@@ -118,7 +118,7 @@ namespace Exader
 
         public static IEnumerable<IEnumerable<T>> AsBatches<T>(this IEnumerable<T> self, int batchSize)
         {
-            if (self == null) throw new ArgumentNullException("self");
+            if (self == null) throw new ArgumentNullException(nameof(self));
 
             // ReSharper disable once PossibleMultipleEnumeration
             var batchesCount = (int)Math.Ceiling(self.Count() / (double)batchSize);

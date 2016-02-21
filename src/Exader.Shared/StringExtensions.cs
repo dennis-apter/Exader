@@ -403,6 +403,24 @@ namespace Exader
 #if SILVERLIGHT || NET45
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
+        public static string EnsureEndsWith(this string self, string end, StringComparison stringComparison)
+        {
+            // AND
+            if (string.IsNullOrEmpty(self) && string.IsNullOrEmpty(end))
+            {
+                return string.Empty;
+            }
+
+            // XOR
+            if (string.IsNullOrEmpty(self)) return end;
+            if (string.IsNullOrEmpty(end)) return self;
+
+            return self.EndsWith(end, stringComparison) ? self : self + end;
+        }
+
+#if SILVERLIGHT || NET45
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
         public static string EnsureStartsWith(this string self, char start)
         {
             if (!string.IsNullOrEmpty(self))
@@ -434,6 +452,24 @@ namespace Exader
             if (string.IsNullOrEmpty(start)) return self;
 
             return self.StartsWith(start) ? self : start + self;
+        }
+
+#if SILVERLIGHT || NET45
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+        public static string EnsureStartsWith(this string self, string start, StringComparison stringComparison)
+        {
+            // AND
+            if (string.IsNullOrEmpty(self) && string.IsNullOrEmpty(start))
+            {
+                return string.Empty;
+            }
+
+            // XOR
+            if (string.IsNullOrEmpty(self)) return start;
+            if (string.IsNullOrEmpty(start)) return self;
+
+            return self.StartsWith(start, stringComparison) ? self : start + self;
         }
 
 #if SILVERLIGHT || NET45

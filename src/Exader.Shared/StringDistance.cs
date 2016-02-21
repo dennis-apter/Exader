@@ -3,173 +3,173 @@ using JetBrains.Annotations;
 
 namespace Exader
 {
-	/// <summary>
+    /// <summary>
     /// http://grantorinoteam.blogspot.com/2009/03/blog-post.html
     /// </summary>
-	[UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
+    [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
     public class StringDistance
     {
-		/// <summary>
-		/// Вычисление меры схожести двух предложений             
-		/// Получение дистанции для двух слов
-		/// </summary>
-		/// <param name="s"></param>
-		/// <param name="t"></param>
-		/// <returns></returns>
-		private static int GetWordDistance(string s, string t)
-		{
-			try
-			{
-				// шаг 1
-				if (string.IsNullOrEmpty(s) || string.IsNullOrEmpty(t))
-				{
-					throw new Exception("Одно из слов не задано.");
-				}
+        /// <summary>
+        /// Вычисление меры схожести двух предложений             
+        /// Получение дистанции для двух слов
+        /// </summary>
+        /// <param name="s"></param>
+        /// <param name="t"></param>
+        /// <returns></returns>
+        private static int GetWordDistance(string s, string t)
+        {
+            try
+            {
+                // шаг 1
+                if (string.IsNullOrEmpty(s) || string.IsNullOrEmpty(t))
+                {
+                    throw new Exception("Одно из слов не задано.");
+                }
 
-				s = s.ToLower();
-				t = t.ToLower();
-				int n = s.Length;// длина строки s    
-				int m = t.Length; // длина строки t      
-				var d = new int[n + 1, m + 1];
+                s = s.ToLower();
+                t = t.ToLower();
+                int n = s.Length;// длина строки s    
+                int m = t.Length; // длина строки t      
+                var d = new int[n + 1, m + 1];
 
-				// матрица для хранения вычислений     
-				// шаг 2 
-				for (int i = 0; i <= n; i++)
-				{
-					d[i, 0] = i;
-				}
+                // матрица для хранения вычислений     
+                // шаг 2 
+                for (int i = 0; i <= n; i++)
+                {
+                    d[i, 0] = i;
+                }
 
-				for (int j = 0; j <= m; j++)
-				{
-					d[0, j] = j;
-				}
+                for (int j = 0; j <= m; j++)
+                {
+                    d[0, j] = j;
+                }
 
-				// шаг 3
-				for (int i = 1; i <= n; i++)
-				{
-					int s_i = s[i - 1];
-					for (int j = 1; j <= m; j++)
-					{
-						int t_j = t[j - 1];
-						int cost = 0;
-						// определение оценки          
-						if (s_i != t_j)
-							cost = 1;
-						// получить минимум для ячейки матрцы           
-						d[i, j] = Minimum(d[i - 1, j] + 1, d[i, j - 1] + 1, d[i - 1, j - 1] + cost);
-					}
-				}
+                // шаг 3
+                for (int i = 1; i <= n; i++)
+                {
+                    int si = s[i - 1];
+                    for (int j = 1; j <= m; j++)
+                    {
+                        int tj = t[j - 1];
+                        int cost = 0;
+                        // определение оценки          
+                        if (si != tj)
+                            cost = 1;
+                        // получить минимум для ячейки матрцы           
+                        d[i, j] = Minimum(d[i - 1, j] + 1, d[i, j - 1] + 1, d[i - 1, j - 1] + cost);
+                    }
+                }
                 
-				int dist = d[n, m]; // дистанция редактирования   
-				// получение относительного числа похожести      
-				var procent = (int)Math.Round((1 - dist / (double)Math.Max(s.Length, t.Length)) * 100, 0);
-				return procent;
-			}
-			catch (Exception ex)
-			{
-				throw new Exception("Ошибка при сравнении слов", ex);
-			}
-		}
+                int dist = d[n, m]; // дистанция редактирования   
+                // получение относительного числа похожести      
+                var procent = (int)Math.Round((1 - dist / (double)Math.Max(s.Length, t.Length)) * 100, 0);
+                return procent;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Ошибка при сравнении слов", ex);
+            }
+        }
 
-		/// Минимум из трех значений                           
-		private static int Minimum(int a, int b, int c)
-		{
-			int min = a;
-			if (b < min)
-			{
-				min = b;
-			}
+        /// Минимум из трех значений                           
+        private static int Minimum(int a, int b, int c)
+        {
+            int min = a;
+            if (b < min)
+            {
+                min = b;
+            }
 
-			if (c < min)
-			{
-				min = c;
-			}
+            if (c < min)
+            {
+                min = c;
+            }
 
-			return min;
-		}
+            return min;
+        }
 
-		private readonly string sentenceOne;
-        private readonly string sentenceTwo;
+        private readonly string _sentenceOne;
+        private readonly string _sentenceTwo;
 
         /// <summary>
         /// Абсолютное значение функции похожести
         /// </summary>
-        private int absoluteMeasure;
+        private int _absoluteMeasure;
 
         /// <summary>
         /// Относительное значение функции похожести
         /// </summary>
-        private int procentMeasure;
+        private int _procentMeasure;
 
-		public StringDistance(string sentenceOne, string sentenceTwo)
-		{
-			this.sentenceOne = sentenceOne;
-			this.sentenceTwo = sentenceTwo;
-			SentenceSeemsMeasure();
-		}
+        public StringDistance(string sentenceOne, string sentenceTwo)
+        {
+            this._sentenceOne = sentenceOne;
+            this._sentenceTwo = sentenceTwo;
+            SentenceSeemsMeasure();
+        }
 
-		private void SentenceSeemsMeasure()
-		{
-			// получение слов в предложениях                      
-			string[] sOneWords = sentenceOne.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+        private void SentenceSeemsMeasure()
+        {
+            // получение слов в предложениях                      
+            string[] sOneWords = _sentenceOne.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
 
-			string[] sTwoWords = sentenceTwo.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            string[] sTwoWords = _sentenceTwo.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
 
-			// заполнение матрицы отношений между словами предложения           
-			var wordRelations = new int[sOneWords.Length, sTwoWords.Length];
+            // заполнение матрицы отношений между словами предложения           
+            var wordRelations = new int[sOneWords.Length, sTwoWords.Length];
 
-			// значения максимальных значений в строках матрицы         
-			var maxRowElements = new int[sOneWords.Length];
+            // значения максимальных значений в строках матрицы         
+            var maxRowElements = new int[sOneWords.Length];
 
-			try
-			{
-				for (int i = 0; i < sOneWords.Length; i++)
-				{
-					int max = 0;
-					for (int j = 0; j < sTwoWords.Length; j++)
-					{ 
-						// получение дистанции для пары слов в предлажении     
-						wordRelations[i, j] = GetWordDistance(sOneWords[i], sTwoWords[j]);
+            try
+            {
+                for (int i = 0; i < sOneWords.Length; i++)
+                {
+                    int max = 0;
+                    for (int j = 0; j < sTwoWords.Length; j++)
+                    { 
+                        // получение дистанции для пары слов в предлажении     
+                        wordRelations[i, j] = GetWordDistance(sOneWords[i], sTwoWords[j]);
 
-						// сравение с максимальным значением              
-						if (max < wordRelations[i, j])
-						{
-							max = wordRelations[i, j];
-						}
-					}
+                        // сравение с максимальным значением              
+                        if (max < wordRelations[i, j])
+                        {
+                            max = wordRelations[i, j];
+                        }
+                    }
 
-					maxRowElements[i] = max;
-				}
+                    maxRowElements[i] = max;
+                }
 
-				// получения меры схожести между предложениями        
-				int measure = 0;
-				for (int i = 0; i < maxRowElements.Length; i++)
-				{
-					int max = maxRowElements[i];
-					for (int j = 0; j < sTwoWords.Length; j++)
-					{
-						if (max < wordRelations[i, j])
-						{
-							max = wordRelations[i, j];
-						}
-					}
+                // получения меры схожести между предложениями        
+                int measure = 0;
+                for (int i = 0; i < maxRowElements.Length; i++)
+                {
+                    int max = maxRowElements[i];
+                    for (int j = 0; j < sTwoWords.Length; j++)
+                    {
+                        if (max < wordRelations[i, j])
+                        {
+                            max = wordRelations[i, j];
+                        }
+                    }
 
-					measure += max;
-				}
+                    measure += max;
+                }
 
-				absoluteMeasure = measure;
+                _absoluteMeasure = measure;
 
-				// получения относительного значения схожести двух предложений
-				procentMeasure = (int)Math.Round(
-					measure / (double)Math.Max(sOneWords.Length, sTwoWords.Length), 0);
-			}
-			catch (Exception error)
-			{
-				throw new Exception("Ошибка при сравнении предложений", error);
-			}
-		}
+                // получения относительного значения схожести двух предложений
+                _procentMeasure = (int)Math.Round(
+                    measure / (double)Math.Max(sOneWords.Length, sTwoWords.Length), 0);
+            }
+            catch (Exception error)
+            {
+                throw new Exception("Ошибка при сравнении предложений", error);
+            }
+        }
 
-		public int AbsoluteMeasure { get {  return absoluteMeasure; } }
-		public int ProcentMeasure { get { return procentMeasure; } }
+        public int AbsoluteMeasure { get {  return _absoluteMeasure; } }
+        public int ProcentMeasure { get { return _procentMeasure; } }
     }
 }

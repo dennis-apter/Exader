@@ -69,7 +69,7 @@ namespace Exader
         {
             if (null == self)
             {
-                throw new ArgumentNullException("self");
+                throw new ArgumentNullException(nameof(self));
             }
 
             var ss = new SecureString();

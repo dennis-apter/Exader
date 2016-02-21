@@ -5,389 +5,339 @@ using System.Text;
 
 namespace Exader
 {
-	/// <summary>
-	/// Представляет поведение перечисляемого узла иерархии.
-	/// </summary>
-	/// <typeparam name="T"></typeparam>
+    /// <summary>
+    /// Представляет поведение перечисляемого узла иерархии.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
 #if NET35
-	public interface IHierarchy<T> where T : IHierarchy<T>
+    public interface IHierarchy<T> where T : IHierarchy<T>
 #else
-	public interface IHierarchy<out T> where T : IHierarchy<T>
+    public interface IHierarchy<out T> where T : IHierarchy<T>
 #endif
-	{
-		/// <summary>
-		/// Возвращает дочерние узлы.
-		/// </summary>
-		IEnumerable<T> Children { get; }
+    {
+        /// <summary>
+        /// Возвращает дочерние узлы.
+        /// </summary>
+        IEnumerable<T> Children { get; }
 
-		/// <summary>
-		/// Возвращает родительский узел.
-		/// </summary>
-		T Parent { get; }
-	}
+        /// <summary>
+        /// Возвращает родительский узел.
+        /// </summary>
+        T Parent { get; }
+    }
 
-	public static class HierarchyExtensions
-	{
-		public static T AncestorAt<T>(this T node, int index) where T : IHierarchy<T>
-		{
-			var ancestor = node;
-			while (!Equals(ancestor, default(T)) && (0 < index))
-			{
-				index--;
-				ancestor = ancestor.Parent;
-			}
+    public static class HierarchyExtensions
+    {
+        public static T AncestorAt<T>(this T node, int index) where T : IHierarchy<T>
+        {
+            var ancestor = node;
+            while (!Equals(ancestor, default(T)) && (0 < index))
+            {
+                index--;
+                ancestor = ancestor.Parent;
+            }
 
-			if (0 < index)
-			{
-				throw new IndexOutOfRangeException();
-			}
+            if (0 < index)
+            {
+                throw new IndexOutOfRangeException();
+            }
 
-			return ancestor;
-		}
+            return ancestor;
+        }
 
-		public static IEnumerable<T> Ancestors<T>(this T self) where T : IHierarchy<T>
-		{
-			return AncestorsCore(self, false);
-		}
+        public static IEnumerable<T> Ancestors<T>(this T self) where T : IHierarchy<T>
+        {
+            return AncestorsCore(self, false);
+        }
 
-		public static IEnumerable<T> AncestorsAndSelf<T>(this T self) where T : IHierarchy<T>
-		{
-			return AncestorsCore(self, true);
-		}
+        public static IEnumerable<T> AncestorsAndSelf<T>(this T self) where T : IHierarchy<T>
+        {
+            return AncestorsCore(self, true);
+        }
 
-		public static IEnumerable<T> Descendants<T>(this T self) where T : IHierarchy<T>
-		{
-			return DescendantsCore(self, false);
-		}
+        public static IEnumerable<T> Descendants<T>(this T self) where T : IHierarchy<T>
+        {
+            return DescendantsCore(self, false);
+        }
 
-		public static IEnumerable<T> Descendants<T>(this IEnumerable<T> nodes) where T : IHierarchy<T>
-		{
-			return nodes.SelectMany(node => node.Descendants());
-		}
+        public static IEnumerable<T> Descendants<T>(this IEnumerable<T> nodes) where T : IHierarchy<T>
+        {
+            return nodes.SelectMany(node => node.Descendants());
+        }
 
-		public static IEnumerable<T> DescendantsAndSelf<T>(this T self) where T : IHierarchy<T>
-		{
-			return DescendantsCore(self, true);
-		}
+        public static IEnumerable<T> DescendantsAndSelf<T>(this T self) where T : IHierarchy<T>
+        {
+            return DescendantsCore(self, true);
+        }
 
-		public static IEnumerable<T> DescendantsAndSelf<T>(this IEnumerable<T> nodes) where T : IHierarchy<T>
-		{
-			return nodes.SelectMany(node => node.DescendantsAndSelf());
-		}
+        public static IEnumerable<T> DescendantsAndSelf<T>(this IEnumerable<T> nodes) where T : IHierarchy<T>
+        {
+            return nodes.SelectMany(node => node.DescendantsAndSelf());
+        }
 
-		public static IEnumerable<T> Hierarchize<T>(this IEnumerable<T> collection) where T : class, IHierarchy<T>
-		{
-			var lookup = collection.ToLookup(e => e.Parent);
-			return HierarchizeCore(lookup);
-		}
+        public static IEnumerable<T> Hierarchize<T>(this IEnumerable<T> collection) where T : class, IHierarchy<T>
+        {
+            var lookup = collection.ToLookup(e => e.Parent);
+            return HierarchizeCore(lookup);
+        }
 
-		public static IEnumerable<T> Hierarchize<T>(this IEnumerable<T> self, Func<T, T> parent) where T : class
-		{
-			var lookup = self.ToLookup(parent);
-			return HierarchizeCore(lookup);
-		}
+        public static IEnumerable<T> Hierarchize<T>(this IEnumerable<T> self, Func<T, T> parent) where T : class
+        {
+            var lookup = self.ToLookup(parent);
+            return HierarchizeCore(lookup);
+        }
 
-		public static bool IsAncestorOf<T>(this T self, T other) where T : IHierarchy<T>
-		{
-			return IsAncestorsCore(self, other, false);
-		}
+        public static bool IsAncestorOf<T>(this T self, T other) where T : IHierarchy<T>
+        {
+            return IsAncestorsCore(self, other, false);
+        }
 
-		public static bool IsAncestorOrSelfOf<T>(this T self, T other) where T : IHierarchy<T>
-		{
-			return IsAncestorsCore(self, other, true);
-		}
+        public static bool IsAncestorOrSelfOf<T>(this T self, T other) where T : IHierarchy<T>
+        {
+            return IsAncestorsCore(self, other, true);
+        }
 
-		public static bool IsDescendantOf<T>(this T self, T other) where T : IHierarchy<T>
-		{
-			return IsAncestorsCore(other, self, false);
-		}
+        public static bool IsDescendantOf<T>(this T self, T other) where T : IHierarchy<T>
+        {
+            return IsAncestorsCore(other, self, false);
+        }
 
-		public static bool IsDescendantOrSelfOf<T>(this T self, T other) where T : IHierarchy<T>
-		{
-			return IsAncestorsCore(other, self, true);
-		}
+        public static bool IsDescendantOrSelfOf<T>(this T self, T other) where T : IHierarchy<T>
+        {
+            return IsAncestorsCore(other, self, true);
+        }
 
-		public static bool IsLeaf<T>(this T node) where T : IHierarchy<T>
-		{
-			return node.Children == null || !node.Children.Any();
-		}
+        public static bool IsLeaf<T>(this T node) where T : IHierarchy<T>
+        {
+            return node.Children == null || !node.Children.Any();
+        }
 
-		public static bool IsRoot<T>(this T node) where T : IHierarchy<T>
-		{
-			return ReferenceEquals(node.Parent, default(T)) ||
-				   ReferenceEquals(node, node.Parent);
-		}
+        public static bool IsRoot<T>(this T node) where T : IHierarchy<T>
+        {
+            return ReferenceEquals(node.Parent, default(T)) ||
+                   ReferenceEquals(node, node.Parent);
+        }
 
-		public static IEnumerable<T> Leaves<T>(this T self) where T : IHierarchy<T>
-		{
-			return self.Descendants().Where(e => e.IsLeaf());
+        public static IEnumerable<T> Leaves<T>(this T self) where T : IHierarchy<T>
+        {
+            return self.Descendants().Where(e => e.IsLeaf());
+        }
 
-			// TODO Стоит ли оптимизировать?
-			//var stack = new Stack<IEnumerator<T>>();
-			//var outer = self.Children.GetEnumerator();
+        public static int Level<T>(this T self) where T : IHierarchy<T>
+        {
+            var level = 0;
+            var ancestor = self.Parent;
+            while (!Equals(ancestor, default(T)))
+            {
+                level++;
+                ancestor = ancestor.Parent;
+            }
 
-			//if (!outer.MoveNext()) yield break;
+            return level;
+        }
 
-			//do
-			//{
-			//	if (outer.Current.Children == null)
-			//	{
-			//		yield return outer.Current;
-			//	}
-			//	else
-			//	{
-			//		var inner = outer.Current.Children.GetEnumerator();
-			//		if (inner.MoveNext())
-			//		{
-			//			stack.Push(outer);
+        public static Path<T> Path<T>(this T self, Func<T, T> parent) where T : class
+        {
+            var stack = new Stack<T>();
+            stack.Push(self);
+            var ancestor = parent(self);
+            while (null != ancestor)
+            {
+                stack.Push(ancestor);
+                ancestor = parent(ancestor);
+            }
 
-			//			outer = inner;
-			//			continue;
-			//		}
+            return new Path<T>(stack.ToArray());
+        }
 
-			//		yield return outer.Current;
-			//	}
+        public static Path<T> Path<T>(this T self) where T : IHierarchy<T>
+        {
+            var stack = new Stack<T>();
+            stack.Push(self);
+            var ancestor = self.Parent;
+            while (!Equals(ancestor, default(T)))
+            {
+                stack.Push(ancestor);
+                ancestor = ancestor.Parent;
+            }
 
-			//	if (outer.MoveNext()) continue;
+            return new Path<T>(stack.ToArray());
+        }
 
-			//	if (0 < stack.Count)
-			//	{
-			//		var o = outer;
-			//		outer = stack.Pop();
+        public static T Root<T>(this T self) where T : IHierarchy<T>
+        {
+            var root = self;
+            var ancestor = self.Parent;
+            while (!Equals(ancestor, default(T)))
+            {
+                root = ancestor;
+                ancestor = ancestor.Parent;
+            }
 
-			//		if (!outer.MoveNext())
-			//		{
-			//			break;
-			//		}
+            return root;
+        }
 
-			//		if (ReferenceEquals(o, outer))
-			//		{
+        public static string ToTreeString<T>(this IEnumerable<T> self, Func<T, string> toString = null)
+            where T : IHierarchy<T>
+        {
+            var buffer = new StringBuilder();
+            foreach (var root in self)
+            {
+                AppendTreeString(buffer, root, toString);
+            }
 
-			//		}
-			//	}
-			//	else
-			//	{
-			//		break;
-			//	}
-			//}
-			//while (true);
-		}
+            return buffer.ToString();
+        }
 
-		public static int Level<T>(this T self) where T : IHierarchy<T>
-		{
-			var level = 0;
-			var ancestor = self.Parent;
-			while (!Equals(ancestor, default(T)))
-			{
-				level++;
-				ancestor = ancestor.Parent;
-			}
+        public static string ToTreeString<T>(this T self, Func<T, string> toString = null) where T : IHierarchy<T>
+        {
+            var buffer = new StringBuilder();
+            AppendTreeString(buffer, self, toString);
+            return buffer.ToString();
+        }
 
-			return level;
-		}
+        private static IEnumerable<T> AncestorsCore<T>(T self, bool andSelf) where T : IHierarchy<T>
+        {
+            if (andSelf)
+            {
+                yield return self;
+            }
 
-		public static Path<T> Path<T>(this T self, Func<T, T> parent) where T : class
-		{
-			var stack = new Stack<T>();
-			stack.Push(self);
-			var ancestor = parent(self);
-			while (null != ancestor)
-			{
-				stack.Push(ancestor);
-				ancestor = parent(ancestor);
-			}
+            var ancestor = self.Parent;
+            while (!Equals(ancestor, default(T)))
+            {
+                yield return ancestor;
 
-			return new Path<T>(stack.ToArray());
-		}
+                ancestor = ancestor.Parent;
+            }
+        }
 
-		public static Path<T> Path<T>(this T self) where T : IHierarchy<T>
-		{
-			var stack = new Stack<T>();
-			stack.Push(self);
-			var ancestor = self.Parent;
-			while (!Equals(ancestor, default(T)))
-			{
-				stack.Push(ancestor);
-				ancestor = ancestor.Parent;
-			}
+        private static void AppendTreeString<T>(StringBuilder buffer, T self, Func<T, string> toString) where T : IHierarchy<T>
+        {
+            if (!typeof(T).IsValueType && Equals(self, default(T)))
+            {
+                buffer.AppendLine("┬─ <null>");
+                return;
+            }
 
-			return new Path<T>(stack.ToArray());
-		}
+            string displayString = toString == null ? Convert.ToString(self) : toString(self);
 
-		public static T Root<T>(this T self) where T : IHierarchy<T>
-		{
-			var root = self;
-			var ancestor = self.Parent;
-			while (!Equals(ancestor, default(T)))
-			{
-				root = ancestor;
-				ancestor = ancestor.Parent;
-			}
+            buffer.Append("┬ ").AppendLine(displayString);
 
-			return root;
-		}
+            if (self.Children == null) return;
 
-		public static string ToTreeString<T>(this IEnumerable<T> self, Func<T, string> toString = null)
-			where T : IHierarchy<T>
-		{
-			var buffer = new StringBuilder();
-			foreach (var root in self)
-			{
-				AppendTreeString(buffer, root, toString);
-			}
+            var stack = new Stack<IEnumerator<T>>();
+            var en = self.Children.GetEnumerator();
+            do
+            {
+                if (en.MoveNext())
+                {
+                    if (!typeof(T).IsValueType && Equals(en.Current, default(T)))
+                    {
+                        buffer.Append("│".Repeat(stack.Count)).AppendLine("├─ <null>");
+                        continue;
+                    }
 
-			return buffer.ToString();
-		}
+                    displayString = toString == null ? Convert.ToString(en.Current) : toString(en.Current);
 
-		public static string ToTreeString<T>(this T self, Func<T, string> toString = null) where T : IHierarchy<T>
-		{
-			var buffer = new StringBuilder();
-			AppendTreeString(buffer, self, toString);
-			return buffer.ToString();
-		}
+                    buffer.Append("│".Repeat(stack.Count));
+                    buffer.Append("├")
+                        .Append(en.Current.IsLeaf() ? "─ " : "┬ ")
+                        .AppendLine(displayString);
 
-		private static IEnumerable<T> AncestorsCore<T>(T self, bool andSelf) where T : IHierarchy<T>
-		{
-			if (andSelf)
-			{
-				yield return self;
-			}
+                    if (en.Current.Children == null) continue;
 
-			var ancestor = self.Parent;
-			while (!Equals(ancestor, default(T)))
-			{
-				yield return ancestor;
+                    stack.Push(en);
+                    en = en.Current.Children.GetEnumerator();
+                }
+                else
+                {
+                    if (0 < stack.Count)
+                    {
+                        en = stack.Pop();
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+            }
+            while (true);
+        }
 
-				ancestor = ancestor.Parent;
-			}
-		}
+        private static IEnumerable<T> DescendantsCore<T>(T self, bool andSelf) where T : IHierarchy<T>
+        {
+            if (andSelf)
+            {
+                yield return self;
+            }
 
-		private static void AppendTreeString<T>(StringBuilder buffer, T self, Func<T, string> toString) where T : IHierarchy<T>
-		{
-			if (!typeof(T).IsValueType && Equals(self, default(T)))
-			{
-				buffer.AppendLine("┬─ <null>");
-				return;
-			}
+            if (self.Children == null) yield break;
 
-			string displayString = toString == null ? Convert.ToString(self) : toString(self);
+            var stack = new Stack<IEnumerator<T>>();
+            var en = self.Children.GetEnumerator();
+            do
+            {
+                if (en.MoveNext())
+                {
+                    yield return en.Current;
 
-			buffer.Append("┬ ").AppendLine(displayString);
+                    if (en.Current.Children == null) continue;
 
-			if (self.Children == null) return;
+                    stack.Push(en);
+                    en = en.Current.Children.GetEnumerator();
+                }
+                else if (0 < stack.Count)
+                {
+                    en = stack.Pop();
+                }
+                else
+                {
+                    break;
+                }
+            }
+            while (true);
+        }
 
-			var stack = new Stack<IEnumerator<T>>();
-			var en = self.Children.GetEnumerator();
-			do
-			{
-				if (en.MoveNext())
-				{
-					if (!typeof(T).IsValueType && Equals(en.Current, default(T)))
-					{
-						buffer.Append("│".Repeat(stack.Count)).AppendLine("├─ <null>");
-						continue;
-					}
+        private static IEnumerable<T> HierarchizeCore<T>(ILookup<T, T> lookup) where T : class
+        {
+            var roots = lookup[null];
+            var en = roots.GetEnumerator();
+            var levels = new Stack<IEnumerator<T>>();
+            do
+            {
+                if (en.MoveNext())
+                {
+                    yield return en.Current;
 
-					displayString = toString == null ? Convert.ToString(en.Current) : toString(en.Current);
+                    levels.Push(en);
+                    en = lookup[en.Current].GetEnumerator();
+                }
+                else if (0 < levels.Count)
+                {
+                    en = levels.Pop();
+                }
+                else
+                {
+                    break;
+                }
+            }
+            while (true);
+        }
 
-					buffer.Append("│".Repeat(stack.Count));
-					buffer.Append("├")
-						.Append(en.Current.IsLeaf() ? "─ " : "┬ ")
-						.AppendLine(displayString);
+        private static bool IsAncestorsCore<T>(T self, T other, bool orSelf) where T : IHierarchy<T>
+        {
+            if (ReferenceEquals(other, null)) return orSelf && ReferenceEquals(self, null);
 
-					if (en.Current.Children == null) continue;
+            var ancestor = orSelf ? other : other.Parent;
+            while (!ReferenceEquals(ancestor, default(T)))
+            {
+                if (ReferenceEquals(ancestor, self)) return true;
 
-					stack.Push(en);
-					en = en.Current.Children.GetEnumerator();
-				}
-				else
-				{
-					if (0 < stack.Count)
-					{
-						en = stack.Pop();
-					}
-					else
-					{
-						break;
-					}
-				}
-			}
-			while (true);
-		}
+                ancestor = ancestor.Parent;
+            }
 
-		private static IEnumerable<T> DescendantsCore<T>(T self, bool andSelf) where T : IHierarchy<T>
-		{
-			if (andSelf)
-			{
-				yield return self;
-			}
-
-			if (self.Children == null) yield break;
-
-			var stack = new Stack<IEnumerator<T>>();
-			var en = self.Children.GetEnumerator();
-			do
-			{
-				if (en.MoveNext())
-				{
-					yield return en.Current;
-
-					if (en.Current.Children == null) continue;
-
-					stack.Push(en);
-					en = en.Current.Children.GetEnumerator();
-				}
-				else if (0 < stack.Count)
-				{
-					en = stack.Pop();
-				}
-				else
-				{
-					break;
-				}
-			}
-			while (true);
-		}
-
-		private static IEnumerable<T> HierarchizeCore<T>(ILookup<T, T> lookup) where T : class
-		{
-			var roots = lookup[null];
-			var en = roots.GetEnumerator();
-			var levels = new Stack<IEnumerator<T>>();
-			do
-			{
-				if (en.MoveNext())
-				{
-					yield return en.Current;
-
-					levels.Push(en);
-					en = lookup[en.Current].GetEnumerator();
-				}
-				else if (0 < levels.Count)
-				{
-					en = levels.Pop();
-				}
-				else
-				{
-					break;
-				}
-			}
-			while (true);
-		}
-
-		private static bool IsAncestorsCore<T>(T self, T other, bool orSelf) where T : IHierarchy<T>
-		{
-			if (ReferenceEquals(other, null)) return orSelf && ReferenceEquals(self, null);
-
-			var ancestor = orSelf ? other : other.Parent;
-			while (!ReferenceEquals(ancestor, default(T)))
-			{
-				if (ReferenceEquals(ancestor, self)) return true;
-
-				ancestor = ancestor.Parent;
-			}
-
-			return false;
-		}
-	}
+            return false;
+        }
+    }
 }

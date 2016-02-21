@@ -47,7 +47,7 @@ namespace Exader
 
 		internal Path(T[] sourceArray, int start, int length)
 		{
-			if (null == sourceArray) throw new ArgumentNullException("sourceArray");
+			if (null == sourceArray) throw new ArgumentNullException(nameof(sourceArray));
 
 			items = new T[length];
 			Array.Copy(sourceArray, start, items, 0, length);

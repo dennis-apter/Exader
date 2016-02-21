@@ -1,296 +1,253 @@
 using System;
 using System.Xml;
 using System.Xml.XPath;
+using JetBrains.Annotations;
 
 namespace Exader.Xml.XPath
 {
-	public class XPathReader : XPathNavigator
-	{
-		private static XPathNodeType ConvertNodeType(XmlNodeType nodeType)
-		{
-			switch (nodeType)
-			{
-				case XmlNodeType.Element:
-					//case XmlNodeType.EndElement:
-					return XPathNodeType.Element;
+    public class XPathReader : XPathNavigator
+    {
+        private bool _moved;
 
-				case XmlNodeType.Attribute:
-					return XPathNodeType.Attribute;
+        [NotNull]
+        private readonly XmlReader _reader;
 
-				case XmlNodeType.Text:
-				case XmlNodeType.CDATA:
-					return XPathNodeType.Text;
+        public XPathReader(XmlReader reader)
+        {
+            if (reader == null)
+                throw new ArgumentNullException(nameof(reader));
 
-				case XmlNodeType.ProcessingInstruction:
-					return XPathNodeType.ProcessingInstruction;
+            _reader = reader;
+        }
 
-				case XmlNodeType.Comment:
-					return XPathNodeType.Comment;
+        public XmlReader Reader => _reader;
 
-				case XmlNodeType.Whitespace:
-					return XPathNodeType.Whitespace;
+        public override XPathNavigator Clone()
+        {
+            return this;
+        }
 
-				case XmlNodeType.SignificantWhitespace:
-					return XPathNodeType.SignificantWhitespace;
+        public override bool IsSamePosition(XPathNavigator other)
+        {
+            return ReferenceEquals(this, other);
+        }
 
-				case XmlNodeType.None:
-				case XmlNodeType.Document:
-				case XmlNodeType.DocumentFragment:
-					return XPathNodeType.Root;
+        public override bool MoveTo(XPathNavigator other)
+        {
+            return ReferenceEquals(this, other);
+        }
 
-				default:
-					return ~XPathNodeType.Root;
-			}
-		}
+        public override bool MoveToFirstAttribute()
+        {
+            return _reader.MoveToFirstAttribute();
+        }
 
-		private static NotSupportedException NotSupportReverseRead()
-		{
-			return new NotSupportedException(
-				"Exader.Xml.XPathReader поддерживает только последовательное чтение вперед.");
-		}
+        public override bool MoveToFirstChild()
+        {
+            if (XmlNodeType.None == _reader.NodeType)
+            {
+                _moved = true;
+                _reader.MoveToContent();
+                return !_reader.EOF;
+            }
 
-		private readonly XmlReader reader;
+            _reader.MoveToElement();
+            if (_reader.IsEmptyElement)
+            {
+                return false;
+            }
 
-		private bool moved;
+            _moved = true;
+            return _reader.Read();
+        }
 
-		public XPathReader(XmlReader reader)
-		{
-			this.reader = reader;
-		}
+        public override bool MoveToFirstNamespace(XPathNamespaceScope scope)
+        {
+            switch (scope)
+            {
+                case XPathNamespaceScope.All:
+                    if (MoveToFirstNamespaceGlobal())
+                    {
+                        return true;
+                    }
 
-		public override XPathNavigator Clone()
-		{
-			return this;
-		}
+                    throw new NotImplementedException();
 
-		public override bool IsSamePosition(XPathNavigator other)
-		{
-			return ReferenceEquals(this, other);
-		}
+                case XPathNamespaceScope.ExcludeXml:
+                    throw new NotImplementedException();
 
-		public override bool MoveTo(XPathNavigator other)
-		{
-			return ReferenceEquals(this, other);
-		}
+                case XPathNamespaceScope.Local:
+                    if (_reader.HasAttributes)
+                    {
+                        if (!MoveToFirstNamespaceLocal())
+                        {
+                            return false;
+                        }
 
-		public override bool MoveToFirstAttribute()
-		{
-			return reader.MoveToFirstAttribute();
-		}
+                        return true;
+                    }
 
-		public override bool MoveToFirstChild()
-		{
-			if (XmlNodeType.None == reader.NodeType)
-			{
-				moved = true;
-				reader.MoveToContent();
-				return !reader.EOF;
-			}
+                    break;
+            }
 
-			reader.MoveToElement();
-			if (reader.IsEmptyElement)
-			{
-				return false;
-			}
+            return false;
+        }
 
-			moved = true;
-			return reader.Read();
-		}
+        public override bool MoveToId(string id)
+        {
+            throw new NotImplementedException();
+        }
 
-		public override bool MoveToFirstNamespace(XPathNamespaceScope scope)
-		{
-			switch (scope)
-			{
-				case XPathNamespaceScope.All:
-					if (MoveToFirstNamespaceGlobal())
-					{
-						return true;
-					}
+        public override bool MoveToNext()
+        {
+            _moved = true;
+            return _reader.Read();
+        }
 
-					throw new NotImplementedException();
+        public override bool MoveToNextAttribute()
+        {
+            return _reader.MoveToNextAttribute();
+        }
 
-				case XPathNamespaceScope.ExcludeXml:
-					throw new NotImplementedException();
+        public override bool MoveToNextNamespace(XPathNamespaceScope scope)
+        {
+            throw new NotImplementedException();
+        }
 
-				case XPathNamespaceScope.Local:
-					if (reader.HasAttributes)
-					{
-						if (!MoveToFirstNamespaceLocal())
-						{
-							return false;
-						}
+        public override bool MoveToParent()
+        {
+            if (XmlNodeType.Attribute == _reader.NodeType)
+            {
+                return _reader.MoveToElement();
+            }
 
-						return true;
-					}
+            throw NotSupportReverseRead();
+        }
 
-					break;
-			}
+        public override bool MoveToPrevious()
+        {
+            throw new NotSupportedException(
+                "Exader.Xml.XPathReader поддерживает только последовательное чтение вперед.");
+        }
 
-			return false;
-		}
+        public override void MoveToRoot()
+        {
+            if (XPathNodeType.Root == NodeType)
+            {
+                _reader.MoveToContent();
+                return;
+            }
 
-		public override bool MoveToId(string id)
-		{
-			throw new NotImplementedException();
-		}
+            throw NotSupportReverseRead();
+        }
 
-		public override bool MoveToNext()
-		{
-			moved = true;
-			return reader.Read();
-		}
+        public override XmlReader ReadSubtree()
+        {
+            switch (NodeType)
+            {
+                case XPathNodeType.Root:
+                case XPathNodeType.Element:
+                    return base.ReadSubtree();
 
-		public override bool MoveToNextAttribute()
-		{
-			return reader.MoveToNextAttribute();
-		}
+                default:
+                    return _reader;
+            }
+        }
 
-		public override bool MoveToNextNamespace(XPathNamespaceScope scope)
-		{
-			throw new NotImplementedException();
-		}
+        public override XPathNodeIterator Select(XPathExpression expr)
+        {
+            _moved = false;
+            XPathNodeIterator it = base.Select(expr);
+            if (_moved)
+            {
+                throw new NotImplementedException();
+            }
 
-		public override bool MoveToParent()
-		{
-			if (XmlNodeType.Attribute == reader.NodeType)
-			{
-				return reader.MoveToElement();
-			}
+            return it;
+        }
 
-			throw NotSupportReverseRead();
+        public override string BaseURI => _reader.BaseURI;
+        public override bool IsEmptyElement => _reader.IsEmptyElement;
+        public override string LocalName => _reader.LocalName;
+        public override string Name => _reader.Name;
+        public override string NamespaceURI => _reader.NamespaceURI;
+        public override XmlNameTable NameTable => _reader.NameTable;
+        public override XPathNodeType NodeType => ConvertNodeType(_reader.NodeType);
+        public override string Prefix => _reader.Prefix;
+        public override string Value => _reader.Value;
 
-			////while (this.reader.Read())
-			////{
-			////    if (this.reader.NodeType == XmlNodeType.EndElement)
-			////    {
-			////        return true;
-			////    }
-			////}
+        private bool IsNamespace()
+        {
+            return "http://www.w3.org/2000/xmlns/" == _reader.NamespaceURI;
+        }
 
-			////return !this.reader.EOF;
-		}
+        private bool MoveToFirstNamespaceGlobal()
+        {
+            if (MoveToFirstNamespaceLocal())
+            {
+                return true;
+            }
 
-		public override bool MoveToPrevious()
-		{
-			throw new NotSupportedException(
-				"Exader.Xml.XPathReader поддерживает только последовательное чтение вперед.");
-		}
+            throw new NotSupportedException();
+        }
 
-		public override void MoveToRoot()
-		{
-			if (XPathNodeType.Root == NodeType)
-			{
-				reader.MoveToContent();
-				return;
-			}
+        private bool MoveToFirstNamespaceLocal()
+        {
+            if (_reader.MoveToFirstAttribute())
+            {
+                do
+                {
+                    if (IsNamespace())
+                    {
+                        return true;
+                    }
 
-			throw NotSupportReverseRead();
-		}
+                } while (_reader.MoveToNextAttribute());
+            }
 
-		public override XmlReader ReadSubtree()
-		{
-			switch (NodeType)
-			{
-				case XPathNodeType.Root:
-				case XPathNodeType.Element:
-					return base.ReadSubtree();
+            return false;
+        }
 
-				default:
-					return reader;
-			}
-		}
+        private static XPathNodeType ConvertNodeType(XmlNodeType nodeType)
+        {
+            switch (nodeType)
+            {
+                case XmlNodeType.Element:
+                    return XPathNodeType.Element;
 
-		public override XPathNodeIterator Select(XPathExpression expr)
-		{
-			moved = false;
-			XPathNodeIterator it = base.Select(expr);
-			if (moved)
-			{
-				throw new NotImplementedException();
-			}
+                case XmlNodeType.Attribute:
+                    return XPathNodeType.Attribute;
 
-			return it;
-		}
+                case XmlNodeType.Text:
+                case XmlNodeType.CDATA:
+                    return XPathNodeType.Text;
 
-		private bool IsNamespace()
-		{
-			return "http://www.w3.org/2000/xmlns/" == reader.NamespaceURI;
-		}
+                case XmlNodeType.ProcessingInstruction:
+                    return XPathNodeType.ProcessingInstruction;
 
-		private bool MoveToFirstNamespaceGlobal()
-		{
-			if (MoveToFirstNamespaceLocal())
-			{
-				return true;
-			}
+                case XmlNodeType.Comment:
+                    return XPathNodeType.Comment;
 
-			throw new NotSupportedException();
-		}
+                case XmlNodeType.Whitespace:
+                    return XPathNodeType.Whitespace;
 
-		private bool MoveToFirstNamespaceLocal()
-		{
-			if (reader.MoveToFirstAttribute())
-			{
-				do
-				{
-					if (IsNamespace())
-					{
-						return true;
-					}
+                case XmlNodeType.SignificantWhitespace:
+                    return XPathNodeType.SignificantWhitespace;
 
-				} while (reader.MoveToNextAttribute());
-			}
+                case XmlNodeType.None:
+                case XmlNodeType.Document:
+                case XmlNodeType.DocumentFragment:
+                    return XPathNodeType.Root;
 
-			return false;
-		}
+                default:
+                    return ~XPathNodeType.Root;
+            }
+        }
 
-		public override string BaseURI
-		{
-			get { return reader.BaseURI; }
-		}
-
-		public override bool IsEmptyElement
-		{
-			get { return reader.IsEmptyElement; }
-		}
-
-		public override string LocalName
-		{
-			get { return reader.LocalName; }
-		}
-
-		public override string Name
-		{
-			get { return reader.Name; }
-		}
-
-		public override XmlNameTable NameTable
-		{
-			get { return reader.NameTable; }
-		}
-		public override string NamespaceURI
-		{
-			get { return reader.NamespaceURI; }
-		}
-
-		public override XPathNodeType NodeType
-		{
-			get { return ConvertNodeType(reader.NodeType); }
-		}
-
-		public override string Prefix
-		{
-			get { return reader.Prefix; }
-		}
-
-		public override string Value
-		{
-			get { return reader.Value; }
-		}
-
-		public XmlReader Reader
-		{
-			get { return reader; }
-		}
-	}
+        private static NotSupportedException NotSupportReverseRead()
+        {
+            return new NotSupportedException(
+                "Exader.Xml.XPathReader поддерживает только последовательное чтение вперед.");
+        }
+    }
 }

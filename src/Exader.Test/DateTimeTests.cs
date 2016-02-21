@@ -7,8 +7,6 @@ namespace Exader
 {
     public class DateTimeTests
     {
-        #region Tests
-
         [Fact]
         public void AddDate()
         {
@@ -191,7 +189,5 @@ namespace Exader
             Assert.Equal(4, DateTimeExtensions.GetWeeksInMonth(2009, 2));
             Assert.Equal(6, DateTimeExtensions.GetWeeksInMonth(2009, 5));
         }
-
-        #endregion
     }
 }

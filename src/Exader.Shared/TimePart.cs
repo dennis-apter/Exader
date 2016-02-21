@@ -1,32 +1,32 @@
 ﻿namespace Exader
 {
-	public enum TimePart
-	{
-		None = 0,
+    public enum TimePart
+    {
+        None = 0,
 
-		Millisecond = 1,
+        Millisecond = 1,
 
-		Second = 2,
+        Second = 2,
 
-		Minute = 3,
+        Minute = 3,
 
-		Hour = 4,
+        Hour = 4,
 
-		/// <summary>
-		/// Сутки.
-		/// </summary>
-		Day = 5,
+        /// <summary>
+        /// Сутки.
+        /// </summary>
+        Day = 5,
 
-		Week = 6,
+        Week = 6,
 
-		/// <summary>
-		/// Десятидневка.
-		/// </summary>
-		Decade = 7,
+        /// <summary>
+        /// Десятидневка.
+        /// </summary>
+        Decade = 7,
 
-		/// <summary>
-		/// Двухнедельный период.
-		/// </summary>
-		Fortnight = 8,
-	}
+        /// <summary>
+        /// Двухнедельный период.
+        /// </summary>
+        Fortnight = 8,
+    }
 }

@@ -5,55 +5,55 @@ using System.Reflection;
 
 namespace Exader.Reflection
 {
-	public static class CustomAttributeProviderExtensions
-	{
-		public static T GetCustomAttribute<T>(this ICustomAttributeProvider self) where T : Attribute
-		{
-			return self.GetCustomAttribute<T>(false);
-		}
+    public static class CustomAttributeProviderExtensions
+    {
+        public static T GetCustomAttribute<T>(this ICustomAttributeProvider self) where T : Attribute
+        {
+            return self.GetCustomAttribute<T>(false);
+        }
 
-		public static T GetCustomAttribute<T>(this ICustomAttributeProvider self, bool inherit) where T : Attribute
-		{
-			object[] attributes = self.GetCustomAttributes(typeof(T), inherit);
-			if (0 == attributes.Length)
-			{
-				return null;
-			}
+        public static T GetCustomAttribute<T>(this ICustomAttributeProvider self, bool inherit) where T : Attribute
+        {
+            object[] attributes = self.GetCustomAttributes(typeof(T), inherit);
+            if (0 == attributes.Length)
+            {
+                return null;
+            }
 
-			if (1 < attributes.Length)
-			{
-				throw new InvalidOperationException(
-					string.Format("Элемент {0} содержит более одного атрибута {1}.", self, typeof(T).FullName));
-			}
+            if (1 < attributes.Length)
+            {
+                throw new InvalidOperationException(
+                    $"Элемент {self} содержит более одного атрибута {typeof (T).FullName}.");
+            }
 
-			return (T)attributes[0];
-		}
+            return (T)attributes[0];
+        }
 
-		public static T[] GetCustomAttributes<T>(this ICustomAttributeProvider self) where T : Attribute
-		{
-			return (T[])self.GetCustomAttributes(typeof(T), false);
-		}
+        public static T[] GetCustomAttributes<T>(this ICustomAttributeProvider self) where T : Attribute
+        {
+            return (T[])self.GetCustomAttributes(typeof(T), false);
+        }
 
-		public static T[] GetCustomAttributes<T>(this ICustomAttributeProvider self, bool inherit) where T : Attribute
-		{
-			return (T[])self.GetCustomAttributes(typeof(T), inherit);
-		}
+        public static T[] GetCustomAttributes<T>(this ICustomAttributeProvider self, bool inherit) where T : Attribute
+        {
+            return (T[])self.GetCustomAttributes(typeof(T), inherit);
+        }
 
-		public static string GetDescription(this ICustomAttributeProvider self)
-		{
-			var attribute = self.GetCustomAttribute<DescriptionAttribute>();
-			return null == attribute ? null : attribute.Description;
-		}
+        public static string GetDescription(this ICustomAttributeProvider self)
+        {
+            var attribute = self.GetCustomAttribute<DescriptionAttribute>();
+            return null == attribute ? null : attribute.Description;
+        }
 
-		public static bool HasCustomAttribute<T>(this ICustomAttributeProvider self, bool inherit) where T : Attribute
-		{
-			return null != self.GetCustomAttribute<T>(inherit);
-		}
+        public static bool HasCustomAttribute<T>(this ICustomAttributeProvider self, bool inherit) where T : Attribute
+        {
+            return null != self.GetCustomAttribute<T>(inherit);
+        }
 
-		public static bool HasCustomAttribute<T>(this ICustomAttributeProvider self) where T : Attribute
-		{
-			return null != self.GetCustomAttribute<T>(false);
-		}
-	}
+        public static bool HasCustomAttribute<T>(this ICustomAttributeProvider self) where T : Attribute
+        {
+            return null != self.GetCustomAttribute<T>(false);
+        }
+    }
 }
 //#endif

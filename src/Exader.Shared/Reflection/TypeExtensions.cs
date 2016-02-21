@@ -86,7 +86,7 @@ namespace Exader.Reflection
                     type = type.GetGenericTypeDefinition();
                 }
 
-				if (interfaceType == type) return true;
+                if (interfaceType == type) return true;
 
                 foreach (Type iface in type.GetInterfaces())
                 {
@@ -142,7 +142,7 @@ namespace Exader.Reflection
 
             if (!genericTypeDefinition.IsGenericTypeDefinition)
             {
-                throw new ArgumentException("Base type should be a generic type definition.", "genericTypeDefinition");
+                throw new ArgumentException("Base type should be a generic type definition.", nameof(genericTypeDefinition));
             }
 
             if (type.IsGenericType && (type.GetGenericTypeDefinition() == genericTypeDefinition))
