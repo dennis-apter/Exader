@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+    <metadata>
+        <id>$id$</id>
+        <version>$version$</version>
+        <authors>Dennis Apter</authors>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <description>File system utilities library</description>
+        <iconUrl>https://s3.amazonaws.com/cloud.ohloh.net/attachments/16636/Exader_med.png</iconUrl>
+        <dependencies>
+            <dependency id="JetBrains.Annotations" version="7.0" />
+            <dependency id="Exader" />
+        </dependencies>
+    </metadata>
+    <files>
+        <file src="src\Exader.IO.Net45\bin\Release\Exader.IO.dll" target="lib\net45\" />
+        <file src="src\Exader.IO.Net35\bin\Release\Exader.IO.dll" target="lib\net35\" />
+        <file src="src\Exader.IO.Silverlight\bin\Release\Exader.IO.dll" target="lib\sl50\" />
+    </files>
+</package>
