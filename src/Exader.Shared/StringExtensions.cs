@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -1447,5 +1449,130 @@ namespace Exader
             return textInfo.ToTitleCase(self);
         }
 #endif
+
+        [NotNull]
+        [Pure]
+        public static IndexedCharEnumerator GetIndexedEnumerator(this string self)
+        {
+            return new IndexedCharEnumerator(self);
+        }
+
+        [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
+        [System.Runtime.InteropServices.ComVisible(true)]
+#if !SILVERLIGHT
+        [Serializable]
+#endif
+        public struct IndexedCharEnumerator : IEnumerator<char>
+        {
+            private string _source;
+            private int _index;
+            private char _current;
+
+            internal IndexedCharEnumerator(string source)
+            {
+                if (source == null)
+                    throw new ArgumentNullException(nameof(source));
+
+                _source = source;
+                _index = -1;
+                _current = '\0';
+            }
+
+            public int Index => _index;
+            public bool IsStarted => _index != -1;
+            public bool IsFinished => _index >= _source.Length;
+            public char Current => _current;
+
+            object IEnumerator.Current => _current;
+
+            public bool MoveNext()
+            {
+                if (_index < (_source.Length - 1))
+                {
+                    _index++;
+                    _current = _source[_index];
+                    return true;
+                }
+                else
+                    _index = _source.Length;
+                return false;
+
+            }
+
+            public void Reset()
+            {
+                _current = '\0';
+                _index = -1;
+            }
+
+            public void Dispose()
+            {
+                if (_source != null)
+                    _index = _source.Length;
+
+                _source = null;
+            }
+
+            public override string ToString()
+            {
+                if (IsStarted)
+                {
+                    if (!IsFinished)
+                    {
+                        return Current.ToString(); // TODO ...prefix<Current>suffix...
+                    }
+
+                    return "Finished";
+                }
+
+                return "Not Started";
+            }
+
+            public int MoveTo(ref IndexedCharEnumerator other)
+            {
+                while (MoveNext())
+                {
+                    if (other.Current == Current)
+                    {
+                        return Index;
+                    }
+                }
+
+                return -1;
+            }
+
+            public int MoveWith(ref IndexedCharEnumerator other)
+            {
+                int start = -1;
+                while (MoveNext())
+                {
+                    if (other.Current != Current)
+                        continue;
+
+                    start = Index;
+                    while (other.MoveNext() & MoveNext())
+                    {
+                        if (other.Current != Current)
+                        {
+                            break;
+                        }
+                    }
+
+                    if (other.IsFinished || IsFinished)
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        _index = start;
+                        start = -1;
+                        other.Reset();
+                        other.MoveNext();
+                    }
+                }
+
+                return start;
+            }
+        }
     }
 }

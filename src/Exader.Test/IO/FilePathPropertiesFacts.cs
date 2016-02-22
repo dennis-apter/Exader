@@ -2,7 +2,7 @@
 
 namespace Exader.IO
 {
-    public class FilePathFacts
+    public class FilePathPropertiesFacts
     {
         [Theory]
         [InlineData(@"c:", @"C:", "", "")]

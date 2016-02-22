@@ -4,6 +4,9 @@ using Xunit;
 
 namespace Exader.IO
 {
+    /// <summary>
+    /// TODO Use fixture
+    /// </summary>
     public class FilePathTravelsalFacts
     {
         [Fact]

@@ -7,11 +7,6 @@ using System.Reflection.Emit;
 
 namespace Exader.Reflection
 {
-    /// <summary>
-    /// TODO Переделать на основе примеров:
-    /// http://blogs.msdn.com/b/zelmalki/archive/2008/12/11/msil-parser-quick-update.aspx
-    /// http://evain.net/blog/articles/2009/04/30/reflection-based-cil-reader
-    /// </summary>
     public class CodeBlock
     {
         public static CodeBlock Create(MethodInfo methodInfo)
@@ -181,7 +176,8 @@ namespace Exader.Reflection
             Type declaringType = method.DeclaringType;
             return declaringType.Module.ResolveType(msilTypeToken, declaringType.GetGenericArguments(), method.GetGenericArguments());
         }
-
+        
+        [Obsolete("Remove?")]
         public Expression ToExpression()
         {
             List<ParameterExpression> args = method.GetParameters()

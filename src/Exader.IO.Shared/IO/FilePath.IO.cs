@@ -712,9 +712,8 @@ namespace Exader.IO
         public FilePath EnsureDirectoryExists()
         {
             if (!IsDirectoryExists)
-            {
                 Directory.CreateDirectory(ToString());
-            }
+
             return this;
         }
 
@@ -725,9 +724,7 @@ namespace Exader.IO
         public FilePath EnsureParentExists()
         {
             if (!IsParentExists)
-            {
                 Directory.CreateDirectory(WithoutNameAsString());
-            }
 
             return this;
         }

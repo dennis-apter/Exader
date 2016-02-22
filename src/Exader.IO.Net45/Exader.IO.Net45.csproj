@@ -7,7 +7,7 @@
     <ProjectGuid>{36EB59C1-A717-44C1-9AC4-BA0F2430CCB1}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Exader.IO.Net45</RootNamespace>
+    <RootNamespace>Exader</RootNamespace>
     <AssemblyName>Exader.IO</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>

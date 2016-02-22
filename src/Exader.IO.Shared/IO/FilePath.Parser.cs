@@ -8,8 +8,8 @@ using System.Text;
 namespace Exader.IO
 {
     [Flags]
-    [Obsolete("TODO")]
-    public enum FilePathStyles
+    [Obsolete("TODO #1 Parse a string representation of a file path in a specified style")]
+    internal enum FilePathStyles
     {
         None,
         AllowDrive,
@@ -30,20 +30,22 @@ namespace Exader.IO
 
     public partial class FilePath
     {
-        public static bool TryParse(string value, out FilePath filePath, FilePathStyles styles = FilePathStyles.None)
+        public static bool TryParse(string value, out FilePath result) => TryParse(value, out result, FilePathStyles.None);
+        internal static bool TryParse(string value, out FilePath result, FilePathStyles styles)
         {
             var parser = new Parser(value, false, "", styles);
             if (parser.ErrorType == FilePathParseErrorType.None)
             {
-                filePath = new FilePath(parser.DriveOrHost, parser.RootFolder, parser.Prefix, parser.Name, parser.Extension, parser.IsDirectory);
+                result = new FilePath(parser.DriveOrHost, parser.RootFolder, parser.Prefix, parser.Name, parser.Extension, parser.IsDirectory);
                 return true;
             }
 
-            filePath = null;
+            result = null;
             return false;
         }
 
-        public static FilePath Parse(string value, FilePathStyles styles = FilePathStyles.None)
+        public static FilePath Parse(string value) => Parse(value, FilePathStyles.None);
+        internal static FilePath Parse(string value, FilePathStyles styles)
         {
             var parser = new Parser(value, false, "", styles);
             switch (parser.ErrorType)
@@ -616,7 +618,7 @@ namespace Exader.IO
                 return len;
             }
 
-            [Obsolete("Trim name only")]
+            [Obsolete("TODO Trim name only")]
             private void TrimEnd(StringBuilder buffer)
             {
                 if (buffer.Length == 1 && buffer[0] == '.')

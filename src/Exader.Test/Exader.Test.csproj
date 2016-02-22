@@ -107,24 +107,24 @@
   <ItemGroup>
     <Compile Include="ArrayExtensionsTest.cs" />
     <Compile Include="IO\FilePathConversionFacts.cs" />
-    <Compile Include="IO\FilePathModificationFacts.cs" />
     <Compile Include="IO\FilePathRelationFacts.cs" />
     <Compile Include="IO\FilePathTransformationFacts.cs" />
     <Compile Include="IO\FilePathTravelsalFacts.cs" />
-    <Compile Include="IO\FilePath_Copy.cs" />
+    <Compile Include="IO\FilePathCopyingFacts.cs" />
     <Compile Include="IO\FilePathParsingFacts.cs" />
-    <Compile Include="IO\StreamExtensions_IsUtf8.cs" />
-    <Compile Include="StringExtensionsFacts.Substring.cs" />
-    <Compile Include="StringExtensionsFacts.Between.cs" />
+    <Compile Include="IO\StreamExtensionsFacts.cs" />
+    <Compile Include="TestData.cs" />
+    <Compile Include="SubstringFacts.cs" />
+    <Compile Include="SubstringBetweenFacts.cs" />
     <Compile Include="HierarchyTests.cs" />
     <Compile Include="DateTimeTests.cs" />
     <Compile Include="IO\FilePathBuilderFacts.cs" />
     <Compile Include="IO\FilePathPatternTests.cs" />
-    <Compile Include="IO\FilePathFacts.cs" />
+    <Compile Include="IO\FilePathPropertiesFacts.cs" />
     <Compile Include="IO\InvalidFilePathTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StringExtensionsFacts.cs" />
-    <Compile Include="TypeExtensionsTest.cs" />
+    <Compile Include="Reflection\TypeExtensionsTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
@@ -159,6 +159,10 @@
     <ProjectReference Include="..\..\src\Exader.Net45\Exader.Net45.csproj">
       <Project>{6d039207-2656-45af-8051-2c4133aa9a58}</Project>
       <Name>Exader</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Exader.Reflection.Net45\Exader.Reflection.Net45.csproj">
+      <Project>{c94705db-e4ad-4e29-99ad-900f6d12ee13}</Project>
+      <Name>Exader.Reflection.Net45</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

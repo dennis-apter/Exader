@@ -1,10 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using Exader.Reflection;
 using Xunit;
 
-namespace Exader
+namespace Exader.Reflection
 {
     public class TypeExtensionsTest
     {

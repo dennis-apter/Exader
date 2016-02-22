@@ -30,6 +30,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Exader.IO.Silverlight", "sr
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Exader.IO.Shared", "src\Exader.IO.Shared\Exader.IO.Shared.shproj", "{4A414DA1-E15E-4EC7-8348-9A22133AC3C9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Exader.Reflection.Net45", "src\Exader.Reflection.Net45\Exader.Reflection.Net45.csproj", "{C94705DB-E4AD-4E29-99AD-900F6D12EE13}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		src\Exader.Shared\Exader.Shared.projitems*{7a2eb1df-92c3-4028-9255-7e4e752e3622}*SharedItemsImports = 4
@@ -74,6 +76,10 @@ Global
 		{76F74FF9-589B-4F4E-AF59-EE2721427A0F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{76F74FF9-589B-4F4E-AF59-EE2721427A0F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{76F74FF9-589B-4F4E-AF59-EE2721427A0F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C94705DB-E4AD-4E29-99AD-900F6D12EE13}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C94705DB-E4AD-4E29-99AD-900F6D12EE13}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C94705DB-E4AD-4E29-99AD-900F6D12EE13}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C94705DB-E4AD-4E29-99AD-900F6D12EE13}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

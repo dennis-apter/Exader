@@ -121,12 +121,6 @@
     <Compile Include="EventModel\IEventSourceWithUndoRedo.cs" />
     <Compile Include="EventModel\IPropertyEventArgs.cs" />
     <Compile Include="Properties\ResourceStrings.Designer.cs" />
-    <Compile Include="Reflection\CodeBlock.cs" />
-    <Compile Include="Reflection\Instruction.cs" />
-    <Compile Include="Reflection\InstructionType.cs" />
-    <Compile Include="Reflection\MethodBodyReader.cs" />
-    <Compile Include="Reflection\PropertyInfoExtensions.cs" />
-    <Compile Include="Reflection\MethodBaseExtensions.cs" />
     <Compile Include="Xml\XPath\XPathReader.cs" />
   </ItemGroup>
   <ItemGroup>
