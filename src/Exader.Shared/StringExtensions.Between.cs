@@ -14,7 +14,7 @@ namespace Exader
             CultureInfo culture = null,
             CompareOptions compareOptions = CompareOptions.Ordinal)
         {
-            return BetweenInternal(false, self, token, token, include, culture, compareOptions);
+            return BetweenCore(false, self, token, token, include, culture, compareOptions, "");
         }
 
         [NotNull]
@@ -26,7 +26,7 @@ namespace Exader
             CultureInfo culture = null,
             CompareOptions compareOptions = CompareOptions.Ordinal)
         {
-            return BetweenInternal(false, self, startToken, endToken, include, culture, compareOptions);
+            return BetweenCore(false, self, startToken, endToken, include, culture, compareOptions, "");
         }
 
         [NotNull]
@@ -39,7 +39,7 @@ namespace Exader
             CultureInfo culture = null,
             CompareOptions compareOptions = CompareOptions.Ordinal)
         {
-            return BetweenInternal(false, self, startToken, endToken, out left, out right, culture, compareOptions);
+            return BetweenCore(false, self, startToken, endToken, out left, out right, culture, compareOptions, "");
         }
 
         [NotNull]
@@ -52,7 +52,7 @@ namespace Exader
             CultureInfo culture = null,
             CompareOptions compareOptions = CompareOptions.Ordinal)
         {
-            return BetweenInternal(false, self, startToken, endToken, out left, out right, culture, compareOptions);
+            return BetweenCore(false, self, startToken, endToken, out left, out right, culture, compareOptions, "");
         }
 
         [NotNull]
@@ -63,7 +63,7 @@ namespace Exader
             CultureInfo culture = null,
             CompareOptions compareOptions = CompareOptions.Ordinal)
         {
-            return BetweenInternal(false, self, token, token, include, culture, compareOptions);
+            return BetweenCore(false, self, token, token, include, culture, compareOptions, "");
         }
 
         [NotNull]
@@ -75,7 +75,7 @@ namespace Exader
             CultureInfo culture = null,
             CompareOptions compareOptions = CompareOptions.Ordinal)
         {
-            return BetweenInternal(false, self, startToken, endToken, include, culture, compareOptions);
+            return BetweenCore(false, self, startToken, endToken, include, culture, compareOptions, "");
         }
 
         [NotNull]
@@ -86,7 +86,7 @@ namespace Exader
             CultureInfo culture = null,
             CompareOptions compareOptions = CompareOptions.Ordinal)
         {
-            return BetweenInternal(true, self, token, token, include, culture, compareOptions);
+            return BetweenCore(true, self, token, token, include, culture, compareOptions, "");
         }
 
         [NotNull]
@@ -97,7 +97,7 @@ namespace Exader
             CultureInfo culture = null,
             CompareOptions compareOptions = CompareOptions.Ordinal)
         {
-            return BetweenInternal(true, self, token, token, include, culture, compareOptions);
+            return BetweenCore(true, self, token, token, include, culture, compareOptions,"");
         }
 
         [NotNull]
@@ -109,7 +109,7 @@ namespace Exader
             CultureInfo culture = null,
             CompareOptions compareOptions = CompareOptions.Ordinal)
         {
-            return BetweenInternal(true, self, startToken, endToken, include, culture, compareOptions);
+            return BetweenCore(true, self, startToken, endToken, include, culture, compareOptions, "");
         }
 
         [NotNull]
@@ -122,7 +122,7 @@ namespace Exader
             CultureInfo culture = null,
             CompareOptions compareOptions = CompareOptions.Ordinal)
         {
-            return BetweenInternal(true, self, startToken, endToken, out left, out right, culture, compareOptions);
+            return BetweenCore(true, self, startToken, endToken, out left, out right, culture, compareOptions, "");
         }
 
         [NotNull]
@@ -135,7 +135,7 @@ namespace Exader
             CultureInfo culture = null,
             CompareOptions compareOptions = CompareOptions.Ordinal)
         {
-            return BetweenInternal(true, self, startToken, endToken, out left, out right, culture, compareOptions);
+            return BetweenCore(true, self, startToken, endToken, out left, out right, culture, compareOptions, "");
         }
 
         [NotNull]
@@ -147,10 +147,9 @@ namespace Exader
             CultureInfo culture = null,
             CompareOptions compareOptions = CompareOptions.Ordinal)
         {
-            return BetweenInternal(true, self, startToken, endToken, include, culture, compareOptions);
+            return BetweenCore(true, self, startToken, endToken, include, culture, compareOptions, "");
         }
-
-        [Obsolete("TODO")]
+        
         [NotNull]
         internal static string BetweenLastOrSelf(
             this string self,
@@ -160,11 +159,10 @@ namespace Exader
             CultureInfo culture = null,
             CompareOptions compareOptions = CompareOptions.Ordinal)
         {
-            var result = BetweenInternal(true, self, startToken, endToken, include, culture, compareOptions);
-            return result == string.Empty ? self : result;
+            var result = BetweenCore(true, self, startToken, endToken, include, culture, compareOptions, self);
+            return result;
         }
-
-        [Obsolete("TODO")]
+        
         [NotNull]
         internal static string BetweenLastOrSelf(
             this string self,
@@ -174,8 +172,8 @@ namespace Exader
             CultureInfo culture = null,
             CompareOptions compareOptions = CompareOptions.Ordinal)
         {
-            var result = BetweenInternal(true, self, startToken, endToken, include, culture, compareOptions);
-            return result == string.Empty ? self : result;
+            var result = BetweenCore(true, self, startToken, endToken, include, culture, compareOptions, self);
+            return result;
         }
 
         [NotNull]
@@ -187,15 +185,8 @@ namespace Exader
             CultureInfo culture = null,
             CompareOptions compareOptions = CompareOptions.Ordinal)
         {
-            var result = BetweenInternal(false, self, startToken, endToken, false, culture, compareOptions);
-            if (result != string.Empty)
-            {
-                return include
-                    ? startToken + result + endToken
-                    : result;
-            }
-
-            return self;
+            var result = BetweenCore(false, self, startToken, endToken, false, culture, compareOptions, self);
+            return result;
         }
 
         [NotNull]
@@ -207,32 +198,26 @@ namespace Exader
             CultureInfo culture = null,
             CompareOptions compareOptions = CompareOptions.Ordinal)
         {
-            var result = BetweenInternal(false, self, startToken, endToken, false, culture, compareOptions);
-            if (result != string.Empty)
-            {
-                return include
-                    ? startToken + result + endToken
-                    : result;
-            }
-
-            return self;
+            var result = BetweenCore(false, self, startToken, endToken, false, culture, compareOptions, self);
+            return result;
         }
 
         [NotNull]
-        private static string BetweenInternal(
+        private static string BetweenCore(
             bool last,
             string self,
             string startToken,
             string endToken,
             bool include,
             CultureInfo culture,
-            CompareOptions compareOptions)
+            CompareOptions compareOptions,
+            string defaultValue)
         {
             if (string.IsNullOrEmpty(self) ||
                 string.IsNullOrEmpty(startToken) ||
                 string.IsNullOrEmpty(endToken))
             {
-                return string.Empty;
+                return defaultValue;
             }
 
             if (null == culture)
@@ -242,19 +227,25 @@ namespace Exader
             {
                 int ei = culture.CompareInfo.LastIndexOf(self, endToken, compareOptions);
                 if (ei < 0)
-                    return string.Empty;
+                    return defaultValue;
 
-                int si = culture.CompareInfo.LastIndexOf(self, startToken, ei, compareOptions);
+                int si = culture.CompareInfo.LastIndexOf(self, startToken, ei - 1, compareOptions);
                 if (si <= ei)
                 {
                     if (include)
                     {
+                        if (ei - si == startToken.Length)
+                            return defaultValue;
+
                         ei += endToken.Length;
                     }
                     else
                     {
                         si += startToken.Length;
                     }
+
+                    if (si == ei)
+                        return defaultValue;
 
                     return self.Substring(si, ei - si);
                 }
@@ -263,7 +254,7 @@ namespace Exader
             {
                 int si = culture.CompareInfo.IndexOf(self, startToken, compareOptions);
                 if (si < 0)
-                    return string.Empty;
+                    return defaultValue;
 
                 var offset = si + startToken.Length;
                 if (!include)
@@ -275,15 +266,18 @@ namespace Exader
                     if (include)
                         ei += endToken.Length;
 
+                    if (si == ei)
+                        return defaultValue;
+
                     return self.Substring(si, ei - si);
                 }
             }
 
-            return string.Empty;
+            return defaultValue;
         }
 
         [NotNull]
-        private static string BetweenInternal(
+        private static string BetweenCore(
             bool last,
             string self,
             string startToken,
@@ -291,7 +285,8 @@ namespace Exader
             out string left,
             out string right,
             CultureInfo culture,
-            CompareOptions compareOptions)
+            CompareOptions compareOptions,
+            string defaultValue)
         {
             left = string.Empty;
             right = string.Empty;
@@ -299,7 +294,7 @@ namespace Exader
                 string.IsNullOrEmpty(startToken) ||
                 string.IsNullOrEmpty(endToken))
             {
-                return string.Empty;
+                return defaultValue;
             }
 
             if (null == culture)
@@ -309,15 +304,19 @@ namespace Exader
             {
                 int ei = culture.CompareInfo.LastIndexOf(self, endToken, compareOptions);
                 if (ei < 0)
-                    return string.Empty;
+                    return defaultValue;
 
                 right = self.SubstringAfter(ei);
 
-                int si = culture.CompareInfo.LastIndexOf(self, startToken, ei, compareOptions);
+                int si = culture.CompareInfo.LastIndexOf(self, startToken, ei - 1, compareOptions);
                 if (si <= ei)
                 {
                     si += startToken.Length;
                     left = self.Left(si);
+
+                    if (si == ei)
+                        return defaultValue;
+
                     return self.Substring(si, ei - si);
                 }
 
@@ -327,26 +326,30 @@ namespace Exader
             {
                 int si = culture.CompareInfo.IndexOf(self, startToken, compareOptions);
                 if (si < 0)
-                    return string.Empty;
+                    return defaultValue;
 
-                left = self.Left(si);
                 si += startToken.Length;
+                left = self.Left(si);
 
                 int ei = culture.CompareInfo.IndexOf(self, endToken, si, compareOptions);
                 if (si <= ei)
                 {
-                    right = self.SubstringAfter(ei + endToken.Length);
+                    right = self.SubstringAfter(ei);
+
+                    if (si == ei)
+                        return defaultValue;
+
                     return self.Substring(si, ei - si);
                 }
 
                 left = string.Empty;
             }
 
-            return string.Empty;
+            return defaultValue;
         }
 
         [NotNull]
-        private static string BetweenInternal(
+        private static string BetweenCore(
             bool last,
             string self,
             char startToken,
@@ -354,7 +357,8 @@ namespace Exader
             out string left,
             out string right,
             CultureInfo culture,
-            CompareOptions compareOptions)
+            CompareOptions compareOptions,
+            string defaultValue)
         {
             left = string.Empty;
             right = string.Empty;
@@ -366,7 +370,7 @@ namespace Exader
             {
                 int ei = culture.CompareInfo.LastIndexOf(self, endToken, compareOptions);
                 if (ei < 0)
-                    return string.Empty;
+                    return defaultValue;
 
                 right = self.SubstringAfter(ei);
 
@@ -375,6 +379,10 @@ namespace Exader
                 {
                     si++;
                     left = self.Left(si);
+
+                    if (si == ei)
+                        return defaultValue;
+
                     return self.Substring(si, ei - si);
                 }
 
@@ -384,33 +392,38 @@ namespace Exader
             {
                 int si = culture.CompareInfo.IndexOf(self, startToken, compareOptions);
                 if (si < 0)
-                    return string.Empty;
+                    return defaultValue;
 
-                left = self.Left(si);
                 si++;
+                left = self.Left(si);
 
                 int ei = compareInfo.IndexOf(self, endToken, si, compareOptions);
                 if (si <= ei)
                 {
-                    right = self.SubstringAfter(ei + 1);
+                    right = self.SubstringAfter(ei);
+
+                    if (si == ei)
+                        return defaultValue;
+
                     return self.Substring(si, ei - si);
                 }
 
                 left = string.Empty;
             }
 
-            return string.Empty;
+            return defaultValue;
         }
 
         [NotNull]
-        private static string BetweenInternal(
+        private static string BetweenCore(
             bool last,
             string self,
             char startToken,
             char endToken,
             bool include,
             CultureInfo culture,
-            CompareOptions compareOptions)
+            CompareOptions compareOptions,
+            string defaultValue)
         {
             if (null == culture)
                 culture = CultureInfo.InvariantCulture;
@@ -420,15 +433,25 @@ namespace Exader
             {
                 int ei = culture.CompareInfo.LastIndexOf(self, endToken, compareOptions);
                 if (ei < 0)
-                    return string.Empty;
+                    return defaultValue;
 
                 int si = culture.CompareInfo.LastIndexOf(self, startToken, ei - 1, compareOptions);
                 if (si <= ei)
                 {
                     if (include)
+                    {
+                        if (ei - si == 1)
+                            return defaultValue;
+
                         ei += 1;
+                    }
                     else
+                    {
                         si += 1;
+                    }
+
+                    if (si == ei)
+                        return defaultValue;
 
                     return self.Substring(si, ei - si);
                 }
@@ -437,7 +460,7 @@ namespace Exader
             {
                 int si = culture.CompareInfo.IndexOf(self, startToken, compareOptions);
                 if (si < 0)
-                    return string.Empty;
+                    return defaultValue;
 
                 var offset = si + 1;
                 if (!include)
@@ -449,11 +472,14 @@ namespace Exader
                     if (include)
                         ei += 1;
 
+                    if (si == ei)
+                        return defaultValue;
+
                     return self.Substring(si, ei - si);
                 }
             }
 
-            return string.Empty;
+            return defaultValue;
         }
     }
 }

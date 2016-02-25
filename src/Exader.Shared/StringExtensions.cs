@@ -245,7 +245,7 @@ namespace Exader
             return false;
         }
 
-#if SILVERLIGHT || NET45
+#if !NET35
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
         public static bool ContainsIgnoreCase(this string self, string subString)

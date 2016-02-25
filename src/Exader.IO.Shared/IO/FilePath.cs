@@ -106,8 +106,6 @@ namespace Exader.IO
             return path;// == "" ? "." : path;
         }
 
-        #region Properties
-
         public string DirectoryPath
         {
             get
@@ -218,8 +216,6 @@ namespace Exader.IO
 
         public string Prefix => _prefix;
         public string RootFolder => _rootFolder;
-
-        #endregion
 
         public string NameWithoutExtensions(string ext)
         {
@@ -342,8 +338,6 @@ namespace Exader.IO
             return sb.ToString();
         }
 
-        #region ToAbsolute
-
         public FilePath ToAbsolute()
         {
             return IsAbsolute ? this : Parse(ToAbsoluteString());
@@ -356,10 +350,6 @@ namespace Exader.IO
 
             return Path.GetFullPath(_path == "" ? "." : _path);
         }
-
-        #endregion
-
-        #region ToRelative
 
         private bool TryToRelativeCore(string basePath, string baseRoot, string baseLocalPath, out FilePath relativePath)
         {
@@ -490,10 +480,6 @@ namespace Exader.IO
             var blp = CanonicalizePath(basePath, out br, out bf);
             return TryToRelativeStringCore(basePath, br + bf, blp, out relativePath);
         }
-
-        #endregion
-
-        #region Combine
 
         public static string Combine(string basePath, string relPath)
         {
@@ -651,10 +637,6 @@ namespace Exader.IO
             result = null;
             return false;
         }
-
-        #endregion
-
-        #region Relation
 
         public static bool TryRelate(string a, string b, out FilePathRelation relation)
         {
@@ -858,10 +840,6 @@ namespace Exader.IO
             return sameRoot;
         }
 
-        #endregion
-
-        #region Transformation
-
         public FilePath WithoutDriveOrHost() => new FilePath("", _rootFolder, _prefix, _name, _extension, _isDirectory);
         public string WithoutDriveOrHostAsString() => _rootFolder + _prefix + _name + _extension + (_isDirectory ? "\\" : "");
 
@@ -900,10 +878,6 @@ namespace Exader.IO
         [CanBeNull]
         public FilePath WithoutRootFolderAndFileName() => _isDirectory ? WithoutRootFolder() : Parent?.WithoutRootFolder();
         public string WithoutRootFolderAndFileNameAsString() => _isDirectory ? _prefix + _name + _extension + "\\" : _prefix;
-
-        #endregion
-
-        #region Modification
 
         /// <summary>
         /// Добавляет расширение файла.
@@ -1076,39 +1050,6 @@ namespace Exader.IO
             return new FilePath(_driveOrHost, _rootFolder, _prefix, newName, ext, _isDirectory);
         }
 
-        #endregion
-
-        #region Transformation
-
-        public FilePath Subpath(string partialPath)
-        {
-            return SubpathBefore(partialPath, false);
-        }
-
-        [Obsolete("Provide SubpathBefore/After methods", true)]
-        public FilePath SubpathInclusive(string partialPath)
-        {
-            return SubpathBefore(partialPath, true);
-        }
-
-        [Obsolete("Use Subpath() instead", true)]
-        public FilePath Up(int levels)
-        {
-            return Ancestor(levels);
-        }
-
-        [Obsolete("Use SubpathInclusive() instead", true)]
-        public FilePath Up(string partialPath)
-        {
-            return SubpathInclusive(partialPath);
-        }
-
-        [Obsolete("Use Subpath() instead", true)]
-        public FilePath Upon(string partialPath)
-        {
-            return Subpath(partialPath);
-        }
-
         public FilePath SubpathBefore(string subpath, bool include = false)
         {
             if (subpath == null)
@@ -1183,8 +1124,6 @@ namespace Exader.IO
             rest = newName.SubstringAfterLast('.', out newName, true);
             return new FilePath(_driveOrHost, _rootFolder, newPrefix, newName, rest, true);
         }
-
-        #endregion
 
         /// <summary>
         /// Возвращает результат сравнения с заданным путем.
