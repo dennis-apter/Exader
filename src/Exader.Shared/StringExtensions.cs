@@ -857,14 +857,14 @@ namespace Exader
             return builder.ToString();
         }
 
-        [Obsolete("Use Remove method instead")]
+        [Obsolete("Use RemoveCharacter method instead",)]
         [NotNull]
         public static string RemoveChars(this string self, params char[] charsToRemove)
         {
             return RemoveCharacter(self, charsToRemove);
         }
 
-        [Obsolete("Use Remove method instead")]
+        [Obsolete("Use RemoveCharacter method instead")]
         [NotNull]
         public static string RemoveChars(this string self, char charToRemove)
         {
