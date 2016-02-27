@@ -117,7 +117,7 @@ namespace Exader.IO
             }
         }
 
-        public string Drive => IsLocal ? _driveOrHost : string.Empty;
+        public string Drive => IsLocal ? _driveOrHost : "";
         public char? DriveLetter => IsLocal ? (char?)_driveOrHost[0] : null;
 
         public string DriveOrHost => _driveOrHost;
@@ -148,10 +148,10 @@ namespace Exader.IO
         {
             get
             {
-                return _rootFolder != string.Empty
-                    && _prefix == string.Empty
-                    && _name == string.Empty
-                    && _extension == string.Empty;
+                return _rootFolder != ""
+                    && _prefix == ""
+                    && _name == ""
+                    && _extension == "";
             }
         }
 
@@ -172,9 +172,7 @@ namespace Exader.IO
                 if (_prefix != "")
                 {
                     if (_prefix.Length < 2)
-                    {
-                        throw new InvalidOperationException($"Invalid parent other '{_prefix}'.");
-                    }
+                        throw new InvalidOperationException($"Invalid file path.");
 
                     string prefix;
                     string fullName;
@@ -280,7 +278,7 @@ namespace Exader.IO
 #endif
         public static bool IsNullOrEmpty(FilePath filePath)
         {
-            return ReferenceEquals(filePath, null) || filePath._path == string.Empty;
+            return ReferenceEquals(filePath, null) || filePath._path == "";
         }
 
         public static string SanitizeFileName(string fileName, char? replacement = null)
@@ -481,21 +479,30 @@ namespace Exader.IO
             return TryToRelativeStringCore(basePath, br + bf, blp, out relativePath);
         }
 
-        public static string Combine(string basePath, string relPath)
+        public static string Combine(string left, string rigth)
         {
-            var baseFilePath = Parse(basePath);
-            var filePath = baseFilePath.Combine(relPath);
+            if (left == null)
+                throw new ArgumentNullException(nameof(left));
+
+            if (rigth == null)
+                throw new ArgumentNullException(nameof(rigth));
+
+            var baseFilePath = Parse(left);
+            var filePath = baseFilePath.Combine(rigth);
             return filePath.ToString();
         }
 
-        public static bool TryCombine(string basePath, string relPath, out string result)
+        public static bool TryCombine(string left, string right, out string result)
         {
-            var baseFilePath = Parse(basePath);
-            FilePath filePath;
-            if (baseFilePath.TryCombine(relPath, out filePath))
+            if (left != null && right != null)
             {
-                result = filePath.ToString();
-                return true;
+                var baseFilePath = Parse(left);
+                FilePath filePath;
+                if (baseFilePath.TryCombine(right, out filePath))
+                {
+                    result = filePath.ToString();
+                    return true;
+                }
             }
 
             result = null;
@@ -504,53 +511,43 @@ namespace Exader.IO
 
         public FilePath Combine(FilePath other)
         {
-            if (IsNullOrEmpty(other))
-            {
+            if (other == null)
+                throw new ArgumentNullException(nameof(other));
+
+            if (other.DriveOrHost != "")
+                throw new ArgumentException("Absolute path cannot be in right part of paths combination.", nameof(other));
+
+            if (other.IsCurrent)
                 return this;
-            }
 
-            if (other.DriveOrHost != string.Empty)
-            {
-                throw new ArgumentException("Relative other can't be absolute.", nameof(other));
-            }
-
-            if (other.RootFolder != string.Empty)
-            {
+            if (other.RootFolder != "")
                 return new FilePath(_driveOrHost, other.RootFolder, other.Prefix, other.Name, other.Extension, other.IsDirectory);
-            }
 
             var basePath = WithoutRootFolderAsString();
             if (basePath != "" && !_isDirectory)
-            {
                 basePath += "\\";
-            }
 
             var com = new Parser(basePath + other.Prefix, true, _rootFolder);
-            if (com.ErrorType != FilePathParseErrorType.None)
-            {
-                throw new ArgumentException("Absolute other", nameof(other));
-            }
-
             return new FilePath(_driveOrHost, _rootFolder, com.DirectoryPath, other.NameWithoutExtension, other.Extension, other.IsDirectory);
         }
 
-        public FilePath Combine(string relPath)
+        public FilePath Combine(string other)
         {
-            if (string.IsNullOrEmpty(relPath))
-            {
+            if (other == null)
+                throw new ArgumentNullException(nameof(other));
+
+            if (other == "")
                 return this;
-            }
 
-            var rel = new Parser(relPath, false, string.Empty);
-            if (rel.DriveOrHost != string.Empty)
-            {
-                throw new ArgumentException("Relative other can't be absolute.", nameof(relPath));
-            }
+            var rel = new Parser(other, false, "");
+            if (rel.ErrorType != FilePathParseErrorType.None)
+                throw new ArgumentException("Invalid file path.", nameof(other));
 
-            if (rel.RootFolder != string.Empty)
-            {
+            if (rel.DriveOrHost != "")
+                throw new ArgumentException("Absolute path cannot be in right part of paths combination.", nameof(other));
+
+            if (rel.RootFolder != "")
                 return new FilePath(_driveOrHost, rel.RootFolder, rel.Prefix, rel.Name, rel.Extension, rel.IsDirectory);
-            }
 
             var value = WithoutRootFolderAsString();
             if (value == "")
@@ -567,11 +564,6 @@ namespace Exader.IO
             }
 
             var com = new Parser(value, true, _rootFolder);
-            if (com.ErrorType != FilePathParseErrorType.None)
-            {
-                throw new ArgumentException("Absolute other", nameof(relPath));
-            }
-
             return new FilePath(_driveOrHost, _rootFolder, com.DirectoryPath, rel.Name, rel.Extension, rel.IsDirectory);
         }
 
@@ -593,16 +585,16 @@ namespace Exader.IO
             return TryCombine(other, out result) ? result : this;
         }
 
-        public bool TryCombine(string relPath, out FilePath result)
+        public bool TryCombine(string other, out FilePath result)
         {
-            if (string.IsNullOrEmpty(relPath))
+            if (string.IsNullOrEmpty(other))
             {
                 result = this;
                 return true;
             }
 
-            var rel = new Parser(relPath, false, string.Empty);
-            if (rel.DriveOrHost == string.Empty && rel.RootFolder == string.Empty)
+            var rel = new Parser(other, false, "");
+            if (rel.DriveOrHost == "" && rel.RootFolder == "")
             {
                 var com = new Parser(_prefix + rel.Prefix, true, _rootFolder);
                 if (com.ErrorType == FilePathParseErrorType.None)
@@ -624,7 +616,7 @@ namespace Exader.IO
                 return true;
             }
 
-            if (other.DriveOrHost == string.Empty && other.RootFolder == string.Empty)
+            if (other.DriveOrHost == "" && other.RootFolder == "")
             {
                 var com = new Parser(DirectoryPath + other.Prefix, true, _rootFolder);
                 if (com.ErrorType == FilePathParseErrorType.None)
@@ -913,7 +905,7 @@ namespace Exader.IO
         {
             if (string.IsNullOrEmpty(newExtension))
             {
-                newExtension = string.Empty;
+                newExtension = "";
             }
             else if (!newExtension.StartsWith("."))
             {
@@ -992,7 +984,7 @@ namespace Exader.IO
                 {
                     root = root.TrimStart('\\');
                     var share = root.SubstringAfter('\\');
-                    if (share == string.Empty || share.JoinsWith('\\'))
+                    if (share == "" || share.JoinsWith('\\'))
                     {
                         throw new ArgumentException($"Invalid network share root '{newRoot}'.");
                     }
@@ -1011,7 +1003,7 @@ namespace Exader.IO
             }
             else
             {
-                newRoot = string.Empty;
+                newRoot = "";
             }
 
             return new FilePath(newRoot, newRootFolder, _prefix, _name, _extension, _isDirectory);
@@ -1022,13 +1014,13 @@ namespace Exader.IO
             string[] parents = _prefix.SplitAndRemoveEmpties(Path.DirectorySeparatorChar);
             if (parents.Length < count) throw new ArgumentOutOfRangeException(nameof(count));
 
-            var newParentPath = string.Empty;
+            var newParentPath = "";
             if (count < parents.Length)
             {
                 newParentPath = string.Join(Path.DirectorySeparatorChar.ToString(), parents.Subarray(count)) + Path.DirectorySeparatorChar;
             }
 
-            return new FilePath(string.Empty, string.Empty, newParentPath, _name, _extension, _isDirectory);
+            return new FilePath("", "", newParentPath, _name, _extension, _isDirectory);
         }
 
         public FilePath WithoutExtensions(int count = 1)
@@ -1041,7 +1033,7 @@ namespace Exader.IO
 
             if (parts.Length == count)
             {
-                return new FilePath(_driveOrHost, _rootFolder, _prefix, parts[0], string.Empty, _isDirectory);
+                return new FilePath(_driveOrHost, _rootFolder, _prefix, parts[0], "", _isDirectory);
             }
 
             var ext = "." + parts[parts.Length - 1];
@@ -1120,7 +1112,7 @@ namespace Exader.IO
             {
                 newPrefix = rest + "\\";
             }
-            
+
             rest = newName.SubstringAfterLast('.', out newName, true);
             return new FilePath(_driveOrHost, _rootFolder, newPrefix, newName, rest, true);
         }
@@ -1194,43 +1186,43 @@ namespace Exader.IO
         /// <summary>
         /// Комбинирует два пути — базовый и относительный.
         /// </summary>
-        /// <param name="basePath">Базовый путь</param>
-        /// <param name="relativePath">Относительный путь</param>
+        /// <param name="left">Базовый путь</param>
+        /// <param name="right">Относительный путь</param>
         /// <returns>Комбинированный путь</returns>
-        public static FilePath operator /(FilePath basePath, FilePath relativePath)
+        public static FilePath operator /(FilePath left, FilePath right)
         {
-            if (ReferenceEquals(basePath, null))
-                return relativePath;
+            if (ReferenceEquals(left, null))
+                return right;
 
-            return basePath.Combine(relativePath);
+            return left.Combine(right);
         }
 
         /// <summary>
         /// Комбинирует два пути — базовый и относительный.
         /// </summary>
-        /// <param name="basePath">Базовый путь</param>
-        /// <param name="relativePath">Относительный путь</param>
+        /// <param name="left">Базовый путь</param>
+        /// <param name="right">Относительный путь</param>
         /// <returns>Комбинированный путь</returns>
-        public static FilePath operator /(FilePath basePath, string relativePath)
+        public static FilePath operator /(FilePath left, string right)
         {
-            if (ReferenceEquals(basePath, null))
-                return Parse(relativePath);
+            if (ReferenceEquals(left, null))
+                return Parse(right);
 
-            return basePath.Combine(relativePath);
+            return left.Combine(right);
         }
 
         /// <summary>
         /// Комбинирует два пути — базовый и относительный.
         /// </summary>
-        /// <param name="basePath">Базовый путь</param>
-        /// <param name="relativePath">Относительный путь</param>
+        /// <param name="left">Базовый путь</param>
+        /// <param name="right">Относительный путь</param>
         /// <returns>Комбинированный путь</returns>
-        public static FilePath operator /(string basePath, FilePath relativePath)
+        public static FilePath operator /(string left, FilePath right)
         {
-            if (ReferenceEquals(basePath, null))
-                return Parse(relativePath);
+            if (ReferenceEquals(left, null))
+                return Parse(right);
 
-            return Parse(basePath).Combine(relativePath);
+            return Parse(left).Combine(right);
         }
 
         /// <summary>

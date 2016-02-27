@@ -6,22 +6,31 @@ namespace Exader.IO
     public class FilePathConversionFacts
     {
         [Theory]
+        [InlineData("", "d:/c")]
         [InlineData("c:/d", "d:/c")]
         [InlineData("//s/s/d", "//h/s/c")]
-        public void Combine_BothIsAbsolute(string a, string b)
+        public void Combine_BothIsAbsolute(string l, string r)
         {
-            Assert.Throws<ArgumentException>(() => FilePath.Combine(a, b));
+            Assert.Throws<ArgumentException>(() => FilePath.Combine(l, r));
         }
 
-        [Fact]
-        public void Combine_WithEmpty()
+        [Theory]
+        [InlineData(@"c:\d\sd\", "", @"c:\d\sd\")]
+        [InlineData(@"\d\f", "", @"\d\f")]
+        [InlineData("", @"\d\f", @"\d\f")]
+        public void Combine(string l, string r, string f)
         {
-            var basePath = (FilePath)@"c:\d\sd";
+            Assert.Equal(f, (FilePath)l / (FilePath)r);
+        }
 
-            Assert.Equal(basePath, basePath / string.Empty);
-            Assert.Equal(basePath, basePath / FilePath.Empty);
-            Assert.Equal(basePath, basePath.Combine(string.Empty));
-            Assert.Equal(basePath, basePath.Combine(FilePath.Empty));
+        [Theory]
+        [InlineData(@"c:\d\sd\", null)]
+        [InlineData(@"\d\f", null)]
+        [InlineData(null, @"\d\f")]
+        [InlineData(null, null)]
+        public void Combine_Null(string a, string b)
+        {
+            Assert.Throws<ArgumentNullException>(() => FilePath.Combine(a, b));
         }
 
         [Fact]
@@ -91,7 +100,7 @@ namespace Exader.IO
         [InlineData("d/sd/ssd/", "d/f.e", @"..\sd\ssd\")]
         public void ToRelative_FileBase(string p, string b, string r)
         {
-            var fp = (FilePath) p;
+            var fp = (FilePath)p;
             var result = fp % b;
             var resultString = fp.ToRelativeString(b);
 
