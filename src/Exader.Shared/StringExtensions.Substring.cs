@@ -15,6 +15,7 @@ namespace Exader
         /// <param name="offset"></param>
         /// <returns></returns>
         [NotNull]
+        [Pure]
         public static string SubstringAfter([CanBeNull] this string self, int offset)
         {
             if (string.IsNullOrEmpty(self))
@@ -31,6 +32,7 @@ namespace Exader
         }
 
         [NotNull]
+        [Pure]
         public static string SubstringAfter(
             this string self,
             string token,
@@ -42,6 +44,7 @@ namespace Exader
         }
 
         [NotNull]
+        [Pure]
         public static string SubstringAfter(
             this string self,
             string token,
@@ -54,6 +57,7 @@ namespace Exader
         }
 
         [NotNull]
+        [Pure]
         public static string SubstringAfter(
             this string self,
             char token,
@@ -65,6 +69,7 @@ namespace Exader
         }
 
         [NotNull]
+        [Pure]
         public static string SubstringAfter(
             this string self,
             char token,
@@ -233,6 +238,7 @@ namespace Exader
         }
 
         [NotNull]
+        [Pure]
         public static string SubstringAfterLast(
             this string self,
             string token,
@@ -244,6 +250,7 @@ namespace Exader
         }
 
         [NotNull]
+        [Pure]
         public static string SubstringAfterLast(
             this string self,
             string token,
@@ -256,6 +263,7 @@ namespace Exader
         }
 
         [NotNull]
+        [Pure]
         public static string SubstringAfterLast(
             this string self,
             char token,
@@ -267,6 +275,7 @@ namespace Exader
         }
 
         [NotNull]
+        [Pure]
         public static string SubstringAfterLast(
             this string self,
             char token,
@@ -279,6 +288,7 @@ namespace Exader
         }
 
         [NotNull]
+        [Pure]
         public static string SubstringAfterLastOrSelf(
             this string self,
             string token,
@@ -291,6 +301,7 @@ namespace Exader
         }
 
         [NotNull]
+        [Pure]
         public static string SubstringAfterLastOrSelf(
             this string self,
             char token,
@@ -303,6 +314,7 @@ namespace Exader
         }
 
         [NotNull]
+        [Pure]
         public static string SubstringAfterLastOrSelf(
             this string self,
             char token,
@@ -322,6 +334,7 @@ namespace Exader
         }
 
         [NotNull]
+        [Pure]
         public static string SubstringAfterLastOrSelf(
             this string self,
             string token,
@@ -341,6 +354,7 @@ namespace Exader
         }
 
         [NotNull]
+        [Pure]
         public static string SubstringAfterOrSelf(
             this string self,
             string token,
@@ -353,6 +367,7 @@ namespace Exader
         }
 
         [NotNull]
+        [Pure]
         public static string SubstringAfterOrSelf(
             this string self,
             string token,
@@ -372,6 +387,7 @@ namespace Exader
         }
 
         [NotNull]
+        [Pure]
         public static string SubstringAfterOrSelf(
             this string self,
             char token,
@@ -384,6 +400,7 @@ namespace Exader
         }
 
         [NotNull]
+        [Pure]
         public static string SubstringAfterOrSelf(
             this string self,
             char token,
@@ -403,6 +420,7 @@ namespace Exader
         }
 
         [NotNull]
+        [Pure]
         public static string SubstringBefore(
             this string self,
             string token,
@@ -414,6 +432,7 @@ namespace Exader
         }
 
         [NotNull]
+        [Pure]
         public static string SubstringBefore(
             this string self,
             string token,
@@ -426,6 +445,7 @@ namespace Exader
         }
 
         [NotNull]
+        [Pure]
         public static string SubstringBefore(
             this string self,
             char token,
@@ -437,6 +457,7 @@ namespace Exader
         }
 
         [NotNull]
+        [Pure]
         public static string SubstringBefore(
             this string self,
             char token,
@@ -608,6 +629,7 @@ namespace Exader
         }
 
         [NotNull]
+        [Pure]
         public static string SubstringBeforeLast(
             this string self,
             string token,
@@ -619,6 +641,7 @@ namespace Exader
         }
 
         [NotNull]
+        [Pure]
         public static string SubstringBeforeLast(
             this string self,
             string token,
@@ -631,6 +654,7 @@ namespace Exader
         }
 
         [NotNull]
+        [Pure]
         public static string SubstringBeforeLast(
             this string self,
             char token,
@@ -642,6 +666,7 @@ namespace Exader
         }
 
         [NotNull]
+        [Pure]
         public static string SubstringBeforeLast(
             this string self,
             char token,
@@ -654,6 +679,7 @@ namespace Exader
         }
 
         [NotNull]
+        [Pure]
         public static string SubstringBeforeLastOrSelf(
             this string self,
             string token,
@@ -666,6 +692,7 @@ namespace Exader
         }
 
         [NotNull]
+        [Pure]
         public static string SubstringBeforeLastOrSelf(
             this string self,
             string token,
@@ -685,6 +712,7 @@ namespace Exader
         }
 
         [NotNull]
+        [Pure]
         public static string SubstringBeforeLastOrSelf(
             this string self,
             char token,
@@ -697,6 +725,7 @@ namespace Exader
         }
 
         [NotNull]
+        [Pure]
         public static string SubstringBeforeLastOrSelf(
             this string self,
             char token,
@@ -716,6 +745,7 @@ namespace Exader
         }
 
         [NotNull]
+        [Pure]
         public static string SubstringBeforeOrSelf(
             this string self,
             string token,
@@ -728,6 +758,7 @@ namespace Exader
         }
 
         [NotNull]
+        [Pure]
         public static string SubstringBeforeOrSelf(
             this string self,
             char token,
@@ -740,6 +771,7 @@ namespace Exader
         }
 
         [NotNull]
+        [Pure]
         public static string SubstringBeforeOrSelf(
             this string self,
             string token,
@@ -759,6 +791,7 @@ namespace Exader
         }
 
         [NotNull]
+        [Pure]
         public static string SubstringBeforeOrSelf(
             this string self,
             char token,

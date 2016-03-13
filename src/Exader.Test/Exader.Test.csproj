@@ -105,7 +105,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ArrayExtensionsTest.cs" />
+    <Compile Include="ArrayExtensionsFacts.cs" />
     <Compile Include="IO\FilePathConversionFacts.cs" />
     <Compile Include="IO\FilePathRelationFacts.cs" />
     <Compile Include="IO\FilePathTransformationFacts.cs" />
@@ -113,6 +113,7 @@
     <Compile Include="IO\FilePathCopyingFacts.cs" />
     <Compile Include="IO\FilePathParsingFacts.cs" />
     <Compile Include="IO\StreamExtensionsFacts.cs" />
+    <Compile Include="Reflection\MethodBodyInfoFacts.cs" />
     <Compile Include="TestData.cs" />
     <Compile Include="SubstringFacts.cs" />
     <Compile Include="SubstringBetweenFacts.cs" />

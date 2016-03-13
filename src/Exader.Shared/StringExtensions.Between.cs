@@ -7,6 +7,7 @@ namespace Exader
     public static partial class StringExtensions
     {
         [NotNull]
+        [Pure]
         public static string Between(
             this string self,
             string token,
@@ -18,6 +19,7 @@ namespace Exader
         }
 
         [NotNull]
+        [Pure]
         public static string Between(
             this string self,
             string startToken,
@@ -30,6 +32,7 @@ namespace Exader
         }
 
         [NotNull]
+        [Pure]
         public static string Between(
             this string self,
             string startToken,
@@ -43,6 +46,7 @@ namespace Exader
         }
 
         [NotNull]
+        [Pure]
         public static string Between(
             this string self,
             char startToken,
@@ -56,6 +60,7 @@ namespace Exader
         }
 
         [NotNull]
+        [Pure]
         public static string Between(
             this string self,
             char token,
@@ -67,6 +72,7 @@ namespace Exader
         }
 
         [NotNull]
+        [Pure]
         public static string Between(
             this string self,
             char startToken,
@@ -79,6 +85,7 @@ namespace Exader
         }
 
         [NotNull]
+        [Pure]
         public static string BetweenLast(
             this string self,
             string token,
@@ -90,6 +97,7 @@ namespace Exader
         }
 
         [NotNull]
+        [Pure]
         public static string BetweenLast(
             this string self,
             char token,
@@ -101,6 +109,7 @@ namespace Exader
         }
 
         [NotNull]
+        [Pure]
         public static string BetweenLast(
             this string self,
             string startToken,
@@ -113,6 +122,7 @@ namespace Exader
         }
 
         [NotNull]
+        [Pure]
         public static string BetweenLast(
             this string self,
             string startToken,
@@ -126,7 +136,8 @@ namespace Exader
         }
 
         [NotNull]
-        internal static string BetweenLast(
+        [Pure]
+        public static string BetweenLast(
             this string self,
             char startToken,
             char endToken,
@@ -139,7 +150,8 @@ namespace Exader
         }
 
         [NotNull]
-        internal static string BetweenLast(
+        [Pure]
+        public static string BetweenLast(
             this string self,
             char startToken,
             char endToken,
@@ -151,7 +163,8 @@ namespace Exader
         }
         
         [NotNull]
-        internal static string BetweenLastOrSelf(
+        [Pure]
+        public static string BetweenLastOrSelf(
             this string self,
             string startToken,
             string endToken,
@@ -164,7 +177,8 @@ namespace Exader
         }
         
         [NotNull]
-        internal static string BetweenLastOrSelf(
+        [Pure]
+        public static string BetweenLastOrSelf(
             this string self,
             char startToken,
             char endToken,
@@ -177,6 +191,7 @@ namespace Exader
         }
 
         [NotNull]
+        [Pure]
         public static string BetweenOrSelf(
             this string self,
             string startToken,
@@ -190,6 +205,7 @@ namespace Exader
         }
 
         [NotNull]
+        [Pure]
         public static string BetweenOrSelf(
             this string self,
             char startToken,

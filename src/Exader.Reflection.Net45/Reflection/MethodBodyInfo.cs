@@ -4,15 +4,16 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Runtime.CompilerServices;
 
 namespace Exader.Reflection
 {
-    public class CodeBlock
+    internal class MethodBodyInfo
     {
-        public static CodeBlock Create(MethodInfo methodInfo)
+        public static MethodBodyInfo Create(MethodInfo methodInfo)
         {
             MethodBody body = methodInfo.GetMethodBody();
-            return null == body ? null : new CodeBlock(body, methodInfo);
+            return null == body ? null : new MethodBodyInfo(body, methodInfo);
         }
 
         /// <summary>
@@ -67,7 +68,7 @@ namespace Exader.Reflection
 
         private readonly MethodInfo method;
 
-        private CodeBlock(MethodBody body, MethodInfo method)
+        private MethodBodyInfo(MethodBody body, MethodInfo method)
         {
             this.method = method;
             this.body = body;
@@ -100,6 +101,26 @@ namespace Exader.Reflection
                 position += operandLength;
 
             }
+        }
+
+        public bool ChangesState(bool byRef = false)
+        {
+            if (method.IsDefined(typeof(ExtensionAttribute)))
+            {
+                return list.Any(i => i.ChangesThis());
+            }
+
+            return list.Any(i => i.IsSetField || (byRef && i.IsPassFieldByRef));
+        }
+
+        public bool ChangesObjectState(bool byRef = false)
+        {
+            return list.Any(i => i.IsSetInstanceField || byRef && i.IsPassInstanceFieldByRef);
+        }
+
+        public bool ChangesTypeState(bool byRef = false)
+        {
+            return list.Any(i => i.IsSetStaticField || byRef && i.IsPassStaticFieldByRef);
         }
 
         [Obsolete]
@@ -176,7 +197,7 @@ namespace Exader.Reflection
             Type declaringType = method.DeclaringType;
             return declaringType.Module.ResolveType(msilTypeToken, declaringType.GetGenericArguments(), method.GetGenericArguments());
         }
-        
+
         [Obsolete("Remove?")]
         public Expression ToExpression()
         {
@@ -244,7 +265,7 @@ namespace Exader.Reflection
                 {
                     peek = Expression.Assign(locals[instruction.GetOperandLocalIndex()], peek);
                 }
-                else if (instruction.IsSetField)
+                else if (instruction.IsSetInstanceField)
                 {
                     peek = Expression.Assign(Expression.Field(peek, instruction.GetOperandField()), peek);
                 }
@@ -301,7 +322,7 @@ namespace Exader.Reflection
             foreach (Instruction inst in list)
             {
                 MemberInfo member;
-                if (inst.TryGetOperandMember(out  member))
+                if (inst.TryGetOperandMember(out member))
                 {
                     yield return member;
                 }
@@ -355,7 +376,7 @@ namespace Exader.Reflection
                 OpCodes.Stloc
             };
 
-            private readonly CodeBlock block;
+            private readonly MethodBodyInfo block;
 
             private readonly OpCode code;
 
@@ -367,7 +388,7 @@ namespace Exader.Reflection
 
             private Instruction target;
 
-            public Instruction(CodeBlock block, OpCode code, byte[] operandBytes)
+            public Instruction(MethodBodyInfo block, OpCode code, byte[] operandBytes)
             {
                 this.block = block;
                 index = block.Add(this);
@@ -382,18 +403,32 @@ namespace Exader.Reflection
 
             public override string ToString()
             {
-                string operand = "?";
-                if (OpCodes.Ldstr == code)
+                string operand = null;
+                if (operandBytes.Length > 0)
                 {
-                    operand = block.ResolveString(operandBytes);
-                }
-                else if (OpCodes.Call == code)
-                {
-                    operand = block.ResolveMethod(operandBytes).ToString();
-                }
-                else if ((OpCodes.Ldsfld == code) || (OpCodes.Ldflda == code) || (OpCodes.Stsfld == code))
-                {
-                    operand = block.ResolveField(operandBytes).ToString();
+                    operand = "?";
+                    if (OpCodes.Ldstr == code)
+                    {
+                        operand = block.ResolveString(operandBytes);
+                    }
+                    else if (OpCodes.Call == code)
+                    {
+                        operand = block.ResolveMethod(operandBytes).ToString();
+                    }
+                    else if ((OpCodes.Ldsfld == code) || (OpCodes.Ldflda == code)
+                        || (OpCodes.Stsfld == code))
+                    {
+                        operand = block.ResolveField(operandBytes).ToString();
+                    }
+                    else if ((OpCodes.Ldarga == code) || (OpCodes.Ldarga_S == code)
+                        || (OpCodes.Ldarg == code) || (OpCodes.Ldarg_S == code))
+                    {
+                        operand = operandBytes[0].ToString();
+                    }
+                    else if (IsBranch)
+                    {
+                        operand = Target.Index + ": " + Target;
+                    }
                 }
 
                 return code + " " + operand;
@@ -428,7 +463,7 @@ namespace Exader.Reflection
                                 Instruction copy;
                                 if (current.TryGetCopy(out copy))
                                 {
-                                    if (copy.IsSetField)
+                                    if (copy.IsSetInstanceField)
                                     {
                                         return copy.GetOperandField();
                                     }
@@ -850,17 +885,25 @@ namespace Exader.Reflection
                 }
             }
 
-            public bool IsReturn
+            public bool IsLoadStaticFieldByRef => OpCodes.Ldsflda == code;
+
+            public bool IsReturn => OpCodes.Ret == code;
+
+            public bool IsSetArgument => (OpCodes.Starg_S == code) || (OpCodes.Starg == code);
+
+            public bool IsSetField => OpCodes.Stfld == code || OpCodes.Stsfld == code;
+
+            public bool IsSetThisArg
             {
-                get { return OpCodes.Ret == code; }
+                get
+                {
+                    return OpCodes.Starg == code;
+                }
             }
 
-            public bool IsSetArgument { get { return (OpCodes.Starg_S == code) || (OpCodes.Starg == code); } }
+            public bool IsSetInstanceField => OpCodes.Stfld == code;
 
-            public bool IsSetField
-            {
-                get { return OpCodes.Stfld == code/* && OpCodes.Ldarg_1 == this.Peek(-1).Code*/; }
-            }
+            public bool IsSetStaticField => OpCodes.Stsfld == code;
 
             public bool IsSetLocal
             {
@@ -872,6 +915,75 @@ namespace Exader.Reflection
                            || (OpCodes.Stloc_3 == code)
                            || (OpCodes.Stloc_S == code)
                            || (OpCodes.Stloc == code);
+                }
+            }
+
+            public bool IsPassFieldByRef
+            {
+                get
+                {
+                    if (OpCodes.Call == code || OpCodes.Callvirt == code)
+                    {
+                        var member = GetOperandMethod();
+                        var parameters = member.GetParameters();
+                        foreach (var parameter in parameters)
+                        {
+                            if (parameter.ParameterType.IsByRef)
+                            {
+                                var load = Peek(parameter.Position - parameters.Length);
+                                if (load.IsLoadFieldByRef || load.IsLoadStaticFieldByRef)
+                                    return true;
+                            }
+                        }
+                    }
+
+                    return false;
+                }
+            }
+
+            public bool IsPassInstanceFieldByRef
+            {
+                get
+                {
+                    if (OpCodes.Call == code || OpCodes.Callvirt == code)
+                    {
+                        var member = GetOperandMethod();
+                        var parameters = member.GetParameters();
+                        foreach (var parameter in parameters)
+                        {
+                            if (parameter.ParameterType.IsByRef)
+                            {
+                                var load = Peek(parameter.Position - parameters.Length);
+                                if (load.IsLoadFieldByRef)
+                                    return true;
+                            }
+                        }
+                    }
+
+                    return false;
+                }
+            }
+
+            public bool IsPassStaticFieldByRef
+            {
+                get
+                {
+                    if (OpCodes.Call == code || OpCodes.Callvirt == code)
+                    {
+                        var member = GetOperandMethod();
+                        var parameters = member.GetParameters();
+                        foreach (var parameter in parameters)
+                        {
+                            if (parameter.ParameterType.IsByRef)
+                            {
+                                var load = Peek(parameter.Position - parameters.Length);
+                                if (load.IsLoadStaticField)
+                                    return true;
+                            }
+                        }
+                    }
+
+                    return false;
                 }
             }
 
@@ -919,16 +1031,56 @@ namespace Exader.Reflection
                 get { return code.Size + operandBytes.Length; }
             }
 
-            //public static OpCode InvertSetLocal(OpCode loadOpCode)
-            //{
-            //    int index = StoreLocalOpCodes.IndexOf(loadOpCode);
-            //    if (0 <= index)
-            //    {
-            //        return LoadLocalOpCodes[index];
-            //    }
+            public bool ChangesThis()
+            {
+                if (code == OpCodes.Starg_S)
+                    return GetOperandByte() == 0;
 
-            //    return OpCodes.Nop;
-            //}
+                if (code == OpCodes.Starg)
+                    return GetOperandInt16() == 0;
+
+                bool result = false;
+                if (code == OpCodes.Ldarga_S)
+                {
+                    result = GetOperandByte() == 0;
+                }
+                else if (code == OpCodes.Ldarga)
+                {
+                    result = GetOperandInt16() == 0;
+                }
+
+                if (!result)
+                    return false;
+
+                var loadsCount = 0;
+                var idx = index + 1;
+                var call = block.Peek(idx);
+                while (!call.IsCall && idx < block.list.Count)
+                {
+                    if (call.IsLoadArgument)
+                        loadsCount++;
+
+                    idx++;
+                    call = block.Peek(idx);
+                }
+
+                if (!call.IsCall)
+                    return false;
+
+                var method = (MethodInfo)call.GetOperandMethod();
+                result = !method.IsDefined(typeof(System.Diagnostics.Contracts.PureAttribute))
+                    && !method.IsDefined(typeof(JetBrains.Annotations.PureAttribute));
+
+                if (result)
+                {
+                    var parameters = method.GetParameters();
+                    var parameterIndex = parameters.Length - loadsCount - 1;
+                    if (parameterIndex == -1)
+                        return false; // 0 arg loaded by ref for calling an instance method of the struct
+                }
+
+                return result;
+            }
         }
     }
 

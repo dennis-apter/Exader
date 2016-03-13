@@ -24,7 +24,7 @@ namespace Exader.Reflection
                     tail = false;
                     foreach (Type genericArgument in methodInfo.GetGenericArguments())
                     {
-                        if (tail) { buffer.Append(","); }
+                        if (tail) { buffer.Append(", "); }
                         tail = true;
 
                         buffer.Append(genericArgument.Name);
@@ -43,7 +43,7 @@ namespace Exader.Reflection
             tail = false;
             foreach (ParameterInfo parameter in method.GetParameters())
             {
-                if (tail) { buffer.Append(","); }
+                if (tail) { buffer.Append(", "); }
                 tail = true;
 
                 if (parameter.IsOut)

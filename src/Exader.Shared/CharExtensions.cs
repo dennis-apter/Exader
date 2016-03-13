@@ -11,6 +11,7 @@ namespace Exader
 #if SILVERLIGHT || NET45
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
+        [Pure]
         public static bool Equals(this char self, char other, StringComparison comparison)
         {
             return self == other || self.ToString().Equals(other.ToString(), comparison);
@@ -19,6 +20,7 @@ namespace Exader
 #if SILVERLIGHT || NET45
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
+        [Pure]
         public static bool EqualsIgnoreCase(this char self, char other)
         {
             return self == other || self.ToString().Equals(other.ToString(), StringComparison.InvariantCultureIgnoreCase);
@@ -27,6 +29,7 @@ namespace Exader
 #if SILVERLIGHT || NET45
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
+        [Pure]
         public static bool IsCloseQuotationMark(this char self)
         {
             switch (self)
@@ -44,6 +47,7 @@ namespace Exader
 #if SILVERLIGHT || NET45
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
+        [Pure]
         public static bool IsLineSeparator(this char self)
         {
             switch (self)
@@ -61,6 +65,7 @@ namespace Exader
 #if SILVERLIGHT || NET45
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
+        [Pure]
         public static bool IsLower(this char c)
         {
             return c == c.ToLower();
@@ -69,6 +74,7 @@ namespace Exader
 #if SILVERLIGHT || NET45
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
+        [Pure]
         public static bool IsOpenOrCloseQuotationMark(this char self)
         {
             switch (self)
@@ -86,6 +92,7 @@ namespace Exader
 #if SILVERLIGHT || NET45
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
+        [Pure]
         public static bool IsOpenQuotationMark(this char self)
         {
             switch (self)
@@ -106,6 +113,7 @@ namespace Exader
 #if SILVERLIGHT || NET45
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
+        [Pure]
         public static bool IsQuotationMark(this char self)
         {
             return IsOpenOrCloseQuotationMark(self) || 
@@ -116,6 +124,7 @@ namespace Exader
 #if SILVERLIGHT || NET45
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
+        [Pure]
         public static bool IsQuotationMarks(this char first, char last)
         {
             return (first.IsOpenQuotationMark() && last.IsCloseQuotationMark()) ||
@@ -125,6 +134,7 @@ namespace Exader
 #if SILVERLIGHT || NET45
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
+        [Pure]
         public static bool IsUpper(this char c)
         {
             return c == c.ToUpper();
@@ -133,6 +143,7 @@ namespace Exader
 #if SILVERLIGHT || NET45
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
+        [Pure]
         public static char ToLower(this char c)
         {
             return char.ToLower(c);
@@ -141,6 +152,7 @@ namespace Exader
 #if SILVERLIGHT || NET45
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
+        [Pure]
         public static char ToLower(this char c, CultureInfo culture)
         {
             return char.ToLower(c, culture);
@@ -149,6 +161,7 @@ namespace Exader
 #if SILVERLIGHT || NET45
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
+        [Pure]
         public static char ToLowerInvariant(this char c)
         {
             return char.ToLowerInvariant(c);
@@ -157,6 +170,7 @@ namespace Exader
 #if SILVERLIGHT || NET45
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
+        [Pure]
         public static char ToUpper(this char c)
         {
             return char.ToUpper(c);
@@ -165,6 +179,7 @@ namespace Exader
 #if SILVERLIGHT || NET45
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
+        [Pure]
         public static char ToUpper(this char c, CultureInfo culture)
         {
             return char.ToUpper(c, culture);
@@ -173,6 +188,7 @@ namespace Exader
 #if SILVERLIGHT || NET45
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
+        [Pure]
         public static char ToUpperInvariant(this char c)
         {
             return char.ToUpperInvariant(c);

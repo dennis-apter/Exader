@@ -1,26 +1,18 @@
 using System;
+using System.Reflection;
 using System.Text;
 
 namespace Exader.Reflection
 {
     public static class TypeExtensions
     {
-        #region Methods
-
         public static StringBuilder AppendTypeName(this Type type, string ignoreNamespace, StringBuilder builder)
         {
             if (type.IsNullable())
             {
-                Type notNullable = type.GetNonNullable();
-                if ((null != notNullable.Namespace)
-                    && !notNullable.Namespace.StartsWith(ignoreNamespace))
-                {
-                    builder.Append(notNullable.Namespace).Append('.');
-                }
-
-                AppendDeclaringType(builder, type);
-
-                builder.Append(notNullable.Name).Append('?');
+                Type notNullable = type.GetGenericArguments()[0];
+                AppendTypeName(notNullable, ignoreNamespace, builder);
+                builder.Append('?');
             }
             else if (type.IsGenericType)
             {
@@ -54,8 +46,7 @@ namespace Exader.Reflection
                 }
 
                 AppendDeclaringType(builder, type);
-
-                builder.Append(type.Name);
+                AppendTypeNameOrAlias(builder, type);
             }
 
             return builder;
@@ -171,12 +162,38 @@ namespace Exader.Reflection
             return TryGetGenericInternal(type, genericTypeDefinition, out genericType);
         }
 
+        private static StringBuilder AppendTypeNameOrAlias(StringBuilder builder, Type type)
+        {
+            if (type.Namespace == "System")
+            {
+                switch (type.Name)
+                {
+                    case "Void": return builder.Append("void");
+                    case "String":
+                    case "String&": // by ref
+                        return builder.Append("string");
+                    case "Boolean": return builder.Append("bool");
+                    case "Char": return builder.Append("char");
+                    case "Int32": return builder.Append("int");
+                    case "Single": return builder.Append("float");
+                    case "Double": return builder.Append("double");
+                    case "Decimal": return builder.Append("decimal");
+                    case "Int64": return builder.Append("long");
+                    case "Int16": return builder.Append("short");
+                    case "UInt32": return builder.Append("uint");
+                    case "UInt64": return builder.Append("unlog");
+                    case "UInt16": return builder.Append("ushort");
+                }
+            }
+
+            return builder.Append(type.Name);
+        }
+
         private static void AppendDeclaringType(StringBuilder builder, Type type)
         {
-            if (null != type.DeclaringType)
+            if (null != type.DeclaringType && !type.IsGenericParameter)
             {
                 AppendDeclaringType(builder, type.DeclaringType);
-
                 builder.Append(type.DeclaringType.Name).Append('.');
             }
         }
@@ -225,7 +242,5 @@ namespace Exader.Reflection
 
             return TryGetGenericInternal(super, baseType, out genericType);
         }
-
-        #endregion
     }
 }

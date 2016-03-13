@@ -16,6 +16,7 @@ namespace Exader
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
         [NotNull]
+        [Pure]
         public static string Capitalize(this string self, CultureInfo culture = null)
         {
             if (string.IsNullOrEmpty(self))
@@ -36,6 +37,7 @@ namespace Exader
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
         [NotNull]
+        [Pure]
         public static string Collapse(this string self, char collapsible, int minWidth = 0)
         {
             if (string.IsNullOrEmpty(self))
@@ -72,6 +74,7 @@ namespace Exader
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
         [NotNull]
+        [Pure]
         public static string Collapse(this string self, string characterString, int minWidth = 0)
         {
             if (string.IsNullOrEmpty(self)) return string.Empty;
@@ -114,6 +117,7 @@ namespace Exader
         /// <param name="minWidth">Минимальная ширина пробела.</param>
         /// <returns></returns>
         [NotNull]
+        [Pure]
         public static string CollapseWhiteSpaces(this string self, int minWidth = 0)
         {
             if (string.IsNullOrEmpty(self)) return string.Empty;
@@ -147,6 +151,7 @@ namespace Exader
         }
 
         [NotNull]
+        [Pure]
         public static string CollapseWhiteSpacesToCamelHumps(this string self, CultureInfo culture = null)
         {
             if (string.IsNullOrEmpty(self)) return string.Empty;
@@ -179,7 +184,8 @@ namespace Exader
 
             return buffer.ToString();
         }
-
+        
+        [Pure]
         public static string CommonPrefixWith(this string self, string other)
         {
             if (!string.IsNullOrEmpty(self) && !string.IsNullOrEmpty(other))
@@ -206,6 +212,7 @@ namespace Exader
 #if SILVERLIGHT || NET45
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
+        [Pure]
         public static bool Contains(this string self, char c)
         {
             return 0 <= self.IndexOf(c);
@@ -214,11 +221,13 @@ namespace Exader
 #if SILVERLIGHT || NET45
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
+        [Pure]
         public static bool Contains(this string self, string subString, StringComparison comparison)
         {
             return 0 <= self.IndexOf(subString, 0, comparison);
         }
-
+        
+        [Pure]
         public static bool ContainsAll(this string self, params char[] chars)
         {
             for (int i = 0; i < chars.Length; i++)
@@ -231,7 +240,8 @@ namespace Exader
 
             return true;
         }
-
+        
+        [Pure]
         public static bool ContainsAny(this string self, params char[] chars)
         {
             for (int i = 0; i < chars.Length; i++)
@@ -248,11 +258,13 @@ namespace Exader
 #if !NET35
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
+        [Pure]
         public static bool ContainsIgnoreCase(this string self, string subString)
         {
             return 0 <= self.IndexOf(subString, 0, StringComparison.InvariantCultureIgnoreCase);
         }
-
+        
+        [Pure]
         public static int Count(this string self, char ch)
         {
             if (self == null)
@@ -273,6 +285,7 @@ namespace Exader
         }
 
         [NotNull]
+        [Pure]
         public static string Decapitalize(this string self, CultureInfo culture = null)
         {
             if (string.IsNullOrEmpty(self))
@@ -292,11 +305,13 @@ namespace Exader
 #if SILVERLIGHT || NET45
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
+        [Pure]
         public static string Deparenthesize(this string self, char open = '(', char close = ')')
         {
             return Unquote(self, open, close);
         }
-
+        
+        [Pure]
         public static string Ellipsis(this string self, int maxLength, params char[] stops)
         {
             if (string.IsNullOrEmpty(self) || self.Length < maxLength)
@@ -349,6 +364,7 @@ namespace Exader
 #if SILVERLIGHT || NET45
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
+        [Pure]
         public static bool EndsWith(this string self, char end)
         {
             if (string.IsNullOrEmpty(self)) return false;
@@ -359,6 +375,7 @@ namespace Exader
 #if SILVERLIGHT || NET45
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
+        [Pure]
         public static bool EndsWithIgnoreCase(this string self, string end)
         {
             if (null == self) return false;
@@ -369,6 +386,7 @@ namespace Exader
 #if SILVERLIGHT || NET45
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
+        [Pure]
         public static string EnsureEndsWith(this string self, char end)
         {
             if (!string.IsNullOrEmpty(self))
@@ -387,6 +405,7 @@ namespace Exader
 #if SILVERLIGHT || NET45
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
+        [Pure]
         public static string EnsureEndsWith(this string self, string end)
         {
             // AND
@@ -405,6 +424,7 @@ namespace Exader
 #if SILVERLIGHT || NET45
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
+        [Pure]
         public static string EnsureEndsWith(this string self, string end, StringComparison stringComparison)
         {
             // AND
@@ -423,6 +443,7 @@ namespace Exader
 #if SILVERLIGHT || NET45
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
+        [Pure]
         public static string EnsureStartsWith(this string self, char start)
         {
             if (!string.IsNullOrEmpty(self))
@@ -441,6 +462,7 @@ namespace Exader
 #if SILVERLIGHT || NET45
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
+        [Pure]
         public static string EnsureStartsWith(this string self, string start)
         {
             // AND
@@ -459,6 +481,7 @@ namespace Exader
 #if SILVERLIGHT || NET45
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
+        [Pure]
         public static string EnsureStartsWith(this string self, string start, StringComparison stringComparison)
         {
             // AND
@@ -477,6 +500,7 @@ namespace Exader
 #if SILVERLIGHT || NET45
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
+        [Pure]
         public static bool EqualsIgnoreCase(this string self, string other)
         {
             return (string.Compare(self, other, CultureInfo.InvariantCulture, CompareOptions.IgnoreCase) == 0);
@@ -485,6 +509,7 @@ namespace Exader
 #if SILVERLIGHT || NET45
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
+        [Pure]
         public static string Escape(this string self)
         {
             return self.Replace(@"\", @"\\").Replace("\"", "\\\"").Replace("'", @"\'");
@@ -497,6 +522,7 @@ namespace Exader
         /// <param name="delimeter"></param>
         /// <returns></returns>
         [NotNull]
+        [Pure]
         public static string ExpandCamelHumps(this string self, string delimeter = " ")
         {
             if (string.IsNullOrEmpty(self)) return string.Empty;
@@ -514,7 +540,8 @@ namespace Exader
 
             return buffer.ToString();
         }
-
+        
+        [Pure]
         public static string ExpandTabs(this string self, byte tabSize)
         {
             var buffer = new StringBuilder();
@@ -533,12 +560,14 @@ namespace Exader
 
             return buffer.ToString();
         }
-
+        
+        [Pure]
         public static string Indent(this string self, int level)
         {
             return InsertLinePrefix(self, "\t".PadLeft(level, '\t'));
         }
-
+        
+        [Pure]
         public static string Indent(this string self)
         {
             return InsertLinePrefix(self, "\t");
@@ -547,6 +576,7 @@ namespace Exader
 #if SILVERLIGHT || NET45
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
+        [Pure]
         public static int IndexOfIgnoreCase(this string self, string other, int startIndex = 0, int count = int.MaxValue)
         {
             if (null == self)
@@ -1181,6 +1211,7 @@ namespace Exader
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
         [CanBeNull]
+        [Pure]
         public static string TrimEndOrNull(this string self)
         {
             if (!string.IsNullOrEmpty(self))
@@ -1196,6 +1227,7 @@ namespace Exader
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
         [CanBeNull]
+        [Pure]
         public static string TrimEndOrNull(this string self, string end)
         {
             self = TrimEnd(self, end);
@@ -1206,6 +1238,7 @@ namespace Exader
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
         [NotNull]
+        [Pure]
         public static string TrimExceed(this string self, int maxLength)
         {
             if (string.IsNullOrEmpty(self))
@@ -1257,6 +1290,7 @@ namespace Exader
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
         [CanBeNull]
+        [Pure]
         public static string TrimStartOrNull(this string self)
         {
             if (!string.IsNullOrEmpty(self))
@@ -1272,6 +1306,7 @@ namespace Exader
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
         [CanBeNull]
+        [Pure]
         public static string TrimStartOrNull(this string self, string start)
         {
             self = TrimStart(self, start);
@@ -1451,7 +1486,7 @@ namespace Exader
 #endif
 
         [NotNull]
-        [Pure]
+        [JetBrains.Annotations.Pure]
         public static IndexedCharEnumerator GetIndexedEnumerator(this string self)
         {
             return new IndexedCharEnumerator(self);

@@ -1,5 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Text;
+using JetBrains.Annotations;
 
 namespace Exader
 {
@@ -16,6 +17,7 @@ namespace Exader
 #if !SILVERLIGHT && !NET35
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
+        [Pure]
         public static bool IsRepeatOf(this StringBuilder self, char token, int startIndex = 0)
         {
             for (int j = startIndex; j < self.Length; j++)

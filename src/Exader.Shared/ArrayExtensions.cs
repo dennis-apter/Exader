@@ -18,6 +18,7 @@ namespace Exader
         /// <typeparam name="T"></typeparam>
         /// <param name="self"></param>
         /// <param name="item"></param>
+        [Pure]
         public static T[] Add<T>(this T[] self, T item)
         {
             if (null == self)
@@ -29,7 +30,8 @@ namespace Exader
             self[self.Length - 1] = item;
             return self;
         }
-
+        
+        [Pure]
         public static T[] Add<T>(this T[] self, params T[] items)
         {
             if (null == self)
@@ -39,7 +41,8 @@ namespace Exader
 
             return self.Insert(self.Length, items);
         }
-
+        
+        [Pure]
         public static T[] AddFirst<T>(this T[] self, T item)
         {
             if (null == self)
@@ -51,7 +54,8 @@ namespace Exader
             self[0] = item;
             return self;
         }
-
+        
+        [Pure]
         public static T[] AddRange<T>(this T[] self, IEnumerable<T> enumerable)
         {
             if (null == self)
@@ -69,11 +73,13 @@ namespace Exader
         /// <param name="self"></param>
         /// <param name="item"></param>
         /// <returns></returns>
+        [Pure]
         public static bool Contains<T>(this T[] self, T item)
         {
             return 0 <= Array.IndexOf(self, item);
         }
-
+        
+        [Pure]
         public static bool Contains<T>(this T[] self, T item, bool useBinarySearch, bool sort)
         {
             if (sort)
@@ -88,7 +94,8 @@ namespace Exader
 
             return 0 <= Array.IndexOf(self, item);
         }
-
+        
+        [Pure]
         public static bool Contains<T>(this T[] self, T item, bool useBinarySearch, bool sort, IComparer comparer)
         {
             if (sort)
@@ -146,7 +153,7 @@ namespace Exader
 
             return self;
         }
-
+        
         public static void Expand<T>(this T[] array, int offset, int startIndex)
         {
             if (startIndex < 0)
@@ -237,6 +244,7 @@ namespace Exader
         /// <param name="self"></param>
         /// <param name="collapsible">Ёлемент дл€ удалени€ из массива</param>
         /// <returns></returns>
+        [Pure]
         public static T[] Collapse<T>(this T[] self, T collapsible = default(T))
         {
             int offset = 0;
@@ -327,17 +335,20 @@ namespace Exader
         /// <typeparam name="T"></typeparam>
         /// <param name="self"></param>
         /// <param name="amount"></param>
+        [Pure]
         public static T[] Growth<T>(this T[] self, int amount)
         {
             Array.Resize(ref self, self.Length + amount);
             return self;
         }
-
+        
+        [Pure]
         public static int IndexOf<T>(this T[] self, T item, int startIndex)
         {
             return Array.IndexOf(self, item, startIndex);
         }
-
+        
+        [Pure]
         public static int IndexOf<T>(this T[] self, T item)
         {
             return Array.IndexOf(self, item);
@@ -494,12 +505,14 @@ namespace Exader
 
             return self;
         }
-
+        
+        [Pure]
         public static int LastIndexOf<T>(this T[] self, T item, int startIndex)
         {
             return Array.LastIndexOf(self, item, startIndex);
         }
-
+        
+        [Pure]
         public static int LastIndexOf<T>(this T[] self, T item)
         {
             return Array.LastIndexOf(self, item);
@@ -533,6 +546,7 @@ namespace Exader
         /// <typeparam name="T"></typeparam>
         /// <param name="self"></param>
         /// <param name="item"></param>
+        [Pure]
         public static T[] RemoveLast<T>(this T[] self, T item)
         {
             if (Equals(default(T), item))
@@ -555,6 +569,7 @@ namespace Exader
         /// <typeparam name="T"></typeparam>
         /// <param name="self"></param>
         /// <param name="index"></param>
+        [Pure]
         public static T[] RemoveAt<T>(this T[] self, int index)
         {
             if (self.Length <= index)
@@ -580,13 +595,10 @@ namespace Exader
         /// <typeparam name="T"></typeparam>
         /// <param name="array"></param>
         /// <param name="newSize"></param>
+        [JetBrains.Annotations.Pure]
         public static T[] Resize<T>(this T[] array, int newSize)
         {
-            if (array.Length != newSize)
-            {
-                Array.Resize(ref array, newSize);
-            }
-
+            Array.Resize(ref array, newSize);
             return array;
         }
 
@@ -630,6 +642,7 @@ namespace Exader
         /// <param name="array"></param>
         /// <param name="offset"></param>
         /// <returns></returns>
+        [Pure]
         public static T[] Move<T>(this T[] array, int offset)
         {
             if (offset != 0)
@@ -667,7 +680,8 @@ namespace Exader
             Array.Resize(ref self, newSize);
             return self;
         }
-
+        
+        [Pure]
         public static T[] Subarray<T>(this T[] array, int startIndex)
         {
             int length = array.Length;
@@ -675,14 +689,16 @@ namespace Exader
             Array.Copy(array, startIndex, dest, 0, dest.Length);
             return dest;
         }
-
+        
+        [Pure]
         public static T[] Subarray<T>(this T[] array, int startIndex, int length)
         {
             var dest = new T[length];
             Array.Copy(array, startIndex, dest, 0, length);
             return dest;
         }
-
+        
+        [Pure]
         public static T[] Subarray<T>(this T[] array, int startIndex, int length, int destinationLength)
         {
             var dest = new T[destinationLength];
