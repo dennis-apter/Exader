@@ -36,7 +36,7 @@ namespace Exader.IO
         [Fact]
         public void DescendantDirectories_ByPattern()
         {
-            var list = FilePath.Empty.DescendantDirectories("*ar*").ToList();
+            var list = FilePath.Empty.DescendantDirectories("*Data*").ToList();
             foreach (var descendant in list)
             {
                 Trace.WriteLine(descendant);

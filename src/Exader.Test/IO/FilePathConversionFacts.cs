@@ -5,6 +5,24 @@ namespace Exader.IO
 {
     public class FilePathConversionFacts
     {
+        [Fact]
+        public void CastNullString()
+        {
+            string nullString = null;
+            FilePath nullFilePath = (FilePath) nullString;
+            Assert.Null(nullFilePath);
+            
+            nullString = nullFilePath;
+            Assert.Null(nullString);
+        }
+
+        [Fact]
+        public void CastEmptyString()
+        {
+            FilePath emptyFilePath = (FilePath) "";
+            Assert.Equal(FilePath.Empty, emptyFilePath);
+        }
+
         [Theory]
         [InlineData("", "d:/c")]
         [InlineData("c:/d", "d:/c")]

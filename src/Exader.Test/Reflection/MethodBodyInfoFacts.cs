@@ -14,7 +14,7 @@ namespace Exader.Reflection
             _output = output;
         }
 
-        [Fact]
+        //[Fact]
         public void NotTaggedAsPure()
         {
             const BindingFlags bf = BindingFlags.DeclaredOnly

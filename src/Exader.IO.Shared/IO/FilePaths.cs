@@ -11,11 +11,16 @@ namespace Exader.IO
         [CanBeNull]
         public static FilePath GetPath(this Assembly assembly)
         {
-            var cb = assembly.CodeBase;
-            if (string.IsNullOrEmpty(cb))
-                return null;
+            if (assembly != null)
+            {
+                var cb = assembly.CodeBase;
+                if (!string.IsNullOrEmpty(cb))
+                {
+                    return SafeCreateFilePath(Uri.UnescapeDataString(new Uri(cb).AbsolutePath));
+                }
+            }
 
-            return SafeCreateFilePath(Uri.UnescapeDataString(new Uri(cb).AbsolutePath));
+            return null;
         }
 
         [CanBeNull]

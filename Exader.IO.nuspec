@@ -8,7 +8,7 @@
         <description>File system utilities library</description>
         <iconUrl>https://s3.amazonaws.com/cloud.ohloh.net/attachments/16636/Exader_med.png</iconUrl>
         <dependencies>
-            <dependency id="JetBrains.Annotations" version="7.0" />
+            <dependency id="JetBrains.Annotations" version="10.1.4" />
             <dependency id="Exader" />
         </dependencies>
     </metadata>

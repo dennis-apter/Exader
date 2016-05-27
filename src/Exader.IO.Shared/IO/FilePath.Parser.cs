@@ -33,11 +33,21 @@ namespace Exader.IO
         public static bool TryParse(string value, out FilePath result) => TryParse(value, out result, FilePathStyles.None);
         internal static bool TryParse(string value, out FilePath result, FilePathStyles styles)
         {
-            var parser = new Parser(value, false, "", styles);
-            if (parser.ErrorType == FilePathParseErrorType.None)
+            if (value == string.Empty)
             {
-                result = new FilePath(parser.DriveOrHost, parser.RootFolder, parser.Prefix, parser.Name, parser.Extension, parser.IsDirectory);
+                result = Empty;
                 return true;
+            }
+
+            if (value != null)
+            {
+                var parser = new Parser(value, false, "", styles);
+                if (parser.ErrorType == FilePathParseErrorType.None)
+                {
+                    result = new FilePath(parser.DriveOrHost, parser.RootFolder, parser.Prefix, parser.Name,
+                        parser.Extension, parser.IsDirectory);
+                    return true;
+                }
             }
 
             result = null;
@@ -47,6 +57,12 @@ namespace Exader.IO
         public static FilePath Parse(string value) => Parse(value, FilePathStyles.None);
         internal static FilePath Parse(string value, FilePathStyles styles)
         {
+            if (value == null)
+                throw new ArgumentNullException(nameof(value));
+
+            if (value == string.Empty)
+                return Empty;
+
             var parser = new Parser(value, false, "", styles);
             switch (parser.ErrorType)
             {

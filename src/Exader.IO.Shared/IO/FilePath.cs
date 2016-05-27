@@ -44,7 +44,7 @@ namespace Exader.IO
         [NotNull]
         private readonly string _rootFolder;
 
-        private bool _isDirectory;
+        private bool _isDirectory = true;
 
         private FilePath _parent;
 
@@ -1009,15 +1009,20 @@ namespace Exader.IO
             return new FilePath(newRoot, newRootFolder, _prefix, _name, _extension, _isDirectory);
         }
 
-        public FilePath SubpathAfter(int count = 1)
+        public FilePath SubpathAfter(int offset = 1)
         {
             string[] parents = _prefix.SplitAndRemoveEmpties(Path.DirectorySeparatorChar);
-            if (parents.Length < count) throw new ArgumentOutOfRangeException(nameof(count));
+            if (parents.Length < offset)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(offset), offset,
+                    $"Path {this} does not contains a parent segments by offset greater than {offset}.");
+            }
 
             var newParentPath = "";
-            if (count < parents.Length)
+            if (offset < parents.Length)
             {
-                newParentPath = string.Join(Path.DirectorySeparatorChar.ToString(), parents.Subarray(count)) + Path.DirectorySeparatorChar;
+                newParentPath = string.Join(Path.DirectorySeparatorChar.ToString(), parents.Subarray(offset)) + Path.DirectorySeparatorChar;
             }
 
             return new FilePath("", "", newParentPath, _name, _extension, _isDirectory);
@@ -1081,7 +1086,8 @@ namespace Exader.IO
 
             if (!matched)
                 throw new ArgumentOutOfRangeException(
-                    nameof(subpath), subpath, "A path does not contain a subpath.");
+                    nameof(subpath), subpath,
+                    $"Path {this} does not contain a subpath {subpath}.");
 
             if (include)
             {
@@ -1260,12 +1266,12 @@ namespace Exader.IO
 
         public static explicit operator FilePath(string path)
         {
-            return Parse(path);
+            return path != null ? Parse(path) : null;
         }
 
         public static implicit operator string(FilePath path)
         {
-            return path.ToString();
+            return path?.ToString();
         }
 
         /// <summary>
