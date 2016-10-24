@@ -896,6 +896,11 @@ namespace Exader.IO
             return WithExtension("." + prefix.Trim('.') + _extension);
         }
 
+        public FilePath WithExtensionSuffix(string suffix)
+        {
+            return WithExtension(_extension + "." + suffix.Trim('.'));
+        }
+
         /// <summary>
         /// Возвращяет новый путь с заданным расширением.
         /// </summary>

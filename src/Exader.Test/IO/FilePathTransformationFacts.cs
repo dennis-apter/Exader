@@ -195,9 +195,18 @@ namespace Exader.IO
         [Fact]
         public void WithExtension()
         {
+            Assert.Equal("foo.x", FilePath.Parse("foo").WithExtension("x"));
+            Assert.Equal("foo.x\\", FilePath.Parse("foo/").WithExtension("x"));
+            Assert.Equal("foo.x", FilePath.Parse("foo.bar").WithExtension("x"));
             Assert.Equal(".x", FilePath.Parse("foo.bar").WithExtension("x").Extension);
             Assert.Equal(".x", FilePath.Parse("foo.bar").WithExtension(".x").Extension);
             Assert.Equal(string.Empty, FilePath.Parse("foo.bar").WithExtension(string.Empty).Extension);
+        }
+
+        [Fact]
+        public void WithExtensionSuffix()
+        {
+            Assert.Equal("foo.bar.x", FilePath.Parse("foo.bar").WithExtensionSuffix("x"));
         }
 
         [Fact]

@@ -111,6 +111,24 @@ namespace Exader
             return 0 <= Array.IndexOf(self, item);
         }
 
+        [Pure]
+        public static T[] Copy<T>(this T[] self)
+        {
+            if (self == null)
+            {
+                return null;
+            }
+
+            var copy = new T[self.Length];
+            if (self.Length == 0)
+            {
+                return copy;
+            }
+
+            Array.Copy(self, copy, self.Length);
+            return copy;
+        }
+
         /// <summary>
         /// Обеспечивает заданный размер массива.
         /// </summary>

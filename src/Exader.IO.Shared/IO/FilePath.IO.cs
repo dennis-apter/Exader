@@ -663,7 +663,7 @@ namespace Exader.IO
             Directory.CreateDirectory(ToString());
             return this;
         }
-
+        
         public FileStream CreateAsFileStream()
         {
             return File.Open(ToString(), FileMode.Create);

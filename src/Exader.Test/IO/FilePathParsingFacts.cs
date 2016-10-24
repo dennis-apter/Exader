@@ -6,27 +6,6 @@ namespace Exader.IO
     public class FilePathParsingFacts
     {
         [Theory]
-        [InlineData(@"..\")]
-        [InlineData(@"..\..\")]
-        [InlineData(@"..\..\..\")]
-        [InlineData(@"..\d\")]
-        [InlineData(@"..\f")]
-        [InlineData(@"..\f.e")]
-        [InlineData(@"..\.e")]
-        public void NonCollapseRelativePath(string value)
-        {
-            var fp = FilePath.Parse(value);
-            Assert.Equal(value, fp);
-            Assert.Empty(fp.RootFolder);
-            Assert.True(fp.IsExternal);
-
-            fp = FilePath.Parse("C:" + value);
-            Assert.Equal("C:" + value, fp);
-            Assert.Empty(fp.RootFolder);
-            Assert.True(fp.IsExternal);
-        }
-
-        [Theory]
         [InlineData(@".\f", "f")]
         [InlineData(@".\..\f", @"..\f")]
         [InlineData(@".\f.e", "f.e")]
@@ -84,17 +63,6 @@ namespace Exader.IO
         }
 
         [Theory]
-        [InlineData("\ff\ri\nl\ve\t", @"file")]
-        [InlineData("\f\r\n\v\tfile", @"file")]
-        [InlineData("file\f\r\n\v\t", @"file")]
-        [InlineData("file\f%0A%0D\v\t", @"file")]
-        [InlineData("file\f%0a%0d\v\t", @"file")]
-        public void IgnoreInvalidCharacters(string value, string result)
-        {
-            Assert.Equal(result, FilePath.Parse(value));
-        }
-
-        [Theory]
         [InlineData(@"")]
         [InlineData(@".")]
         [InlineData(@".\")]
@@ -108,27 +76,6 @@ namespace Exader.IO
             Assert.True(fp.IsDirectory);
             Assert.True(fp.IsCurrent);
             Assert.False(fp.IsRoot);
-        }
-
-        [Theory]
-        [InlineData(@"\")]
-        [InlineData(@"\.")]
-        [InlineData(@"\d\..")]
-        [InlineData(@"c:\")]
-        [InlineData(@"c:\d\..")]
-        [InlineData(@"\\h\r\")]
-        [InlineData(@"\\h\r\..")]
-        [InlineData(@"\\h\r\d\..")]
-        public void RootFolder(string value)
-        {
-            var fp = FilePath.Parse(value);
-
-            Assert.Empty(fp.Name);
-            Assert.Empty(fp.Extension);
-            Assert.True(fp.IsDirectory);
-            Assert.False(fp.IsCurrent);
-            Assert.True(fp.IsRoot);
-            Assert.True(fp.HasRootFolder);
         }
 
         [Theory]
@@ -161,39 +108,81 @@ namespace Exader.IO
         }
 
         [Theory]
+        [InlineData(".\\", "")]
+        [InlineData("..\\", "..")]
+        [InlineData("...\\", "..")]
+        [InlineData("....\\", "..")]
+        [InlineData("..e\\", ".")]
+        [InlineData("...e\\", "..")]
+        [InlineData("....e\\", "...")]
+        public void DirectoryNameWithDots(string value, string result)
+        {
+            var fp = FilePath.Parse(value);
+            Assert.Equal(result, fp.NameWithoutExtension);
+        }
+
+        [Theory]
         [InlineData(@"file://c|\Program%20Files\", @"c:\Program Files\")]
         public void EncodedFileUri(string value, string result)
         {
             Assert.Equal(result, FilePath.Parse(value));
         }
 
+        [Fact]
+        public void Extension()
+        {
+            var fp = FilePath.Parse("foo.bar");
+            Assert.Equal(".bar", fp.Extension);
+            Assert.Equal("foo.bar", fp.Name);
+            Assert.Equal("foo", fp.NameWithoutExtension);
+
+            fp = FilePath.Parse("foo.bar/");
+            Assert.True(fp.IsDirectory);
+            Assert.Equal(".bar", fp.Extension);
+            Assert.Equal("foo.bar", fp.Name);
+            Assert.Equal("foo", fp.NameWithoutExtension);
+        }
+
         [Theory]
-        [InlineData(@"file://h/r/d/")]
-        [InlineData(@"file:///h/r/d/")]
-        [InlineData(@"file:////h/r/d/")]
-        [InlineData(@"file://///h/r/d/")]
-        [InlineData(@"file://////h/r/d/")]
-        [InlineData(@"file:///////h/r/d/")]
-        [InlineData(@"file:////////h/r/d/")]
-        [InlineData(@"file://///////h/r/d/")]
-        [InlineData(@"file://////////h/r/d/")]
-        [InlineData(@"file:/\/\/\/\/\/h/r/d/")]
-        [InlineData(@"file:///\\\///\\\h/r/d/")]
-        public void NetworkFileUri(string value)
+        [InlineData("..e", ".")]
+        [InlineData("...e", "..")]
+        [InlineData("....e", "...")]
+        public void FileNameWithDots(string value, string result)
         {
             var fp = FilePath.Parse(value);
-            {
-                Assert.Equal(@"\\h\r\d\", fp);
-                Assert.Equal("d", fp.Name);
-                Assert.Equal("\\r\\", fp.RootFolder);
-                Assert.Equal("\\\\h", fp.Host);
-                Assert.Empty(fp.Drive);
-                Assert.Empty(fp.Extension);
-                Assert.Empty(fp.Prefix);
-                Assert.True(fp.IsDirectory);
-                Assert.False(fp.IsLocal);
-                Assert.True(fp.IsNetwork);
-            }
+            Assert.Equal(result, fp.NameWithoutExtension);
+        }
+
+        [Theory]
+        [InlineData("\ff\ri\nl\ve\t", @"file")]
+        [InlineData("\f\r\n\v\tfile", @"file")]
+        [InlineData("file\f\r\n\v\t", @"file")]
+        [InlineData("file\f%0A%0D\v\t", @"file")]
+        [InlineData("file\f%0a%0d\v\t", @"file")]
+        public void IgnoreInvalidCharacters(string value, string result)
+        {
+            Assert.Equal(result, FilePath.Parse(value));
+        }
+
+        [Theory]
+        [InlineData(@"xyz:\")]
+        [InlineData(@"file://xyz:\")]
+        [InlineData(@"file://xyz|\")]
+        [InlineData(@"file://localhost/xyz:\")]
+        [InlineData(@"file://localhost/xyz|\")]
+        public void InvalidDriveLetter(string s)
+        {
+            var ex = Assert.Throws<ArgumentException>(() => FilePath.Parse(s));
+            Assert.Contains("xyz", ex.Message);
+        }
+
+        [Theory]
+        [InlineData(@"\\?\xz:\")]
+        [InlineData(@"\\?\file:\")]
+        [InlineData(@"\\?\UNCx\")]
+        public void InvalidLongPathPrefix(string s)
+        {
+            Assert.Throws<ArgumentException>(() => FilePath.Parse(s));
         }
 
         [Theory]
@@ -242,6 +231,35 @@ namespace Exader.IO
         }
 
         [Theory]
+        [InlineData(@"file://h/r/d/")]
+        [InlineData(@"file:///h/r/d/")]
+        [InlineData(@"file:////h/r/d/")]
+        [InlineData(@"file://///h/r/d/")]
+        [InlineData(@"file://////h/r/d/")]
+        [InlineData(@"file:///////h/r/d/")]
+        [InlineData(@"file:////////h/r/d/")]
+        [InlineData(@"file://///////h/r/d/")]
+        [InlineData(@"file://////////h/r/d/")]
+        [InlineData(@"file:/\/\/\/\/\/h/r/d/")]
+        [InlineData(@"file:///\\\///\\\h/r/d/")]
+        public void NetworkFileUri(string value)
+        {
+            var fp = FilePath.Parse(value);
+            {
+                Assert.Equal(@"\\h\r\d\", fp);
+                Assert.Equal("d", fp.Name);
+                Assert.Equal("\\r\\", fp.RootFolder);
+                Assert.Equal("\\\\h", fp.Host);
+                Assert.Empty(fp.Drive);
+                Assert.Empty(fp.Extension);
+                Assert.Empty(fp.Prefix);
+                Assert.True(fp.IsDirectory);
+                Assert.False(fp.IsLocal);
+                Assert.True(fp.IsNetwork);
+            }
+        }
+
+        [Theory]
         [InlineData(@"\\h", @"\\h")]
         [InlineData(@"\\h\", @"\\h\")]
         [InlineData(@"\\h\r\", @"\\h\r\")]
@@ -252,6 +270,27 @@ namespace Exader.IO
         public void NetworkShare(string value, string result)
         {
             Assert.Equal(result, FilePath.Parse(value));
+        }
+
+        [Theory]
+        [InlineData(@"..\")]
+        [InlineData(@"..\..\")]
+        [InlineData(@"..\..\..\")]
+        [InlineData(@"..\d\")]
+        [InlineData(@"..\f")]
+        [InlineData(@"..\f.e")]
+        [InlineData(@"..\.e")]
+        public void NonCollapseRelativePath(string value)
+        {
+            var fp = FilePath.Parse(value);
+            Assert.Equal(value, fp);
+            Assert.Empty(fp.RootFolder);
+            Assert.True(fp.IsExternal);
+
+            fp = FilePath.Parse("C:" + value);
+            Assert.Equal("C:" + value, fp);
+            Assert.Empty(fp.RootFolder);
+            Assert.True(fp.IsExternal);
         }
 
         [Theory]
@@ -269,24 +308,24 @@ namespace Exader.IO
         }
 
         [Theory]
-        [InlineData(@"xyz:\")]
-        [InlineData(@"file://xyz:\")]
-        [InlineData(@"file://xyz|\")]
-        [InlineData(@"file://localhost/xyz:\")]
-        [InlineData(@"file://localhost/xyz|\")]
-        public void InvalidDriveLetter(string s)
+        [InlineData(@"\")]
+        [InlineData(@"\.")]
+        [InlineData(@"\d\..")]
+        [InlineData(@"c:\")]
+        [InlineData(@"c:\d\..")]
+        [InlineData(@"\\h\r\")]
+        [InlineData(@"\\h\r\..")]
+        [InlineData(@"\\h\r\d\..")]
+        public void RootFolder(string value)
         {
-            var ex = Assert.Throws<ArgumentException>(() => FilePath.Parse(s));
-            Assert.Contains("xyz", ex.Message);
-        }
+            var fp = FilePath.Parse(value);
 
-        [Theory]
-        [InlineData(@"\\?\xz:\")]
-        [InlineData(@"\\?\file:\")]
-        [InlineData(@"\\?\UNCx\")]
-        public void InvalidLongPathPrefix(string s)
-        {
-            Assert.Throws<ArgumentException>(() => FilePath.Parse(s));
+            Assert.Empty(fp.Name);
+            Assert.Empty(fp.Extension);
+            Assert.True(fp.IsDirectory);
+            Assert.False(fp.IsCurrent);
+            Assert.True(fp.IsRoot);
+            Assert.True(fp.HasRootFolder);
         }
 
         [Theory]
@@ -301,30 +340,6 @@ namespace Exader.IO
         public void TrimEnds(string value, string result)
         {
             Assert.Equal(result, FilePath.Parse(value));
-        }
-
-        [Theory]
-        [InlineData("..e", ".")]
-        [InlineData("...e", "..")]
-        [InlineData("....e", "...")]
-        public void FileNameWithDots(string value, string result)
-        {
-            var fp = FilePath.Parse(value);
-            Assert.Equal(result, fp.NameWithoutExtension);
-        }
-
-        [Theory]
-        [InlineData(".\\", "")]
-        [InlineData("..\\", "..")]
-        [InlineData("...\\", "..")]
-        [InlineData("....\\", "..")]
-        [InlineData("..e\\", ".")]
-        [InlineData("...e\\", "..")]
-        [InlineData("....e\\", "...")]
-        public void DirectoryNameWithDots(string value, string result)
-        {
-            var fp = FilePath.Parse(value);
-            Assert.Equal(result, fp.NameWithoutExtension);
         }
 
         [Theory]
