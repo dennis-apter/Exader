@@ -223,6 +223,11 @@ namespace Exader.IO
             Assert.Equal(@"C:\dir\.e", FilePath.Parse("C:/dir/file.e").WithName(null));
             Assert.Equal(@"C:\dir\.f", FilePath.Parse("C:/dir/file.e").WithName(".f"));
             Assert.Equal(@"C:\dir\_._", FilePath.Parse("C:/dir/file.e").WithName("_._"));
+
+            Assert.Equal(@"C:\dir\b\", FilePath.Parse("C:/dir/subdir.e/").WithName("b"));
+            Assert.Throws<ArgumentException>(() => FilePath.Parse("C:/dir/subdir.e/").WithName(null));
+            Assert.Equal(@"C:\dir\.f\", FilePath.Parse("C:/dir/subdir.e/").WithName(".f"));
+            Assert.Equal(@"C:\dir\_._\", FilePath.Parse("C:/dir/subdir.e/").WithName("_._"));
         }
 
         [Fact]

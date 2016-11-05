@@ -13,11 +13,11 @@ namespace Exader.IO
 {
     public partial class FilePath
     {
-        public bool IsFileExists => File.Exists(ToAbsoluteString());
+        public bool IsFileExists => System.IO.File.Exists(ToAbsoluteString());
 
-        public bool IsDirectoryExists => Directory.Exists(ToAbsoluteString());
+        public bool IsDirectoryExists => System.IO.Directory.Exists(ToAbsoluteString());
 
-        public bool IsParentExists => IsRoot && Directory.Exists(WithoutNameAsString());
+        public bool IsParentExists => IsRoot && System.IO.Directory.Exists(WithoutNameAsString());
 
         public bool IsEmptyFileOrDirectory
         {
@@ -30,7 +30,7 @@ namespace Exader.IO
 
                 if (IsDirectoryExists)
                 {
-                    return 0 == Directory.GetFileSystemEntries(ToString()).Length;
+                    return 0 == System.IO.Directory.GetFileSystemEntries(ToString()).Length;
                 }
 
                 return true;
@@ -45,9 +45,9 @@ namespace Exader.IO
             if (basePath == "")
                 basePath = ".";
 #if NET35
-            foreach (string directory in Directory.GetDirectories(basePath, searchPattern, searchOption))
+            foreach (string directory in System.IO.Directory.GetDirectories(basePath, searchPattern, searchOption))
 #else
-            foreach (string directory in Directory.EnumerateDirectories(basePath, searchPattern, searchOption))
+            foreach (string directory in System.IO.Directory.EnumerateDirectories(basePath, searchPattern, searchOption))
 #endif
             {
                 if (!string.IsNullOrEmpty(selfPath) && selfPath.Equals(directory, StringComparison.OrdinalIgnoreCase))
@@ -65,9 +65,9 @@ namespace Exader.IO
             if (basePath == "")
                 basePath = ".";
 #if NET35
-            foreach (string file in Directory.GetFiles(basePath, searchPattern, searchOption))
+            foreach (string file in System.IO.Directory.GetFiles(basePath, searchPattern, searchOption))
 #else
-            foreach (string file in Directory.EnumerateFiles(basePath, searchPattern, searchOption))
+            foreach (string file in System.IO.Directory.EnumerateFiles(basePath, searchPattern, searchOption))
 #endif
             {
                 if (!string.IsNullOrEmpty(selfPath) && selfPath.Equals(file, StringComparison.OrdinalIgnoreCase))
@@ -348,20 +348,20 @@ namespace Exader.IO
             else
             {
 #if NET35
-                var files = Directory.GetFiles(dir);
+                var files = System.IO.Directory.GetFiles(dir);
 #else
-                var files = Directory.EnumerateFiles(dir);
+                var files = System.IO.Directory.EnumerateFiles(dir);
 #endif
                 foreach (string file in files)
                 {
-                    File.Delete(file);
+                    System.IO.File.Delete(file);
                 }
             }
 
 #if NET35
-            var subdirs = Directory.GetDirectories(dir);
+            var subdirs = System.IO.Directory.GetDirectories(dir);
 #else
-            var subdirs = Directory.EnumerateDirectories(dir);
+            var subdirs = System.IO.Directory.EnumerateDirectories(dir);
 #endif
             foreach (string subdir in subdirs)
             {
@@ -404,13 +404,13 @@ namespace Exader.IO
         {
             options = options ?? CopyOptions.Default;
 
-            if (Directory.Exists(sourcePath))
+            if (System.IO.Directory.Exists(sourcePath))
             {
                 CopyDirectory(sourcePath, destPath, options);
             }
-            else if (File.Exists(sourcePath))
+            else if (System.IO.File.Exists(sourcePath))
             {
-                if (Directory.Exists(destPath))
+                if (System.IO.Directory.Exists(destPath))
                 {
                     string name = Path.GetFileName(sourcePath);
 
@@ -424,7 +424,7 @@ namespace Exader.IO
         private static void CopyDirectory(string sourceDir, string destDir, CopyOptions options)
         {
             // If the source directory does not exist, throw an exception.
-            if (!Directory.Exists(sourceDir))
+            if (!System.IO.Directory.Exists(sourceDir))
             {
                 if (options.ContinueOnError)
                 {
@@ -435,16 +435,16 @@ namespace Exader.IO
             }
 
             // If the destination directory does not exist, create it.
-            if (!Directory.Exists(destDir))
+            if (!System.IO.Directory.Exists(destDir))
             {
-                Directory.CreateDirectory(destDir);
+                System.IO.Directory.CreateDirectory(destDir);
             }
             else if (ClearCondition.None != options.Clear)
             {
 #if NET35
-                var existsFiles = Directory.GetFiles(destDir);
+                var existsFiles = System.IO.Directory.GetFiles(destDir);
 #else
-                var existsFiles = Directory.EnumerateFiles(destDir);
+                var existsFiles = System.IO.Directory.EnumerateFiles(destDir);
 #endif
                 foreach (string existsFile in existsFiles)
                 {
@@ -454,7 +454,7 @@ namespace Exader.IO
                         {
                             if (ClearCondition.IfOlderThenBaseTime == options.Clear)
                             {
-                                DateTime lastWriteTime = File.GetLastWriteTime(existsFile);
+                                DateTime lastWriteTime = System.IO.File.GetLastWriteTime(existsFile);
                                 if (lastWriteTime < options.BaseTime)
                                 {
                                     continue;
@@ -466,7 +466,7 @@ namespace Exader.IO
                                 Trace.WriteLine("Delete " + existsFile);
                             }
 
-                            File.Delete(existsFile);
+                            System.IO.File.Delete(existsFile);
                         }
                         catch (Exception)
                         {
@@ -485,9 +485,9 @@ namespace Exader.IO
 
             // Get the file contents of the directory to copy.
 #if NET35
-            var sourceFiles = Directory.GetFiles(sourceDir);
+            var sourceFiles = System.IO.Directory.GetFiles(sourceDir);
 #else
-            var sourceFiles = Directory.EnumerateFiles(sourceDir);
+            var sourceFiles = System.IO.Directory.EnumerateFiles(sourceDir);
 #endif
             foreach (string sourceFile in sourceFiles)
             {
@@ -510,9 +510,9 @@ namespace Exader.IO
                 return;
 
 #if NET35
-            var sourceSubdirs = Directory.GetDirectories(sourceDir);
+            var sourceSubdirs = System.IO.Directory.GetDirectories(sourceDir);
 #else
-            var sourceSubdirs = Directory.EnumerateDirectories(sourceDir);
+            var sourceSubdirs = System.IO.Directory.EnumerateDirectories(sourceDir);
 #endif
             foreach (string sourceSubdir in sourceSubdirs)
             {
@@ -529,9 +529,9 @@ namespace Exader.IO
                         try
                         {
 #if NET35
-                            if (!Directory.GetFileSystemEntries(destSubdir).Any())
+                            if (!System.IO.Directory.GetFileSystemEntries(destSubdir).Any())
 #else
-                            if (!Directory.EnumerateFileSystemEntries(destSubdir).Any())
+                            if (!System.IO.Directory.EnumerateFileSystemEntries(destSubdir).Any())
 #endif
                             {
                                 if (options.IsTraceEnabled)
@@ -539,7 +539,7 @@ namespace Exader.IO
                                     Trace.WriteLine("Clear empty directory " + destSubdir);
                                 }
 
-                                Directory.Delete(destSubdir);
+                                System.IO.Directory.Delete(destSubdir);
                             }
                         }
                         catch (Exception ex)
@@ -563,7 +563,7 @@ namespace Exader.IO
         {
             try
             {
-                if (OverwriteCondition.Always != options.Overwrite && File.Exists(destFile))
+                if (OverwriteCondition.Always != options.Overwrite && System.IO.File.Exists(destFile))
                 {
                     switch (options.Overwrite)
                     {
@@ -574,8 +574,8 @@ namespace Exader.IO
                             }
                             return;
                         case OverwriteCondition.IfNewer:
-                            DateTime destLastWriteTime = File.GetLastWriteTime(destFile);
-                            DateTime sourceLastWriteTime = File.GetLastWriteTime(sourceFile);
+                            DateTime destLastWriteTime = System.IO.File.GetLastWriteTime(destFile);
+                            DateTime sourceLastWriteTime = System.IO.File.GetLastWriteTime(sourceFile);
                             if (sourceLastWriteTime < destLastWriteTime)
                             {
                                 if (options.IsTraceEnabled)
@@ -601,7 +601,7 @@ namespace Exader.IO
                         );
                 }
 
-                File.Copy(sourceFile, destFile, true);
+                System.IO.File.Copy(sourceFile, destFile, true);
             }
             catch (Exception)
             {
@@ -614,7 +614,7 @@ namespace Exader.IO
 
         public void AppendAllText(string contents)
         {
-            File.AppendAllText(ToString(), contents);
+            System.IO.File.AppendAllText(ToString(), contents);
         }
 
         public StreamWriter AppendText()
@@ -660,13 +660,13 @@ namespace Exader.IO
 
         public FilePath CreateAsDirectory()
         {
-            Directory.CreateDirectory(ToString());
+            System.IO.Directory.CreateDirectory(ToString());
             return this;
         }
         
         public FileStream CreateAsFileStream()
         {
-            return File.Open(ToString(), FileMode.Create);
+            return System.IO.File.Open(ToString(), FileMode.Create);
         }
 
 #if !SILVERLIGHT
@@ -690,7 +690,7 @@ namespace Exader.IO
         {
             if (IsFileExists)
             {
-                File.Delete(this);
+                System.IO.File.Delete(this);
                 return true;
             }
 
@@ -712,7 +712,7 @@ namespace Exader.IO
         public FilePath EnsureDirectoryExists()
         {
             if (!IsDirectoryExists)
-                Directory.CreateDirectory(ToString());
+                System.IO.Directory.CreateDirectory(ToString());
 
             return this;
         }
@@ -724,19 +724,19 @@ namespace Exader.IO
         public FilePath EnsureParentExists()
         {
             if (!IsParentExists)
-                Directory.CreateDirectory(WithoutNameAsString());
+                System.IO.Directory.CreateDirectory(WithoutNameAsString());
 
             return this;
         }
 
         public FileStream Open()
         {
-            return File.Open(ToString(), FileMode.Open);
+            return System.IO.File.Open(ToString(), FileMode.Open);
         }
 
         public FileStream OpenOrCreate()
         {
-            return File.Open(ToString(), FileMode.OpenOrCreate);
+            return System.IO.File.Open(ToString(), FileMode.OpenOrCreate);
         }
 
         public StreamReader OpenText(Encoding encoding = null)
@@ -751,7 +751,7 @@ namespace Exader.IO
 
         public FileStream Overwrite()
         {
-            FileStream stream = File.OpenWrite(ToString());
+            FileStream stream = System.IO.File.OpenWrite(ToString());
             stream.Seek(0, SeekOrigin.Begin);
             stream.SetLength(0);
             return stream;
@@ -765,7 +765,7 @@ namespace Exader.IO
 #if !SILVERLIGHT
         public string[] ReadAllLines(Encoding encoding = null)
         {
-            return File.ReadAllLines(this, encoding ?? Encoding.UTF8);
+            return System.IO.File.ReadAllLines(this, encoding ?? Encoding.UTF8);
         }
 
         public XmlReader ReadXml()
@@ -776,7 +776,7 @@ namespace Exader.IO
 
         public string ReadAllText(Encoding encoding = null)
         {
-            return File.ReadAllText(ToString(), encoding ?? Encoding.UTF8);
+            return System.IO.File.ReadAllText(ToString(), encoding ?? Encoding.UTF8);
         }
 
         public string ReadAllTextWithDecoding(int maxFileSize = 64 * 1024, Encoding defaultEncoding = null)
@@ -786,7 +786,7 @@ namespace Exader.IO
                 defaultEncoding = Encoding.Default;
             }
 
-            using (var stream = File.Open(ToString(), FileMode.Open, FileAccess.Read, FileShare.Read))
+            using (var stream = System.IO.File.Open(ToString(), FileMode.Open, FileAccess.Read, FileShare.Read))
             {
                 if (maxFileSize < stream.Length)
                 {
@@ -827,7 +827,7 @@ namespace Exader.IO
             }
 
             FilePath copy;
-            using (var stream = File.Open(ToString(), FileMode.Open, FileAccess.Read, FileShare.Read))
+            using (var stream = System.IO.File.Open(ToString(), FileMode.Open, FileAccess.Read, FileShare.Read))
             {
                 if (maxFileSize < stream.Length)
                 {
@@ -840,7 +840,7 @@ namespace Exader.IO
                 }
 
                 copy = WithExtension(Extension + "__fixed");
-                using (var fixStream = File.Create(copy))
+                using (var fixStream = System.IO.File.Create(copy))
                 {
                     stream.ConvertTo(fixStream, fromEncoding, Encoding.UTF8);
                     fixStream.Flush();
@@ -849,8 +849,8 @@ namespace Exader.IO
 
             if (copy != null)
             {
-                File.Delete(this);
-                File.Move(copy, this);
+                System.IO.File.Delete(this);
+                System.IO.File.Move(copy, this);
             }
 
             return true;
@@ -905,20 +905,20 @@ namespace Exader.IO
 #else
         public FilePath WriteAllLines(string[] contents, Encoding encoding = null)
         {
-            File.WriteAllLines(this, contents, encoding ?? Encoding.UTF8);
+            System.IO.File.WriteAllLines(this, contents, encoding ?? Encoding.UTF8);
             return this;
         }
 
         public FilePath WriteAllLines(IEnumerable<string> contents, Encoding encoding = null)
 #endif
         {
-            File.WriteAllLines(this, contents, encoding ?? Encoding.UTF8);
+            System.IO.File.WriteAllLines(this, contents, encoding ?? Encoding.UTF8);
             return this;
         }
 
         public FilePath WriteAllText(string contents, Encoding encoding = null)
         {
-            File.WriteAllText(this, contents, encoding ?? Encoding.UTF8);
+            System.IO.File.WriteAllText(this, contents, encoding ?? Encoding.UTF8);
             return this;
         }
 

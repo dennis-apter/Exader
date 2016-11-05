@@ -215,6 +215,39 @@ namespace Exader.IO
         public string Prefix => _prefix;
         public string RootFolder => _rootFolder;
 
+        public FilePath Directory(string name)
+        {
+            return Item(name, true);
+        }
+
+        public FilePath File(string name)
+        {
+            return Item(name, false);
+        }
+
+        private FilePath Item(string name, bool directory)
+        {
+            if (string.IsNullOrEmpty(name))
+            {
+                throw new ArgumentException(nameof(name));
+            }
+            
+            string ext = "";
+            int pos = name.LastIndexOf('.');
+            if (0 == pos)
+            {
+                ext = name;
+                name = "";
+            }
+            else if (0 < pos)
+            {
+                ext = name.Substring(pos);
+                name = name.Substring(0, pos);
+            }
+
+            return new FilePath(_driveOrHost, _rootFolder, _prefix + "/" + Name, name, ext, directory);
+        }
+
         public string NameWithoutExtensions(string ext)
         {
             if (!string.IsNullOrEmpty(ext))
@@ -924,7 +957,21 @@ namespace Exader.IO
 
         public FilePath WithName(string newName)
         {
-            string ext = _extension;
+            string ext;
+
+            if (IsDirectory)
+            {
+                ext = "";
+                if (string.IsNullOrEmpty(newName))
+                {
+                    throw new ArgumentException(nameof(newName));
+                }
+            }
+            else
+            {
+                ext = _extension;
+            }
+
             if (newName == null)
             {
                 newName = "";
