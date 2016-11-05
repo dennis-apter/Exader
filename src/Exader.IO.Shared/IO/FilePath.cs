@@ -244,8 +244,9 @@ namespace Exader.IO
                 ext = name.Substring(pos);
                 name = name.Substring(0, pos);
             }
-
-            return new FilePath(_driveOrHost, _rootFolder, _prefix + "/" + Name, name, ext, directory);
+            
+            var result = new FilePath(_driveOrHost, _rootFolder, DirectoryPath, name, ext, directory);
+            return result;
         }
 
         public string NameWithoutExtensions(string ext)

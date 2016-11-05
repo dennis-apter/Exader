@@ -169,6 +169,15 @@ namespace Exader.IO
             Assert.Equal(r, FilePath.Parse(p).SubpathBefore(sp));
         }
 
+        [Fact]
+        public void Item()
+        {
+            Assert.Equal(@"C:\dir\file.e", FilePath.Parse("C:/dir/").File("file.e"));
+            Assert.Equal(@"C:\dir\file.e", FilePath.Parse("C:/dir/f.e").File("file.e"));
+            Assert.Equal(@"C:\dir\dir.e\", FilePath.Parse("C:/dir/").Directory("dir.e"));
+            Assert.Equal(@"C:\dir\dir.e\", FilePath.Parse("C:/dir/f.e").Directory("dir.e"));
+        }
+
         [Theory]
         [InlineData("a/b/c/d/e/f", "f", @"a\b\c\d\e\f")]
         [InlineData("a/b/c/d/e/f", "e", @"a\b\c\d\e\")]
