@@ -370,6 +370,12 @@ namespace Exader.IO
             return sb.ToString();
         }
 
+        [Obsolete("Use ToAbsoluteString() or ToAbsolute() method instead", true)]
+        public string AbsolutePath => ToAbsoluteString();
+        
+        [Obsolete("Use ToString() method instead", true)]
+        public string FullPath => ToString();
+
         public FilePath ToAbsolute()
         {
             return IsAbsolute ? this : Parse(ToAbsoluteString());
@@ -1060,6 +1066,12 @@ namespace Exader.IO
             }
 
             return new FilePath(newRoot, newRootFolder, _prefix, _name, _extension, _isDirectory);
+        }
+
+        [Obsolete("Use SubpathAfter() method instead", true)]
+        public FilePath TrimAnscestors(int offset = 1)
+        {
+            return SubpathAfter(offset);
         }
 
         public FilePath SubpathAfter(int offset = 1)
