@@ -38,7 +38,7 @@ namespace Exader
             string token,
             bool include = false,
             CultureInfo culture = null,
-            CompareOptions compareOptions = CompareOptions.Ordinal)
+            CompareOptions compareOptions = CompareOptions.OrdinalIgnoreCase)
         {
             return SubstringAfterInternal(false, self, token, include, culture, compareOptions);
         }
@@ -51,7 +51,7 @@ namespace Exader
             out string rest,
             bool include = false,
             CultureInfo culture = null,
-            CompareOptions compareOptions = CompareOptions.Ordinal)
+            CompareOptions compareOptions = CompareOptions.OrdinalIgnoreCase)
         {
             return SubstringAfterInternal(false, self, token, out rest, include, culture, compareOptions);
         }
@@ -63,7 +63,7 @@ namespace Exader
             char token,
             bool include = false,
             CultureInfo culture = null,
-            CompareOptions compareOptions = CompareOptions.Ordinal)
+            CompareOptions compareOptions = CompareOptions.OrdinalIgnoreCase)
         {
             return SubstringAfterInternal(false, self, token, include, culture, compareOptions);
         }
@@ -76,7 +76,7 @@ namespace Exader
             out string rest,
             bool include = false,
             CultureInfo culture = null,
-            CompareOptions compareOptions = CompareOptions.Ordinal)
+            CompareOptions compareOptions = CompareOptions.OrdinalIgnoreCase)
         {
             return SubstringAfterInternal(false, self, token, out rest, include, culture, compareOptions);
         }
@@ -219,8 +219,8 @@ namespace Exader
 
             var compareInfo = culture.CompareInfo;
             var index = last
-                ? compareInfo.LastIndexOf(self, token, CompareOptions.Ordinal)
-                : compareInfo.IndexOf(self, token, CompareOptions.Ordinal);
+                ? compareInfo.LastIndexOf(self, token, compareOptions)
+                : compareInfo.IndexOf(self, token, compareOptions);
 
             if (index < 0)
             {
@@ -244,7 +244,7 @@ namespace Exader
             string token,
             bool include = false,
             CultureInfo culture = null,
-            CompareOptions compareOptions = CompareOptions.Ordinal)
+            CompareOptions compareOptions = CompareOptions.OrdinalIgnoreCase)
         {
             return SubstringAfterInternal(true, self, token, include, culture, compareOptions);
         }
@@ -257,7 +257,7 @@ namespace Exader
             out string rest,
             bool include = false,
             CultureInfo culture = null,
-            CompareOptions compareOptions = CompareOptions.Ordinal)
+            CompareOptions compareOptions = CompareOptions.OrdinalIgnoreCase)
         {
             return SubstringAfterInternal(true, self, token, out rest, include, culture, compareOptions);
         }
@@ -269,7 +269,7 @@ namespace Exader
             char token,
             bool include = false,
             CultureInfo culture = null,
-            CompareOptions compareOptions = CompareOptions.Ordinal)
+            CompareOptions compareOptions = CompareOptions.OrdinalIgnoreCase)
         {
             return SubstringAfterInternal(true, self, token, include, culture, compareOptions);
         }
@@ -282,7 +282,7 @@ namespace Exader
             out string rest,
             bool include = false,
             CultureInfo culture = null,
-            CompareOptions compareOptions = CompareOptions.Ordinal)
+            CompareOptions compareOptions = CompareOptions.OrdinalIgnoreCase)
         {
             return SubstringAfterInternal(true, self, token, out rest, include, culture, compareOptions);
         }
@@ -294,7 +294,7 @@ namespace Exader
             string token,
             bool include = false,
             CultureInfo culture = null,
-            CompareOptions compareOptions = CompareOptions.Ordinal)
+            CompareOptions compareOptions = CompareOptions.OrdinalIgnoreCase)
         {
             var result = SubstringAfterInternal(true, self, token, include, culture, compareOptions);
             return result == string.Empty ? self : result;
@@ -307,7 +307,7 @@ namespace Exader
             char token,
             bool include = false,
             CultureInfo culture = null,
-            CompareOptions compareOptions = CompareOptions.Ordinal)
+            CompareOptions compareOptions = CompareOptions.OrdinalIgnoreCase)
         {
             var result = SubstringAfterInternal(true, self, token, include, culture, compareOptions);
             return result == string.Empty ? self : result;
@@ -321,7 +321,7 @@ namespace Exader
             out string rest,
             bool include = false,
             CultureInfo culture = null,
-            CompareOptions compareOptions = CompareOptions.Ordinal)
+            CompareOptions compareOptions = CompareOptions.OrdinalIgnoreCase)
         {
             var result = SubstringAfterInternal(true, self, token, out rest, include, culture, compareOptions);
             if (result == string.Empty)
@@ -341,7 +341,7 @@ namespace Exader
             out string rest,
             bool include = false,
             CultureInfo culture = null,
-            CompareOptions compareOptions = CompareOptions.Ordinal)
+            CompareOptions compareOptions = CompareOptions.OrdinalIgnoreCase)
         {
             var result = SubstringAfterInternal(true, self, token, out rest, include, culture, compareOptions);
             if (result == string.Empty)
@@ -360,7 +360,7 @@ namespace Exader
             string token,
             bool include = false,
             CultureInfo culture = null,
-            CompareOptions compareOptions = CompareOptions.Ordinal)
+            CompareOptions compareOptions = CompareOptions.OrdinalIgnoreCase)
         {
             var result = SubstringAfterInternal(false, self, token, include, culture, compareOptions);
             return result == string.Empty ? self : result;
@@ -374,7 +374,7 @@ namespace Exader
             out string rest,
             bool include = false,
             CultureInfo culture = null,
-            CompareOptions compareOptions = CompareOptions.Ordinal)
+            CompareOptions compareOptions = CompareOptions.OrdinalIgnoreCase)
         {
             var result = SubstringAfterInternal(false, self, token, out rest, include, culture, compareOptions);
             if (result == string.Empty)
@@ -393,7 +393,7 @@ namespace Exader
             char token,
             bool include = false,
             CultureInfo culture = null,
-            CompareOptions compareOptions = CompareOptions.Ordinal)
+            CompareOptions compareOptions = CompareOptions.OrdinalIgnoreCase)
         {
             var result = SubstringAfterInternal(false, self, token, include, culture, compareOptions);
             return result == string.Empty ? self : result;
@@ -407,7 +407,7 @@ namespace Exader
             out string rest,
             bool include = false,
             CultureInfo culture = null,
-            CompareOptions compareOptions = CompareOptions.Ordinal)
+            CompareOptions compareOptions = CompareOptions.OrdinalIgnoreCase)
         {
             var result = SubstringAfterInternal(false, self, token, out rest, include, culture, compareOptions);
             if (result == string.Empty)
@@ -426,7 +426,7 @@ namespace Exader
             string token,
             bool include = false,
             CultureInfo culture = null,
-            CompareOptions compareOptions = CompareOptions.Ordinal)
+            CompareOptions compareOptions = CompareOptions.OrdinalIgnoreCase)
         {
             return SubstringBeforeInternal(false, self, token, include, culture, compareOptions);
         }
@@ -439,7 +439,7 @@ namespace Exader
             out string rest,
             bool include = false,
             CultureInfo culture = null,
-            CompareOptions compareOptions = CompareOptions.Ordinal)
+            CompareOptions compareOptions = CompareOptions.OrdinalIgnoreCase)
         {
             return SubstringBeforeInternal(false, self, token, out rest, include, culture, compareOptions);
         }
@@ -451,7 +451,7 @@ namespace Exader
             char token,
             bool include = false,
             CultureInfo culture = null,
-            CompareOptions compareOptions = CompareOptions.Ordinal)
+            CompareOptions compareOptions = CompareOptions.OrdinalIgnoreCase)
         {
             return SubstringBeforeInternal(false, self, token, include, culture, compareOptions);
         }
@@ -464,7 +464,7 @@ namespace Exader
             out string rest,
             bool include = false,
             CultureInfo culture = null,
-            CompareOptions compareOptions = CompareOptions.Ordinal)
+            CompareOptions compareOptions = CompareOptions.OrdinalIgnoreCase)
         {
             return SubstringBeforeInternal(false, self, token, out rest, include, culture, compareOptions);
         }
@@ -635,7 +635,7 @@ namespace Exader
             string token,
             bool include = false,
             CultureInfo culture = null,
-            CompareOptions compareOptions = CompareOptions.Ordinal)
+            CompareOptions compareOptions = CompareOptions.OrdinalIgnoreCase)
         {
             return SubstringBeforeInternal(true, self, token, include, culture, compareOptions);
         }
@@ -648,7 +648,7 @@ namespace Exader
             out string rest,
             bool include = false,
             CultureInfo culture = null,
-            CompareOptions compareOptions = CompareOptions.Ordinal)
+            CompareOptions compareOptions = CompareOptions.OrdinalIgnoreCase)
         {
             return SubstringBeforeInternal(true, self, token, out rest, include, culture, compareOptions);
         }
@@ -660,7 +660,7 @@ namespace Exader
             char token,
             bool include = false,
             CultureInfo culture = null,
-            CompareOptions compareOptions = CompareOptions.Ordinal)
+            CompareOptions compareOptions = CompareOptions.OrdinalIgnoreCase)
         {
             return SubstringBeforeInternal(true, self, token, include, culture, compareOptions);
         }
@@ -673,7 +673,7 @@ namespace Exader
             out string rest,
             bool include = false,
             CultureInfo culture = null,
-            CompareOptions compareOptions = CompareOptions.Ordinal)
+            CompareOptions compareOptions = CompareOptions.OrdinalIgnoreCase)
         {
             return SubstringBeforeInternal(true, self, token, out rest, include, culture, compareOptions);
         }
@@ -685,7 +685,7 @@ namespace Exader
             string token,
             bool include = false,
             CultureInfo culture = null,
-            CompareOptions compareOptions = CompareOptions.Ordinal)
+            CompareOptions compareOptions = CompareOptions.OrdinalIgnoreCase)
         {
             var result = SubstringBeforeInternal(true, self, token, include, culture, compareOptions);
             return result == string.Empty ? self : result;
@@ -699,7 +699,7 @@ namespace Exader
             out string rest,
             bool include = false,
             CultureInfo culture = null,
-            CompareOptions compareOptions = CompareOptions.Ordinal)
+            CompareOptions compareOptions = CompareOptions.OrdinalIgnoreCase)
         {
             var result = SubstringBeforeInternal(true, self, token, out rest, include, culture, compareOptions);
             if (result == string.Empty)
@@ -718,7 +718,7 @@ namespace Exader
             char token,
             bool include = false,
             CultureInfo culture = null,
-            CompareOptions compareOptions = CompareOptions.Ordinal)
+            CompareOptions compareOptions = CompareOptions.OrdinalIgnoreCase)
         {
             var result = SubstringBeforeInternal(true, self, token, include, culture, compareOptions);
             return result == string.Empty ? self : result;
@@ -732,7 +732,7 @@ namespace Exader
             out string rest,
             bool include = false,
             CultureInfo culture = null,
-            CompareOptions compareOptions = CompareOptions.Ordinal)
+            CompareOptions compareOptions = CompareOptions.OrdinalIgnoreCase)
         {
             var result = SubstringBeforeInternal(true, self, token, out rest, include, culture, compareOptions);
             if (result == string.Empty)
@@ -751,7 +751,7 @@ namespace Exader
             string token,
             bool include = false,
             CultureInfo culture = null,
-            CompareOptions compareOptions = CompareOptions.Ordinal)
+            CompareOptions compareOptions = CompareOptions.OrdinalIgnoreCase)
         {
             var result = SubstringBeforeInternal(false, self, token, include, culture, compareOptions);
             return result == string.Empty ? self : result;
@@ -764,7 +764,7 @@ namespace Exader
             char token,
             bool include = false,
             CultureInfo culture = null,
-            CompareOptions compareOptions = CompareOptions.Ordinal)
+            CompareOptions compareOptions = CompareOptions.OrdinalIgnoreCase)
         {
             var result = SubstringBeforeInternal(false, self, token, include, culture, compareOptions);
             return result == string.Empty ? self : result;
@@ -778,7 +778,7 @@ namespace Exader
             out string rest,
             bool include = false,
             CultureInfo culture = null,
-            CompareOptions compareOptions = CompareOptions.Ordinal)
+            CompareOptions compareOptions = CompareOptions.OrdinalIgnoreCase)
         {
             var result = SubstringBeforeInternal(false, self, token, out rest, include, culture, compareOptions);
             if (result == string.Empty)
@@ -798,7 +798,7 @@ namespace Exader
             out string rest,
             bool include = false,
             CultureInfo culture = null,
-            CompareOptions compareOptions = CompareOptions.Ordinal)
+            CompareOptions compareOptions = CompareOptions.OrdinalIgnoreCase)
         {
             var result = SubstringBeforeInternal(false, self, token, out rest, include, culture, compareOptions);
             if (result == string.Empty)
