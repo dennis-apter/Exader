@@ -15,6 +15,5 @@
     <files>
         <file src="src\Exader.IO.Net45\bin\Release\Exader.IO.dll" target="lib\net45\" />
         <file src="src\Exader.IO.Net35\bin\Release\Exader.IO.dll" target="lib\net35\" />
-        <file src="src\Exader.IO.Silverlight\bin\Release\Exader.IO.dll" target="lib\sl50\" />
     </files>
 </package>

@@ -42,6 +42,15 @@ namespace Exader.IO
         }
 
         [Theory]
+        [InlineData(@"c:\d\sd\", "", @"c:\d\sd\.e")]
+        [InlineData(@"\d\f", "", @"\d\f\.e")]
+        [InlineData("", @"\d\f", @"\d\f.e")]
+        public void Combine_Or(string l, string r, string f)
+        {
+            Assert.Equal(f, (FilePath)l | r + ".e");
+        }
+
+        [Theory]
         [InlineData(@"c:\d\sd\", null)]
         [InlineData(@"\d\f", null)]
         [InlineData(null, @"\d\f")]

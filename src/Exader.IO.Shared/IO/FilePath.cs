@@ -1288,7 +1288,35 @@ namespace Exader.IO
         /// <param name="left">Базовый путь</param>
         /// <param name="right">Относительный путь</param>
         /// <returns>Комбинированный путь</returns>
+        public static FilePath operator |(FilePath left, string right)
+        {
+            if (ReferenceEquals(left, null))
+                return Parse(right);
+
+            return left.Combine(right);
+        }
+
+        /// <summary>
+        /// Комбинирует два пути — базовый и относительный.
+        /// </summary>
+        /// <param name="left">Базовый путь</param>
+        /// <param name="right">Относительный путь</param>
+        /// <returns>Комбинированный путь</returns>
         public static FilePath operator /(string left, FilePath right)
+        {
+            if (ReferenceEquals(left, null))
+                return Parse(right);
+
+            return Parse(left).Combine(right);
+        }
+
+        /// <summary>
+        /// Комбинирует два пути — базовый и относительный.
+        /// </summary>
+        /// <param name="left">Базовый путь</param>
+        /// <param name="right">Относительный путь</param>
+        /// <returns>Комбинированный путь</returns>
+        public static FilePath operator |(string left, FilePath right)
         {
             if (ReferenceEquals(left, null))
                 return Parse(right);
