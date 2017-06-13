@@ -154,14 +154,18 @@ namespace Exader.IO
         }
 
         [Theory]
-        [InlineData("\ff\ri\nl\ve\t", @"file")]
-        [InlineData("\f\r\n\v\tfile", @"file")]
-        [InlineData("file\f\r\n\v\t", @"file")]
-        [InlineData("file\f%0A%0D\v\t", @"file")]
-        [InlineData("file\f%0a%0d\v\t", @"file")]
-        public void IgnoreInvalidCharacters(string value, string result)
+        [InlineData(">f\ri\nl\ve\t")]
+        [InlineData(">\r\n\v\tfile")]
+        [InlineData("file>\r\n\v\t")]
+        [InlineData("file>%0A%0D\v\t")]
+        [InlineData("file>%0a%0d\v\t")]
+        public void InvalidCharacters(string s)
         {
-            Assert.Equal(result, FilePath.Parse(value));
+            var ex = Assert.Throws<ArgumentException>(() => FilePath.Parse(s));
+            Assert.Equal("Invalid file path character '>'.", ex.Message);
+
+            Assert.False(FilePath.TryParse(s, out var result, out var error));
+            Assert.Equal(FilePathParseErrorType.InvalidCharacter, error.ErrorType);
         }
 
         [Theory]
@@ -174,6 +178,9 @@ namespace Exader.IO
         {
             var ex = Assert.Throws<ArgumentException>(() => FilePath.Parse(s));
             Assert.Contains("xyz", ex.Message);
+            
+            Assert.False(FilePath.TryParse(s, out var result, out var error));
+            Assert.Equal(FilePathParseErrorType.InvalidDriveLetter, error.ErrorType);
         }
 
         [Theory]
@@ -183,6 +190,9 @@ namespace Exader.IO
         public void InvalidLongPathPrefix(string s)
         {
             Assert.Throws<ArgumentException>(() => FilePath.Parse(s));
+
+            Assert.False(FilePath.TryParse(s, out var result, out var error));
+            Assert.Equal(FilePathParseErrorType.InvalidLongPathPrefix, error.ErrorType);
         }
 
         [Theory]

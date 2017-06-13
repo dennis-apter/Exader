@@ -26,28 +26,40 @@ namespace Exader.IO
         InvalidDriveLetter,
         InvalidCharacter,
         InvalidLongPathPrefix,
+        NullValue,
     }
 
     public partial class FilePath
     {
-        public static bool TryParse(string value, out FilePath result) => TryParse(value, out result, FilePathStyles.None);
-        internal static bool TryParse(string value, out FilePath result, FilePathStyles styles)
+        public static bool TryParse(string value, out FilePath result) => TryParse(value, FilePathStyles.None, out result, out var error);
+        
+        public static bool TryParse(string value, out FilePath result, out FilePathError error) => TryParse(value, FilePathStyles.None, out result, out error);
+
+        internal static bool TryParse(string value, FilePathStyles styles, out FilePath result, out FilePathError error)
         {
             if (value == string.Empty)
             {
                 result = Empty;
+                error = new FilePathError(value, FilePathParseErrorType.None, 0, 0);
                 return true;
             }
 
-            if (value != null)
+            if (value == null)
+            {
+                error = new FilePathError(value, FilePathParseErrorType.NullValue, 0, 0);
+            }
+            else
             {
                 var parser = new Parser(value, false, "", styles);
                 if (parser.ErrorType == FilePathParseErrorType.None)
                 {
                     result = new FilePath(parser.DriveOrHost, parser.RootFolder, parser.Prefix, parser.Name,
                         parser.Extension, parser.IsDirectory);
+                    error = new FilePathError(value, FilePathParseErrorType.None, 0, 0);
                     return true;
                 }
+
+                error = new FilePathError(value, parser.ErrorType, parser.ErrorStart, parser.ErrorLength);
             }
 
             result = null;
@@ -55,6 +67,7 @@ namespace Exader.IO
         }
 
         public static FilePath Parse(string value) => Parse(value, FilePathStyles.None);
+
         internal static FilePath Parse(string value, FilePathStyles styles)
         {
             if (value == null)
@@ -74,7 +87,6 @@ namespace Exader.IO
                     throw new ArgumentException($"Invalid drive letter '{parser.ErrorValue}'.");
                 case FilePathParseErrorType.InvalidLongPathPrefix:
                     throw new ArgumentException($"Invalid long path prefix '{parser.ErrorValue}'.");
-                    break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -350,7 +362,10 @@ namespace Exader.IO
                         default:
                             if (IsInvalidCharacter(c))
                             {
-                                continue;
+                                _error = FilePathParseErrorType.InvalidCharacter;
+                                _errorStart = i;
+                                _errorLength = 1;
+                                return;
                             }
 
                             if (c == '%')
@@ -361,7 +376,10 @@ namespace Exader.IO
                                     i += 2;
                                     if (IsInvalidCharacter(hex))
                                     {
-                                        continue;
+                                        _error = FilePathParseErrorType.InvalidCharacter;
+                                        _errorStart = i;
+                                        _errorLength = 3;
+                                        return;
                                     }
 
                                     c = hex;
@@ -741,13 +759,30 @@ namespace Exader.IO
             public string Name => _name;
             public string Extension => _extension;
             public string DirectoryPath => _isDirectory ? _prefix + _name + _extension + "\\" : _prefix;
-
             public bool IsDirectory => _isDirectory;
-
             public string ErrorValue => _originalString.Substring(_errorStart, _errorLength);
+            public int ErrorStart => _errorStart;
+            public int ErrorLength => _errorLength;
 
             public override string ToString() => _originalString;
         }
+    }
+
+    public struct FilePathError
+    {
+        public FilePathError(string originalValue, FilePathParseErrorType errorType, int start, int length)
+        {
+            OriginalValue = originalValue;
+            ErrorType = errorType;
+            Start = start;
+            Length = length;
+        }
+
+        public FilePathParseErrorType ErrorType { get; }
+        public string ErrorValue => OriginalValue.Substring(Start, Length);
+        public string OriginalValue { get; }
+        public int Start { get; }
+        public int Length { get; }
     }
 }
 
