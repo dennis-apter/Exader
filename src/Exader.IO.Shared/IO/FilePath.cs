@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using JetBrains.Annotations;
@@ -21,28 +20,16 @@ namespace Exader.IO
         public static readonly FilePath RelativeRoot = new FilePath("", "\\", "", "", "", false);
 
         /// <summary>
-        /// Storing drive letter or server computer name of shared folder.
+        ///     Storing drive letter or server computer name of shared folder.
         /// </summary>
-        [NotNull]
-        private readonly string _driveOrHost;
+        [NotNull] private readonly string _driveOrHost;
 
-        [NotNull]
-        private readonly string _extension;
-
-        [NotNull]
-        private readonly string _name;
-
-        [NotNull]
-        private readonly string _prefix;
-
-        [NotNull]
-        private readonly string _path;
+        [NotNull] private readonly string _path;
 
         /// <summary>
-        /// Storing name of shared folder or root directory.
+        ///     Storing name of shared folder or root directory.
         /// </summary>
-        [NotNull]
-        private readonly string _rootFolder;
+        [NotNull] private readonly string _rootFolder;
 
         private bool _isDirectory = true;
 
@@ -50,27 +37,28 @@ namespace Exader.IO
 
 
         /// <summary>
-        /// Создает экземпляр <see cref="FilePath"/>
-        /// для описания фалового пути к текущей директории.
+        ///     Создает экземпляр <see cref="FilePath" />
+        ///     для описания фалового пути к текущей директории.
         /// </summary>
         [DebuggerStepThrough]
         public FilePath()
         {
             _driveOrHost = "";
             _rootFolder = "";
-            _prefix = "";
-            _name = "";
-            _extension = "";
+            Prefix = "";
+            NameWithoutExtension = "";
+            Extension = "";
             _path = "";
         }
 
-        private FilePath(string driveOrHost, string rootFolder, string prefix, string name, string extension, bool isDirectory)
+        private FilePath(string driveOrHost, string rootFolder, string prefix, string name, string extension,
+            bool isDirectory)
         {
             _driveOrHost = driveOrHost;
             _rootFolder = rootFolder;
-            _prefix = prefix;
-            _name = name;
-            _extension = extension;
+            Prefix = prefix;
+            NameWithoutExtension = name;
+            Extension = extension;
             _isDirectory = isDirectory;
 
             _path = CombinePath(driveOrHost, rootFolder, prefix, name, extension, isDirectory);
@@ -83,28 +71,24 @@ namespace Exader.IO
                 _parent = parent;
                 _driveOrHost = parent._driveOrHost;
                 _rootFolder = parent._rootFolder;
-                _prefix = parent.DirectoryPath;
+                Prefix = parent.DirectoryPath;
             }
             else
             {
                 _driveOrHost = "";
                 _rootFolder = "";
-                _prefix = "";
+                Prefix = "";
             }
 
-            _name = name;
-            _extension = extension;
+            NameWithoutExtension = name;
+            Extension = extension;
             _isDirectory = isDirectory;
 
-            _path = CombinePath(_driveOrHost, _rootFolder, _prefix, name, extension, isDirectory);
+            _path = CombinePath(_driveOrHost, _rootFolder, Prefix, name, extension, isDirectory);
         }
 
-        private static string CombinePath(string driveOrHost, string rootFolder, string prefix, string name, string extension, bool isDirectory)
-        {
-            var trailingSlash = isDirectory && (name != "" || extension != "") ? "\\" : "";
-            var path = driveOrHost + rootFolder + prefix + name + extension + trailingSlash;
-            return path;// == "" ? "." : path;
-        }
+        [Obsolete("Use ToAbsoluteString() or ToAbsolute() method instead", true)]
+        public string AbsolutePath => ToAbsoluteString();
 
         public string DirectoryPath
         {
@@ -112,82 +96,88 @@ namespace Exader.IO
             {
                 var rootLength = _driveOrHost.Length + _rootFolder.Length;
                 return _isDirectory && _path.Length > rootLength
-                    ? _prefix + _name + _extension + "\\"
-                    : _prefix;
+                    ? Prefix + NameWithoutExtension + Extension + "\\"
+                    : Prefix;
             }
         }
 
         public string Drive => IsLocal ? _driveOrHost : "";
-        public char? DriveLetter => IsLocal ? (char?)_driveOrHost[0] : null;
+        public char? DriveLetter => IsLocal ? (char?) _driveOrHost[0] : null;
 
         public string DriveOrHost => _driveOrHost;
-        public string Extension => _extension;
+
+        [NotNull]
+        public string Extension { get; }
+
+        [Obsolete("Use ToString() method instead", true)]
+        public string FullPath => ToString();
+
         public bool HasDriveOrHost => _driveOrHost != "";
         public bool HasRootFolder => _rootFolder != "";
         public string Host => IsNetwork ? _driveOrHost : "";
 
         /// <summary>
-        ///  Указывает на то, что путь является абсолютным и обладает именем диска.
+        ///     Указывает на то, что путь является абсолютным и обладает именем диска.
         /// </summary>
         /// <example>\</example>
         public bool IsAbsolute => _driveOrHost != "" && _rootFolder != "";
 
-        public bool IsCurrent => _rootFolder == "" && _prefix == "" && _name == "" && _extension == "";
+        public bool IsCurrent => _rootFolder == "" && Prefix == "" && NameWithoutExtension == "" && Extension == "";
 
-        public bool IsDirectory => _isDirectory || (_name == "" && _extension == "");
+        public bool IsDirectory => _isDirectory || NameWithoutExtension == "" && Extension == "";
+
+        public bool IsExternal => NameWithoutExtension == ".." || Prefix.StartsWith("..");
 
         public bool IsLocal => _driveOrHost.Length == 2 && _driveOrHost[1] == ':';
         public bool IsNetwork => 2 < _driveOrHost.Length && _driveOrHost[0] == '\\';
 
-        public bool IsExternal => _name == ".." || _prefix.StartsWith("..");
-
         /// <summary>
-        /// Relative or Absolute
+        ///     Relative or Absolute
         /// </summary>
-        public bool IsRoot
-        {
-            get
-            {
-                return _rootFolder != ""
-                    && _prefix == ""
-                    && _name == ""
-                    && _extension == "";
-            }
-        }
+        public bool IsRoot => _rootFolder != ""
+                              && Prefix == ""
+                              && NameWithoutExtension == ""
+                              && Extension == "";
 
-        public string Name => _name + _extension;
-        public string NameWithoutExtension => _name;
+        public string Name => NameWithoutExtension + Extension;
+
+        [NotNull]
+        public string NameWithoutExtension { get; }
 
         /// <summary>
-        ///  Возвращает путь верхнего уровня.
+        ///     Возвращает путь верхнего уровня.
         /// </summary>
         [CanBeNull]
         public FilePath Parent
         {
             get
             {
-                if (_parent != null || (_name == "" && _extension == ""))
-                    return _parent;
-
-                if (_prefix != "")
+                if (_parent != null || NameWithoutExtension == "" && Extension == "")
                 {
-                    if (_prefix.Length < 2)
-                        throw new InvalidOperationException($"Invalid file path.");
+                    return _parent;
+                }
+
+                if (Prefix != "")
+                {
+                    if (Prefix.Length < 2)
+                    {
+                        throw new InvalidOperationException("Invalid file path.");
+                    }
 
                     string prefix;
                     string fullName;
                     string name;
                     string ext;
-                    var i = _prefix.LastIndexOf('\\', _prefix.Length - 2);
+                    var i = Prefix.LastIndexOf('\\', Prefix.Length - 2);
                     if (i == -1)
                     {
-                        fullName = _prefix.Substring(0, _prefix.Length - 1);
+                        fullName = Prefix.Substring(0, Prefix.Length - 1);
                         prefix = "";
                     }
                     else
                     {
-                        fullName = _prefix.Substring(i + 1, _prefix.Length - i - 2);
-                        prefix = _prefix.Substring(0, i + 1);
+                        fullName = Prefix.Substring(i + 1, Prefix.Length - i - 2);
+                        prefix = Prefix.Substring(0, i + 1);
                     }
 
                     if (fullName == "..")
@@ -212,99 +202,72 @@ namespace Exader.IO
             }
         }
 
-        public string Prefix => _prefix;
+        [NotNull]
+        public string Prefix { get; }
+
         public string RootFolder => _rootFolder;
 
-        public FilePath Directory(string name)
-        {
-            return Item(name, true);
-        }
+        #region IEquatable<FilePath> Members
 
-        public FilePath File(string name)
+        /// <inheritdoc />
+        /// <summary>
+        ///     Возвращает результат сравнения с заданным путем.
+        ///     Сравнение произодится без учёта регистра и с инвариантной культурой.
+        /// </summary>
+        /// <returns></returns>
+        public bool Equals(FilePath other)
         {
-            return Item(name, false);
-        }
+            if (ReferenceEquals(null, other))
+            {
+                return false;
+            }
 
-        private FilePath Item(string name, bool directory)
-        {
-            if (string.IsNullOrEmpty(name))
+            if (ReferenceEquals(this, other))
             {
-                throw new ArgumentException(nameof(name));
+                return true;
             }
-            
-            string ext = "";
-            int pos = name.LastIndexOf('.');
-            if (0 == pos)
-            {
-                ext = name;
-                name = "";
-            }
-            else if (0 < pos)
-            {
-                ext = name.Substring(pos);
-                name = name.Substring(0, pos);
-            }
-            
-            var result = new FilePath(_driveOrHost, _rootFolder, DirectoryPath, name, ext, directory);
-            return result;
-        }
 
-        public string NameWithoutExtensions(string ext)
-        {
-            if (!string.IsNullOrEmpty(ext))
+            if (_isDirectory != other._isDirectory)
             {
-                var result = NameWithoutExtensionsCore(ext);
-                if (result != null)
+                var delta = _path.Length - other._path.Length;
+                if (delta == 1)
                 {
-                    return result;
+                    return _path.StartsWith(other._path, StringComparison.OrdinalIgnoreCase) && _isDirectory;
                 }
-            }
 
-            return Name;
-        }
-
-        public string NameWithoutExtensions(params string[] extensions)
-        {
-            return NameWithoutExtensions((IEnumerable<string>)extensions);
-        }
-
-        public string NameWithoutExtensions(IEnumerable<string> extensions)
-        {
-            if (extensions != null)
-            {
-                foreach (var ext in extensions)
+                if (delta == -1)
                 {
-                    var result = NameWithoutExtensionsCore(ext);
-                    if (result != null)
-                    {
-                        return result;
-                    }
+                    return other._path.StartsWith(_path, StringComparison.OrdinalIgnoreCase) && other._isDirectory;
                 }
+
+                return false;
             }
 
-            return Name;
+            return _path.Equals(other._path, StringComparison.OrdinalIgnoreCase);
         }
 
-        private string NameWithoutExtensionsCore(string ext)
-        {
-            if (ext[0] != '.')
-                ext = '.' + ext;
+        #endregion
 
-            if (ext.EndsWithIgnoreCase(_extension))
+        public static string Combine(string left, string rigth)
+        {
+            if (left == null)
             {
-                var subExt = ext.RemoveRight(_extension.Length);
-                if (_name.EndsWithIgnoreCase(subExt))
-                {
-                    return _name.RemoveRight(subExt.Length);
-                }
+                throw new ArgumentNullException(nameof(left));
             }
 
-            return null;
+            if (rigth == null)
+            {
+                throw new ArgumentNullException(nameof(rigth));
+            }
+
+            var baseFilePath = Parse(left);
+            var filePath = baseFilePath.Combine(rigth);
+            return filePath.ToString();
         }
 
         public static bool IsDriveLetter(char letter)
         {
-            return ('A' <= letter && letter <= 'Z') || ('a' <= letter && letter <= 'z');
+            return 'A' <= letter && letter <= 'Z' || 'a' <= letter && letter <= 'z';
         }
 
 #if !SILVERLIGHT && !NET35
@@ -315,21 +278,231 @@ namespace Exader.IO
             return ReferenceEquals(filePath, null) || filePath._path == "";
         }
 
+        /// <summary>
+        ///     Комбинирует два пути — базовый и относительный.
+        /// </summary>
+        /// <param name="left">Базовый путь</param>
+        /// <param name="right">Относительный путь</param>
+        /// <returns>Комбинированный путь</returns>
+        public static FilePath operator |(FilePath left, string right)
+        {
+            if (ReferenceEquals(left, null))
+            {
+                return Parse(right);
+            }
+
+            return left.Combine(right);
+        }
+
+        /// <summary>
+        ///     Комбинирует два пути — базовый и относительный.
+        /// </summary>
+        /// <param name="left">Базовый путь</param>
+        /// <param name="right">Относительный путь</param>
+        /// <returns>Комбинированный путь</returns>
+        public static FilePath operator |(string left, FilePath right)
+        {
+            if (ReferenceEquals(left, null))
+            {
+                return Parse(right);
+            }
+
+            return Parse(left).Combine(right);
+        }
+
+        /// <summary>
+        ///     Комбинирует два пути — базовый и относительный.
+        /// </summary>
+        /// <param name="left">Базовый путь</param>
+        /// <param name="right">Относительный путь</param>
+        /// <returns>Комбинированный путь</returns>
+        public static FilePath operator /(FilePath left, FilePath right)
+        {
+            if (ReferenceEquals(left, null))
+            {
+                return right;
+            }
+
+            return left.Combine(right);
+        }
+
+        /// <summary>
+        ///     Комбинирует два пути — базовый и относительный.
+        /// </summary>
+        /// <param name="left">Базовый путь</param>
+        /// <param name="right">Относительный путь</param>
+        /// <returns>Комбинированный путь</returns>
+        public static FilePath operator /(FilePath left, string right)
+        {
+            if (ReferenceEquals(left, null))
+            {
+                return Parse(right);
+            }
+
+            return left.Combine(right);
+        }
+
+        /// <summary>
+        ///     Комбинирует два пути — базовый и относительный.
+        /// </summary>
+        /// <param name="left">Базовый путь</param>
+        /// <param name="right">Относительный путь</param>
+        /// <returns>Комбинированный путь</returns>
+        public static FilePath operator /(string left, FilePath right)
+        {
+            if (ReferenceEquals(left, null))
+            {
+                return Parse(right);
+            }
+
+            return Parse(left).Combine(right);
+        }
+
+        /// <summary>
+        ///     Возвращает результат сравнения с двух путей.
+        ///     Сравнение произодится без учёта регистра и с инвариантной культурой.
+        /// </summary>
+        public static bool operator ==(FilePath left, FilePath right)
+        {
+            return Equals(left, right);
+        }
+
+        /// <summary>
+        ///     Возвращает результат сравнения с двух путей.
+        ///     Сравнение произодится без учёта регистра и с инвариантной культурой.
+        /// </summary>
+        public static bool operator ==(FilePath left, string right)
+        {
+            if (ReferenceEquals(left, null))
+            {
+                return right == null;
+            }
+
+            return Equals(left.ToString(), right);
+        }
+
+        /// <summary>
+        ///     Возвращает результат сравнения с двух путей.
+        ///     Сравнение произодится без учёта регистра и с инвариантной культурой.
+        /// </summary>
+        public static bool operator ==(string left, FilePath right)
+        {
+            if (ReferenceEquals(right, null))
+            {
+                return left == null;
+            }
+
+            return Equals(left, right.ToString());
+        }
+
+        public static explicit operator FilePath(string path)
+        {
+            return path != null ? Parse(path) : null;
+        }
+
+        public static implicit operator string(FilePath path)
+        {
+            return path?.ToString();
+        }
+
+        /// <summary>
+        ///     Возвращает результат сравнения двух путей.
+        ///     Сравнение произодится без учёта регистра и с инвариантной культурой.
+        /// </summary>
+        public static bool operator !=(FilePath left, FilePath right)
+        {
+            return !Equals(left, right);
+        }
+
+        /// <summary>
+        ///     Возвращает результат сравнения двух путей.
+        ///     Сравнение произодится без учёта регистра и с инвариантной культурой.
+        /// </summary>
+        public static bool operator !=(FilePath left, string right)
+        {
+            if (ReferenceEquals(left, null))
+            {
+                return right != null;
+            }
+
+            return !Equals(left.ToString(), right);
+        }
+
+        /// <summary>
+        ///     Возвращает результат сравнения двух путей.
+        ///     Сравнение произодится без учёта регистра и с инвариантной культурой.
+        /// </summary>
+        public static bool operator !=(string left, FilePath right)
+        {
+            if (ReferenceEquals(right, null))
+            {
+                return left != null;
+            }
+
+            return !Equals(left, right.ToString());
+        }
+
+        /// <summary>
+        ///     Создает относительный путь на основе базового из полного.
+        /// </summary>
+        /// <param name="absolutePath">Полный путь</param>
+        /// <param name="basePath">Базовый путь</param>
+        /// <returns>Относительный путь</returns>
+        public static FilePath operator %(FilePath absolutePath, FilePath basePath)
+        {
+            if (ReferenceEquals(absolutePath, null))
+            {
+                return basePath;
+            }
+
+            return absolutePath.ToRelative(basePath);
+        }
+
+        /// <summary>
+        ///     Создает относительный путь на основе базового из полного.
+        /// </summary>
+        /// <param name="absolutePath">Полный путь</param>
+        /// <param name="basePath">Базовый путь</param>
+        /// <returns>Относительный путь</returns>
+        public static FilePath operator %(FilePath absolutePath, string basePath)
+        {
+            if (ReferenceEquals(absolutePath, null))
+            {
+                return Parse(basePath);
+            }
+
+            return absolutePath.ToRelative(Parse(basePath));
+        }
+
+        /// <summary>
+        ///     Создает относительный путь на основе базового из полного.
+        /// </summary>
+        /// <param name="absolutePath">Полный путь</param>
+        /// <param name="basePath">Базовый путь</param>
+        /// <returns>Относительный путь</returns>
+        public static FilePath operator %(string absolutePath, FilePath basePath)
+        {
+            if (absolutePath == null)
+            {
+                return basePath;
+            }
+
+            return Parse(absolutePath).ToRelative(basePath);
+        }
+
         public static string SanitizeFileName(string fileName, char? replacement = null)
         {
             fileName = fileName.Trim();
             var sb = new StringBuilder();
-            for (int index = 0; index < fileName.Length; index++)
+            for (var index = 0; index < fileName.Length; index++)
             {
                 var c = fileName[index];
-                foreach (char invalidFileNameChar in Path.GetInvalidFileNameChars())
-                {
+                foreach (var invalidFileNameChar in Path.GetInvalidFileNameChars())
                     if (c.Equals(invalidFileNameChar))
                     {
                         c = replacement ?? char.MinValue;
                         break;
                     }
-                }
 
                 if (c != char.MinValue)
                 {
@@ -345,20 +518,18 @@ namespace Exader.IO
             fileName = fileName.Trim();
             var sb = new StringBuilder();
             var parts = fileName.Split(Path.DirectorySeparatorChar);
-            for (int i = 0; i < parts.Length; i++)
+            for (var i = 0; i < parts.Length; i++)
             {
                 var part = parts[i].Trim();
-                for (int index = 0; index < part.Length; index++)
+                for (var index = 0; index < part.Length; index++)
                 {
                     var c = part[index];
-                    foreach (char invalidFileNameChar in Path.GetInvalidFileNameChars())
-                    {
+                    foreach (var invalidFileNameChar in Path.GetInvalidFileNameChars())
                         if (c.Equals(invalidFileNameChar))
                         {
                             c = replacement ?? char.MinValue;
                             break;
                         }
-                    }
 
                     if (c != char.MinValue)
                     {
@@ -368,168 +539,6 @@ namespace Exader.IO
             }
 
             return sb.ToString();
-        }
-
-        [Obsolete("Use ToAbsoluteString() or ToAbsolute() method instead", true)]
-        public string AbsolutePath => ToAbsoluteString();
-        
-        [Obsolete("Use ToString() method instead", true)]
-        public string FullPath => ToString();
-
-        public FilePath ToAbsolute()
-        {
-            return IsAbsolute ? this : Parse(ToAbsoluteString());
-        }
-
-        public string ToAbsoluteString()
-        {
-            if (IsAbsolute)
-                return _path;
-
-            return Path.GetFullPath(_path == "" ? "." : _path);
-        }
-
-        private bool TryToRelativeCore(string basePath, string baseRoot, string baseLocalPath, out FilePath relativePath)
-        {
-            if (_driveOrHost != baseRoot)
-            {
-                relativePath = null;
-                return false;
-            }
-
-            var path = WithoutRootFolderAsString();
-            var result = GetRelativePath(path, baseLocalPath);
-
-            // TODO Make the result FilePath without parsing
-            relativePath = Parse(result);
-            return true;
-        }
-
-        private bool TryToRelativeStringCore(string basePath, string baseRoot, string baseLocalPath, out string relativePath)
-        {
-            if (_driveOrHost != baseRoot)
-            {
-                relativePath = null;
-                return false;
-            }
-
-            var path = WithoutRootFolderAsString();
-            relativePath = GetRelativePath(path, baseLocalPath);
-            return true;
-        }
-
-        private static string GetRelativePath(string path, string basePath)
-        {
-            var basePathParts = basePath.SplitAndRemoveEmpties(Path.DirectorySeparatorChar);
-            var pathParts = path.Split(Path.DirectorySeparatorChar);
-            int partsCount = Math.Min(basePathParts.Length, pathParts.Length);
-            int samePartCount = 0;
-            for (int i = 0; i < partsCount; i++)
-            {
-                if (!basePathParts[i].EqualsIgnoreCase(pathParts[i]))
-                {
-                    break;
-                }
-
-                samePartCount++;
-            }
-
-            if (0 == samePartCount)
-            {
-                return "..\\".Repeat(basePathParts.Length) + path;
-            }
-
-            var relativePath = new StringBuilder();
-            for (int i = samePartCount; i < basePathParts.Length; i++)
-            {
-                relativePath.Append("..");
-                relativePath.Append(Path.DirectorySeparatorChar);
-            }
-
-            for (int i = samePartCount; i < pathParts.Length; i++)
-            {
-                if (samePartCount < i)
-                {
-                    relativePath.Append(Path.DirectorySeparatorChar);
-                }
-
-                relativePath.Append(pathParts[i]);
-            }
-
-            return relativePath.ToString();
-        }
-
-        public FilePath ToRelative(FilePath basePath)
-        {
-            FilePath result;
-            if (TryToRelative(basePath, out result))
-            {
-                return result;
-            }
-
-            throw new ArgumentException("Invalid base path.", nameof(basePath));
-        }
-
-        public FilePath ToRelative(string basePath)
-        {
-            return ToRelative(Parse(basePath));
-        }
-
-        public string ToRelativeString(FilePath basePath)
-        {
-            string result;
-            if (TryToRelativeString(basePath, out result))
-            {
-                return result;
-            }
-
-            throw new ArgumentException("Invalid base path.", nameof(basePath));
-        }
-
-        public string ToRelativeString(string basePath)
-        {
-            return ToRelativeString(Parse(basePath));
-        }
-
-        public bool TryToRelative(FilePath basePath, out FilePath relativePath)
-        {
-            var blp = basePath.WithoutRootFolderAsString();
-            return TryToRelativeCore(basePath.ToString(), basePath._driveOrHost, blp, out relativePath);
-        }
-
-        public bool TryToRelative(string basePath, out FilePath relativePath)
-        {
-            string br;
-            string bf;
-            var blp = CanonicalizePath(basePath, out br, out bf);
-            return TryToRelativeCore(basePath, br + bf, blp, out relativePath);
-        }
-
-        public bool TryToRelativeString(FilePath basePath, out string relativePath)
-        {
-            var blp = basePath.WithoutRootFolderAsString();
-            return TryToRelativeStringCore(basePath.ToString(), basePath._driveOrHost, blp, out relativePath);
-        }
-
-        public bool TryToRelativeString(string basePath, out string relativePath)
-        {
-            string br;
-            string bf;
-            var blp = CanonicalizePath(basePath, out br, out bf);
-            return TryToRelativeStringCore(basePath, br + bf, blp, out relativePath);
-        }
-
-        public static string Combine(string left, string rigth)
-        {
-            if (left == null)
-                throw new ArgumentNullException(nameof(left));
-
-            if (rigth == null)
-                throw new ArgumentNullException(nameof(rigth));
-
-            var baseFilePath = Parse(left);
-            var filePath = baseFilePath.Combine(rigth);
-            return filePath.ToString();
         }
 
         public static bool TryCombine(string left, string right, out string result)
@@ -549,45 +558,143 @@ namespace Exader.IO
             return false;
         }
 
+        public static bool TryRelate(string a, string b, out FilePathRelation relation)
+        {
+            return Parse(a).TryRelateTo(Parse(b), out relation);
+        }
+
+        private static string CombinePath(string driveOrHost, string rootFolder, string prefix, string name,
+            string extension, bool isDirectory)
+        {
+            var trailingSlash = isDirectory && (name != "" || extension != "") ? "\\" : "";
+            var path = driveOrHost + rootFolder + prefix + name + extension + trailingSlash;
+            return path; // == "" ? "." : path;
+        }
+
+        private static string GetRelativePath(string path, string basePath)
+        {
+            var basePathParts = basePath.SplitAndRemoveEmpties(Path.DirectorySeparatorChar);
+            var pathParts = path.Split(Path.DirectorySeparatorChar);
+            var partsCount = Math.Min(basePathParts.Length, pathParts.Length);
+            var samePartCount = 0;
+            for (var i = 0; i < partsCount; i++)
+            {
+                if (!basePathParts[i].EqualsIgnoreCase(pathParts[i]))
+                {
+                    break;
+                }
+
+                samePartCount++;
+            }
+
+            if (0 == samePartCount)
+            {
+                return "..\\".Repeat(basePathParts.Length) + path;
+            }
+
+            var relativePath = new StringBuilder();
+            for (var i = samePartCount; i < basePathParts.Length; i++)
+            {
+                relativePath.Append("..");
+                relativePath.Append(Path.DirectorySeparatorChar);
+            }
+
+            for (var i = samePartCount; i < pathParts.Length; i++)
+            {
+                if (samePartCount < i)
+                {
+                    relativePath.Append(Path.DirectorySeparatorChar);
+                }
+
+                relativePath.Append(pathParts[i]);
+            }
+
+            return relativePath.ToString();
+        }
+
+        public FilePath AsDirectory()
+        {
+            if (IsDirectory)
+            {
+                return this;
+            }
+
+            return new FilePath(_driveOrHost, _rootFolder, Prefix, NameWithoutExtension, Extension, true);
+        }
+
+        public FilePath AsRooted()
+        {
+            if (HasRootFolder)
+            {
+                return this;
+            }
+
+            return new FilePath(_driveOrHost, "\\", Prefix, NameWithoutExtension, Extension, _isDirectory);
+        }
+
         public FilePath Combine(FilePath other)
         {
             if (other == null)
+            {
                 throw new ArgumentNullException(nameof(other));
+            }
 
             if (other.DriveOrHost != "")
-                throw new ArgumentException("Absolute path cannot be in right part of paths combination.", nameof(other));
+            {
+                throw new ArgumentException("Absolute path cannot be in right part of paths combination.",
+                    nameof(other));
+            }
 
             if (other.IsCurrent)
+            {
                 return this;
+            }
 
             if (other.RootFolder != "")
-                return new FilePath(_driveOrHost, other.RootFolder, other.Prefix, other.Name, other.Extension, other.IsDirectory);
+            {
+                return new FilePath(_driveOrHost, other.RootFolder, other.Prefix, other.Name, other.Extension,
+                    other.IsDirectory);
+            }
 
             var basePath = WithoutRootFolderAsString();
             if (basePath != "" && !_isDirectory)
+            {
                 basePath += "\\";
+            }
 
             var com = new Parser(basePath + other.Prefix, true, _rootFolder);
-            return new FilePath(_driveOrHost, _rootFolder, com.DirectoryPath, other.NameWithoutExtension, other.Extension, other.IsDirectory);
+            return new FilePath(_driveOrHost, _rootFolder, com.DirectoryPath, other.NameWithoutExtension,
+                other.Extension, other.IsDirectory);
         }
 
         public FilePath Combine(string other)
         {
             if (other == null)
+            {
                 throw new ArgumentNullException(nameof(other));
+            }
 
             if (other == "")
+            {
                 return this;
+            }
 
             var rel = new Parser(other, false, "");
             if (rel.ErrorType != FilePathParseErrorType.None)
+            {
                 throw new ArgumentException("Invalid file path.", nameof(other));
+            }
 
             if (rel.DriveOrHost != "")
-                throw new ArgumentException("Absolute path cannot be in right part of paths combination.", nameof(other));
+            {
+                throw new ArgumentException("Absolute path cannot be in right part of paths combination.",
+                    nameof(other));
+            }
 
             if (rel.RootFolder != "")
+            {
                 return new FilePath(_driveOrHost, rel.RootFolder, rel.Prefix, rel.Name, rel.Extension, rel.IsDirectory);
+            }
 
             var value = WithoutRootFolderAsString();
             if (value == "")
@@ -625,6 +732,274 @@ namespace Exader.IO
             return TryCombine(other, out result) ? result : this;
         }
 
+        public FilePath Directory(string name)
+        {
+            return Item(name, true);
+        }
+
+        /// <summary>
+        ///     Возвращает результат сравнения с заданным путем.
+        ///     Сравнение произодится без учёта регистра и с инвариантной культурой.
+        /// </summary>
+        /// <returns></returns>
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj))
+            {
+                return false;
+            }
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+
+            var a = obj as FilePath;
+            return a != null && Equals(a);
+        }
+
+        public FilePath File(string name)
+        {
+            return Item(name, false);
+        }
+
+        public override int GetHashCode()
+        {
+            return _path.GetHashCode();
+        }
+
+        public bool IsAncestorOf(params FilePath[] paths)
+        {
+            return IsAncestorOf((IEnumerable<FilePath>) paths);
+        }
+
+        public bool IsAncestorOf(IEnumerable<FilePath> paths)
+        {
+            if (paths == null)
+            {
+                return false;
+            }
+
+            foreach (var path in paths)
+                if (!IsAncestorOf(path))
+                {
+                    return false;
+                }
+
+            return true;
+        }
+
+        public bool IsAncestorOf(FilePath other)
+        {
+            FilePathRelation rel;
+            return TryRelateTo(other, out rel)
+                   && (rel == FilePathRelation.Parent || rel == FilePathRelation.ImplicitParent);
+        }
+
+        public bool IsDescendantOf(FilePath other)
+        {
+            FilePathRelation rel;
+            return TryRelateTo(other, out rel)
+                   && (rel == FilePathRelation.Child || rel == FilePathRelation.ImplicitChild);
+        }
+
+        public string NameWithoutExtensions(string ext)
+        {
+            if (!string.IsNullOrEmpty(ext))
+            {
+                var result = NameWithoutExtensionsCore(ext);
+                if (result != null)
+                {
+                    return result;
+                }
+            }
+
+            return Name;
+        }
+
+        public string NameWithoutExtensions(params string[] extensions)
+        {
+            return NameWithoutExtensions((IEnumerable<string>) extensions);
+        }
+
+        public string NameWithoutExtensions(IEnumerable<string> extensions)
+        {
+            if (extensions != null)
+            {
+                foreach (var ext in extensions)
+                {
+                    var result = NameWithoutExtensionsCore(ext);
+                    if (result != null)
+                    {
+                        return result;
+                    }
+                }
+            }
+
+            return Name;
+        }
+
+        public FilePath SubpathAfter(int offset = 1)
+        {
+            var parents = Prefix.SplitAndRemoveEmpties(Path.DirectorySeparatorChar);
+            if (parents.Length < offset)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(offset), offset,
+                    $"Path {this} does not contains a parent segments by offset greater than {offset}.");
+            }
+
+            var newParentPath = "";
+            if (offset < parents.Length)
+            {
+                newParentPath = string.Join(Path.DirectorySeparatorChar.ToString(), parents.Subarray(offset)) +
+                                Path.DirectorySeparatorChar;
+            }
+
+            return new FilePath("", "", newParentPath, NameWithoutExtension, Extension, _isDirectory);
+        }
+
+        public FilePath SubpathBefore(string subpath, bool include = false)
+        {
+            if (subpath == null)
+            {
+                throw new ArgumentNullException(nameof(subpath));
+            }
+
+            subpath = subpath.Replace('/', '\\').Trim('\\');
+
+            var s = Prefix.GetIndexedEnumerator();
+            var t = subpath.GetIndexedEnumerator();
+
+            if (!t.MoveNext())
+            {
+                return include ? this : null;
+            }
+
+            var start = s.MoveWith(ref t);
+            var matched = t.IsFinished;
+            var matchedByPrefix = matched;
+            if (!matched)
+            {
+                if (NameWithoutExtension != "")
+                {
+                    s = NameWithoutExtension.GetIndexedEnumerator();
+                    s.MoveWith(ref t);
+                    matched = s.IsFinished && t.IsFinished;
+                }
+
+                if (Extension != "")
+                {
+                    matched = false;
+                    if (!t.IsFinished)
+                    {
+                        s = Extension.GetIndexedEnumerator();
+                        s.MoveWith(ref t);
+                        matched = s.IsFinished && t.IsFinished;
+                    }
+                }
+            }
+
+            if (!matched)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(subpath), subpath,
+                    $"Path {this} does not contain a subpath {subpath}.");
+            }
+
+            if (include)
+            {
+                if (s.IsFinished)
+                {
+                    return matchedByPrefix ? Parent : this;
+                }
+
+                start = s.Index + 1;
+            }
+            else if (start < 0)
+            {
+                return Parent;
+            }
+
+            if (start == 0)
+            {
+                return new FilePath(_driveOrHost, _rootFolder, "", "", "", true);
+            }
+
+            string rest;
+            var newPrefix = Prefix.Substring(0, start - 1);
+            var newName = newPrefix.SubstringAfterLast('\\', out rest);
+            if (newName == "")
+            {
+                newName = newPrefix;
+                newPrefix = "";
+            }
+            else
+            {
+                newPrefix = rest + "\\";
+            }
+
+            rest = newName.SubstringAfterLast('.', out newName, true);
+            return new FilePath(_driveOrHost, _rootFolder, newPrefix, newName, rest, true);
+        }
+
+        public FilePath ToAbsolute()
+        {
+            return IsAbsolute ? this : Parse(ToAbsoluteString());
+        }
+
+        public string ToAbsoluteString()
+        {
+            if (IsAbsolute)
+            {
+                return _path;
+            }
+
+            return Path.GetFullPath(_path == "" ? "." : _path);
+        }
+
+        public FilePath ToRelative(FilePath basePath)
+        {
+            FilePath result;
+            if (TryToRelative(basePath, out result))
+            {
+                return result;
+            }
+
+            throw new ArgumentException("Invalid base path.", nameof(basePath));
+        }
+
+        public FilePath ToRelative(string basePath)
+        {
+            return ToRelative(Parse(basePath));
+        }
+
+        public string ToRelativeString(FilePath basePath)
+        {
+            string result;
+            if (TryToRelativeString(basePath, out result))
+            {
+                return result;
+            }
+
+            throw new ArgumentException("Invalid base path.", nameof(basePath));
+        }
+
+        public string ToRelativeString(string basePath)
+        {
+            return ToRelativeString(Parse(basePath));
+        }
+
+        public override string ToString()
+        {
+            return _path;
+        }
+
+        [Obsolete("Use SubpathAfter() method instead", true)]
+        public FilePath TrimAnscestors(int offset = 1)
+        {
+            return SubpathAfter(offset);
+        }
+
         public bool TryCombine(string other, out FilePath result)
         {
             if (string.IsNullOrEmpty(other))
@@ -636,10 +1011,11 @@ namespace Exader.IO
             var rel = new Parser(other, false, "");
             if (rel.DriveOrHost == "" && rel.RootFolder == "")
             {
-                var com = new Parser(_prefix + rel.Prefix, true, _rootFolder);
+                var com = new Parser(Prefix + rel.Prefix, true, _rootFolder);
                 if (com.ErrorType == FilePathParseErrorType.None)
                 {
-                    result = new FilePath(_driveOrHost, _rootFolder, com.Prefix, rel.Name, rel.Extension, rel.IsDirectory);
+                    result = new FilePath(_driveOrHost, _rootFolder, com.Prefix, rel.Name, rel.Extension,
+                        rel.IsDirectory);
                     return true;
                 }
             }
@@ -661,55 +1037,14 @@ namespace Exader.IO
                 var com = new Parser(DirectoryPath + other.Prefix, true, _rootFolder);
                 if (com.ErrorType == FilePathParseErrorType.None)
                 {
-                    result = new FilePath(_driveOrHost, _rootFolder, com.DirectoryPath, other.NameWithoutExtension, other.Extension, other.IsDirectory);
+                    result = new FilePath(_driveOrHost, _rootFolder, com.DirectoryPath, other.NameWithoutExtension,
+                        other.Extension, other.IsDirectory);
                     return true;
                 }
             }
 
             result = null;
             return false;
-        }
-
-        public static bool TryRelate(string a, string b, out FilePathRelation relation)
-        {
-            return Parse(a).TryRelateTo(Parse(b), out relation);
-        }
-
-        public bool IsDescendantOf(FilePath other)
-        {
-            FilePathRelation rel;
-            return TryRelateTo(other, out rel)
-                   && (rel == FilePathRelation.Child || rel == FilePathRelation.ImplicitChild);
-        }
-
-        public bool IsAncestorOf(params FilePath[] paths)
-        {
-            return IsAncestorOf((IEnumerable<FilePath>)paths);
-        }
-
-        public bool IsAncestorOf(IEnumerable<FilePath> paths)
-        {
-            if (paths == null)
-            {
-                return false;
-            }
-
-            foreach (var path in paths)
-            {
-                if (!IsAncestorOf(path))
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        public bool IsAncestorOf(FilePath other)
-        {
-            FilePathRelation rel;
-            return TryRelateTo(other, out rel)
-                   && (rel == FilePathRelation.Parent || rel == FilePathRelation.ImplicitParent);
         }
 
         public bool TryRelateTo(FilePath other, out FilePathRelation relation)
@@ -720,229 +1055,195 @@ namespace Exader.IO
                 return false;
             }
 
-            bool sameRoot = _driveOrHost.EqualsIgnoreCase(other._driveOrHost)
-                            && _rootFolder.EqualsIgnoreCase(other._rootFolder);
+            var sameRoot = _driveOrHost.EqualsIgnoreCase(other._driveOrHost)
+                           && _rootFolder.EqualsIgnoreCase(other._rootFolder);
 
-            int start = 0;
-            int end = 0;
+            var start = 0;
+            var end = 0;
 
             var self = DirectoryPath.GetEnumerator();
             var target = other.DirectoryPath.GetEnumerator();
-
-            bool hasSelf = self.MoveNext();
-            bool hasTarget = target.MoveNext();
-
-            if (hasSelf && hasTarget)
+            try
             {
-                bool hasSeparator = false;
+                var hasSelf = self.MoveNext();
+                var hasTarget = target.MoveNext();
 
-                while (hasSelf && hasTarget)
+                if (hasSelf && hasTarget)
                 {
-                    if (CharExtensions.Equals(self.Current, target.Current,
-                        StringComparison.CurrentCultureIgnoreCase))
+                    var hasSeparator = false;
+
+                    while (hasSelf && hasTarget)
                     {
-                        // Stretch common range
-                        // 1bsd+
-                        // abcdef
-                        //  ^^
-                        //  ^^^
-
-                        end++;
-
-                        if (self.Current == '\\')
+                        if (CharExtensions.Equals(self.Current, target.Current,
+                            StringComparison.CurrentCultureIgnoreCase))
                         {
-                            hasSeparator = true;
+                            // Stretch common range
+                            // 1bsd+
+                            // abcdef
+                            //  ^^
+                            //  ^^^
+
+                            end++;
+
+                            if (self.Current == '\\')
+                            {
+                                hasSeparator = true;
+                            }
                         }
-                    }
-                    else if (end < start)
-                    {
-                        // Find common start
-                        // 1bsd+
-                        // abcdef
-                        //  ^
-                        //   ^
-
-                        start++;
-                        end = start;
-                    }
-                    else
-                    {
-                        // Common range end
-                        // 1bsd+
-                        // abcdef
-                        //  ^^^
-                        //  ^^^|
-
-                        break;
-                    }
-
-                    hasSelf = self.MoveNext();
-                    hasTarget = target.MoveNext();
-                }
-
-                if (end <= start)
-                {
-                    relation = FilePathRelation.Sibling;
-                    return sameRoot;
-                }
-
-                if (hasSelf)
-                {
-                    if (hasTarget)
-                    {
-                        relation = hasSeparator
-                            // d1/c/
-                            // d1/d2/
-                            //    |
-                            ? FilePathRelation.CommonAncestor
-                            // d1/
-                            // dA/dB/
-                            //  |
-                            : FilePathRelation.Sibling;
-                    }
-                    else
-                    {
-                        if (hasSeparator)
+                        else if (end < start)
                         {
-                            // d/c/
-                            // d/
-                            //   |
-                            relation = FilePathRelation.Child;
+                            // Find common start
+                            // 1bsd+
+                            // abcdef
+                            //  ^
+                            //   ^
+
+                            start++;
+                            end = start;
                         }
                         else
                         {
-                            // d/
+                            // Common range end
+                            // 1bsd+
+                            // abcdef
+                            //  ^^^
+                            //  ^^^|
+
+                            break;
+                        }
+
+                        hasSelf = self.MoveNext();
+                        hasTarget = target.MoveNext();
+                    }
+
+                    if (end <= start)
+                    {
+                        relation = FilePathRelation.Sibling;
+                        return sameRoot;
+                    }
+
+                    if (hasSelf)
+                    {
+                        if (hasTarget)
+                        {
+                            relation = hasSeparator
+                                // d1/c/
+                                // d1/d2/
+                                //    |
+                                ? FilePathRelation.CommonAncestor
+                                // d1/
+                                // dA/dB/
+                                //  |
+                                : FilePathRelation.Sibling;
+                        }
+                        else
+                        {
+                            if (hasSeparator)
+                            {
+                                // d/c/
+                                // d/
+                                //   |
+                                relation = FilePathRelation.Child;
+                            }
+                            else
+                            {
+                                // d/
+                                // 
+                                // |
+                                relation = FilePathRelation.ImplicitChild;
+                                Debug.Fail("RelativelyChild");
+                            }
+                        }
+                    }
+                    else if (hasTarget)
+                    {
+                        if (hasSeparator)
+                        {
+                            // d1/
+                            // d1/d2/
+                            //    |
+                            relation = FilePathRelation.Parent;
+                        }
+                        else
+                        {
                             // 
+                            // d/
                             // |
                             relation = FilePathRelation.ImplicitChild;
                             Debug.Fail("RelativelyChild");
                         }
                     }
-                }
-                else if (hasTarget)
-                {
-                    if (hasSeparator)
+                    else if (IsDirectory == other.IsDirectory)
                     {
-                        // d1/
-                        // d1/d2/
-                        //    |
+                        relation = FilePathRelation.Equal;
+                    }
+                    else if (IsDirectory)
+                    {
                         relation = FilePathRelation.Parent;
+                    }
+                    else if (other.IsDirectory)
+                    {
+                        relation = FilePathRelation.Child;
                     }
                     else
                     {
-                        // 
-                        // d/
-                        // |
-                        relation = FilePathRelation.ImplicitChild;
-                        Debug.Fail("RelativelyChild");
+                        relation = FilePathRelation.Equal;
                     }
                 }
-                else if (IsDirectory == other.IsDirectory)
+                else if (hasSelf)
                 {
-                    relation = FilePathRelation.Equal;
-                }
-                else if (IsDirectory)
-                {
-                    relation = FilePathRelation.Parent;
-                }
-                else if (other.IsDirectory)
-                {
-                    relation = FilePathRelation.Child;
+                    // d/
+                    // 
+                    // |
+                    relation = FilePathRelation.ImplicitChild;
                 }
                 else
                 {
-                    relation = FilePathRelation.Equal;
+                    // 
+                    // d/
+                    // |
+                    relation = FilePathRelation.ImplicitParent;
                 }
             }
-            else if (hasSelf)
+            finally
             {
-                // d/
-                // 
-                // |
-                relation = FilePathRelation.ImplicitChild;
-            }
-            else
-            {
-                // 
-                // d/
-                // |
-                relation = FilePathRelation.ImplicitParent;
+                ((IDisposable) self).Dispose();
+                ((IDisposable) target).Dispose();
             }
 
             return sameRoot;
         }
 
-        public FilePath WithoutDriveOrHost() => new FilePath("", _rootFolder, _prefix, _name, _extension, _isDirectory);
-        public string WithoutDriveOrHostAsString() => _rootFolder + _prefix + _name + _extension + (_isDirectory ? "\\" : "");
-
-        public FilePath WithoutDriveOrHostAndExtension() => new FilePath("", _rootFolder, _prefix, _name, "", false);
-        public string WithoutDriveOrHostAndExtensionAsString() => _rootFolder + _prefix + _name;
-
-        public FilePath WithoutExtension() => new FilePath(_driveOrHost, _rootFolder, _prefix, _name, "", false);
-        public string WithoutExtensionAsString() => _driveOrHost + _rootFolder + _prefix + _name;
-
-        [CanBeNull]
-        public FilePath WithoutDriveOrHostAndName() => Parent?.WithoutDriveOrHost();
-        public string WithoutDriveOrHostAndNameAsString() => _rootFolder + _prefix;
-
-        [CanBeNull]
-        public FilePath WithoutDriveOrHostAndFileName() => _isDirectory ? WithoutDriveOrHost() : Parent?.WithoutDriveOrHost();
-        public string WithoutDriveOrHostAndFileNameAsString() => _isDirectory ? _rootFolder + _prefix + _name + _extension + "\\" : _rootFolder + _prefix;
-
-        [CanBeNull]
-        public FilePath WithoutName() => Parent;
-        public string WithoutNameAsString() => _driveOrHost + _rootFolder + _prefix;
-
-        [CanBeNull]
-        public FilePath WithoutFileName() => _isDirectory ? this : Parent;
-        public string WithoutFileNameAsString() => _isDirectory ? _path : _driveOrHost + _rootFolder + _prefix;
-
-        public FilePath WithoutRootFolder() => new FilePath("", "", _prefix, _name, _extension, _isDirectory);
-        public string WithoutRootFolderAsString() => _prefix + _name + _extension + (_isDirectory ? "\\" : "");
-
-        public FilePath WithoutRootFolderAndExtension() => new FilePath("", "", _prefix, _name, "", false);
-        public string WithoutRootFolderAndExtensionAsString() => _prefix + _name;
-
-        [CanBeNull]
-        public FilePath WithoutRootFolderAndName() => Parent?.WithoutRootFolder();
-        public string WithoutRootFolderAndNameAsString() => _prefix;
-
-        [CanBeNull]
-        public FilePath WithoutRootFolderAndFileName() => _isDirectory ? WithoutRootFolder() : Parent?.WithoutRootFolder();
-        public string WithoutRootFolderAndFileNameAsString() => _isDirectory ? _prefix + _name + _extension + "\\" : _prefix;
-
-        /// <summary>
-        /// Добавляет расширение файла.
-        /// </summary>
-        /// <param name="suffix">Может начинаться или оканчиваться с точки.</param>
-        /// <returns></returns>
-        public FilePath WithNameSuffix(string suffix)
+        public bool TryToRelative(FilePath basePath, out FilePath relativePath)
         {
-            return WithExtension(_extension + "." + suffix.Trim('.'));
+            var blp = basePath.WithoutRootFolderAsString();
+            return TryToRelativeCore(basePath.ToString(), basePath._driveOrHost, blp, out relativePath);
         }
 
-        public FilePath WithNamePrefix(string prefix)
+        public bool TryToRelative(string basePath, out FilePath relativePath)
         {
-            return WithName(prefix + Name);
+            string br;
+            string bf;
+            var blp = CanonicalizePath(basePath, out br, out bf);
+            return TryToRelativeCore(basePath, br + bf, blp, out relativePath);
+        }
+
+        public bool TryToRelativeString(FilePath basePath, out string relativePath)
+        {
+            var blp = basePath.WithoutRootFolderAsString();
+            return TryToRelativeStringCore(basePath.ToString(), basePath._driveOrHost, blp, out relativePath);
+        }
+
+        public bool TryToRelativeString(string basePath, out string relativePath)
+        {
+            string br;
+            string bf;
+            var blp = CanonicalizePath(basePath, out br, out bf);
+            return TryToRelativeStringCore(basePath, br + bf, blp, out relativePath);
         }
 
         /// <summary>
-        /// Добавляет префикс перед расширением файла.
-        /// </summary>
-        /// <param name="prefix">Может начинаться или оканчиваться с точки.</param>
-        /// <returns></returns>
-        public FilePath WithExtensionPrefix(string prefix)
-        {
-            return WithExtension("." + prefix.Trim('.') + _extension);
-        }
-
-        public FilePath WithExtensionSuffix(string suffix)
-        {
-            return WithExtension(_extension + "." + suffix.Trim('.'));
-        }
-
-        /// <summary>
-        /// Возвращяет новый путь с заданным расширением.
+        ///     Возвращяет новый путь с заданным расширением.
         /// </summary>
         /// <param name="newExtension">Расширение имени файла начинающееся с точки (например: .ext).</param>
         /// <returns></returns>
@@ -959,7 +1260,23 @@ namespace Exader.IO
 
             var suffix = newExtension.SubstringBeforeLast('.');
             newExtension = newExtension.Substring(suffix.Length);
-            return new FilePath(_driveOrHost, _rootFolder, _prefix, _name + suffix, newExtension, _isDirectory);
+            return new FilePath(_driveOrHost, _rootFolder, Prefix, NameWithoutExtension + suffix, newExtension,
+                _isDirectory);
+        }
+
+        /// <summary>
+        ///     Добавляет префикс перед расширением файла.
+        /// </summary>
+        /// <param name="prefix">Может начинаться или оканчиваться с точки.</param>
+        /// <returns></returns>
+        public FilePath WithExtensionPrefix(string prefix)
+        {
+            return WithExtension("." + prefix.Trim('.') + Extension);
+        }
+
+        public FilePath WithExtensionSuffix(string suffix)
+        {
+            return WithExtension(Extension + "." + suffix.Trim('.'));
         }
 
         public FilePath WithName(string newName)
@@ -976,7 +1293,7 @@ namespace Exader.IO
             }
             else
             {
-                ext = _extension;
+                ext = Extension;
             }
 
             if (newName == null)
@@ -985,7 +1302,7 @@ namespace Exader.IO
             }
             else
             {
-                int pos = newName.LastIndexOf('.');
+                var pos = newName.LastIndexOf('.');
                 if (0 == pos)
                 {
                     ext = newName;
@@ -998,7 +1315,159 @@ namespace Exader.IO
                 }
             }
 
-            return new FilePath(_driveOrHost, _rootFolder, _prefix, newName, ext, _isDirectory);
+            return new FilePath(_driveOrHost, _rootFolder, Prefix, newName, ext, _isDirectory);
+        }
+
+        public FilePath WithNamePrefix(string prefix)
+        {
+            return WithName(prefix + Name);
+        }
+
+        /// <summary>
+        ///     Добавляет расширение файла.
+        /// </summary>
+        /// <param name="suffix">Может начинаться или оканчиваться с точки.</param>
+        /// <returns></returns>
+        public FilePath WithNameSuffix(string suffix)
+        {
+            return WithExtension(Extension + "." + suffix.Trim('.'));
+        }
+
+        public FilePath WithoutDriveOrHost()
+        {
+            return new FilePath("", _rootFolder, Prefix, NameWithoutExtension, Extension, _isDirectory);
+        }
+
+        public FilePath WithoutDriveOrHostAndExtension()
+        {
+            var newExt = NameWithoutExtension.SubstringAfterLast('.', out var newName, true);
+            return new FilePath("", _rootFolder, Prefix, newName, newExt, false);
+        }
+
+        public string WithoutDriveOrHostAndExtensionAsString()
+        {
+            return _rootFolder + Prefix + NameWithoutExtension;
+        }
+
+        [CanBeNull]
+        public FilePath WithoutDriveOrHostAndFileName()
+        {
+            return _isDirectory ? WithoutDriveOrHost() : Parent?.WithoutDriveOrHost();
+        }
+
+        public string WithoutDriveOrHostAndFileNameAsString()
+        {
+            return _isDirectory ? _rootFolder + Prefix + NameWithoutExtension + Extension + "\\" : _rootFolder + Prefix;
+        }
+
+        [CanBeNull]
+        public FilePath WithoutDriveOrHostAndName()
+        {
+            return Parent?.WithoutDriveOrHost();
+        }
+
+        public string WithoutDriveOrHostAndNameAsString()
+        {
+            return _rootFolder + Prefix;
+        }
+
+        public string WithoutDriveOrHostAsString()
+        {
+            return _rootFolder + Prefix + NameWithoutExtension + Extension + (_isDirectory ? "\\" : "");
+        }
+
+        public FilePath WithoutExtension()
+        {
+            var newExt = NameWithoutExtension.SubstringAfterLast('.', out var newName, true);
+            return new FilePath(_driveOrHost, _rootFolder, Prefix, newName, newExt, false);
+        }
+
+        public string WithoutExtensionAsString()
+        {
+            return _driveOrHost + _rootFolder + Prefix + NameWithoutExtension;
+        }
+
+        public FilePath WithoutExtensions(int count = 1)
+        {
+            var parts = NameWithoutExtension.Split('.');
+            if (parts.Length < count)
+            {
+                throw new ArgumentOutOfRangeException();
+            }
+
+            if (parts.Length == count)
+            {
+                return new FilePath(_driveOrHost, _rootFolder, Prefix, parts[0], "", _isDirectory);
+            }
+
+            var ext = "." + parts[parts.Length - 1];
+            parts = parts.Shrink(count);
+            var newName = string.Join(".", parts);
+            return new FilePath(_driveOrHost, _rootFolder, Prefix, newName, ext, _isDirectory);
+        }
+
+        [CanBeNull]
+        public FilePath WithoutFileName()
+        {
+            return _isDirectory ? this : Parent;
+        }
+
+        public string WithoutFileNameAsString()
+        {
+            return _isDirectory ? _path : _driveOrHost + _rootFolder + Prefix;
+        }
+
+        [CanBeNull]
+        public FilePath WithoutName()
+        {
+            return Parent;
+        }
+
+        public string WithoutNameAsString()
+        {
+            return _driveOrHost + _rootFolder + Prefix;
+        }
+
+        public FilePath WithoutRootFolder()
+        {
+            return new FilePath("", "", Prefix, NameWithoutExtension, Extension, _isDirectory);
+        }
+
+        public FilePath WithoutRootFolderAndExtension()
+        {
+            return new FilePath("", "", Prefix, NameWithoutExtension, "", false);
+        }
+
+        public string WithoutRootFolderAndExtensionAsString()
+        {
+            return Prefix + NameWithoutExtension;
+        }
+
+        [CanBeNull]
+        public FilePath WithoutRootFolderAndFileName()
+        {
+            return _isDirectory ? WithoutRootFolder() : Parent?.WithoutRootFolder();
+        }
+
+        public string WithoutRootFolderAndFileNameAsString()
+        {
+            return _isDirectory ? Prefix + NameWithoutExtension + Extension + "\\" : Prefix;
+        }
+
+        [CanBeNull]
+        public FilePath WithoutRootFolderAndName()
+        {
+            return Parent?.WithoutRootFolder();
+        }
+
+        public string WithoutRootFolderAndNameAsString()
+        {
+            return Prefix;
+        }
+
+        public string WithoutRootFolderAsString()
+        {
+            return Prefix + NameWithoutExtension + Extension + (_isDirectory ? "\\" : "");
         }
 
         public FilePath WithRoot(string newRoot)
@@ -1065,415 +1534,122 @@ namespace Exader.IO
                 newRoot = "";
             }
 
-            return new FilePath(newRoot, newRootFolder, _prefix, _name, _extension, _isDirectory);
+            return new FilePath(newRoot, newRootFolder, Prefix, NameWithoutExtension, Extension, _isDirectory);
         }
 
-        [Obsolete("Use SubpathAfter() method instead", true)]
-        public FilePath TrimAnscestors(int offset = 1)
+        private FilePath Item(string name, bool directory)
         {
-            return SubpathAfter(offset);
+            if (string.IsNullOrEmpty(name))
+            {
+                throw new ArgumentException(nameof(name));
+            }
+
+            var ext = "";
+            var pos = name.LastIndexOf('.');
+            if (0 == pos)
+            {
+                ext = name;
+                name = "";
+            }
+            else if (0 < pos)
+            {
+                ext = name.Substring(pos);
+                name = name.Substring(0, pos);
+            }
+
+            var result = new FilePath(_driveOrHost, _rootFolder, DirectoryPath, name, ext, directory);
+            return result;
         }
 
-        public FilePath SubpathAfter(int offset = 1)
+        private string NameWithoutExtensionsCore(string ext)
         {
-            string[] parents = _prefix.SplitAndRemoveEmpties(Path.DirectorySeparatorChar);
-            if (parents.Length < offset)
+            if (ext[0] != '.')
             {
-                throw new ArgumentOutOfRangeException(
-                    nameof(offset), offset,
-                    $"Path {this} does not contains a parent segments by offset greater than {offset}.");
+                ext = '.' + ext;
             }
 
-            var newParentPath = "";
-            if (offset < parents.Length)
+            if (ext.EndsWithIgnoreCase(Extension))
             {
-                newParentPath = string.Join(Path.DirectorySeparatorChar.ToString(), parents.Subarray(offset)) + Path.DirectorySeparatorChar;
-            }
-
-            return new FilePath("", "", newParentPath, _name, _extension, _isDirectory);
-        }
-
-        public FilePath WithoutExtensions(int count = 1)
-        {
-            var parts = _name.Split('.');
-            if (parts.Length < count)
-            {
-                throw new ArgumentOutOfRangeException();
-            }
-
-            if (parts.Length == count)
-            {
-                return new FilePath(_driveOrHost, _rootFolder, _prefix, parts[0], "", _isDirectory);
-            }
-
-            var ext = "." + parts[parts.Length - 1];
-            parts = parts.Shrink(count);
-            var newName = string.Join(".", parts);
-            return new FilePath(_driveOrHost, _rootFolder, _prefix, newName, ext, _isDirectory);
-        }
-
-        public FilePath SubpathBefore(string subpath, bool include = false)
-        {
-            if (subpath == null)
-                throw new ArgumentNullException(nameof(subpath));
-
-            subpath = subpath.Replace('/', '\\').Trim('\\');
-
-            var s = _prefix.GetIndexedEnumerator();
-            var t = subpath.GetIndexedEnumerator();
-
-            if (!t.MoveNext())
-                return include ? this : null;
-
-            var start = s.MoveWith(ref t);
-            bool matched = t.IsFinished;
-            bool matchedByPrefix = matched;
-            if (!matched)
-            {
-                if (_name != "")
+                var subExt = ext.RemoveRight(Extension.Length);
+                if (NameWithoutExtension.EndsWithIgnoreCase(subExt))
                 {
-                    s = _name.GetIndexedEnumerator();
-                    s.MoveWith(ref t);
-                    matched = s.IsFinished && t.IsFinished;
-                }
-
-                if (_extension != "")
-                {
-                    matched = false;
-                    if (!t.IsFinished)
-                    {
-                        s = _extension.GetIndexedEnumerator();
-                        s.MoveWith(ref t);
-                        matched = s.IsFinished && t.IsFinished;
-                    }
+                    return NameWithoutExtension.RemoveRight(subExt.Length);
                 }
             }
 
-            if (!matched)
-                throw new ArgumentOutOfRangeException(
-                    nameof(subpath), subpath,
-                    $"Path {this} does not contain a subpath {subpath}.");
-
-            if (include)
-            {
-                if (s.IsFinished)
-                {
-                    return matchedByPrefix ? Parent : this;
-                }
-
-                start = s.Index + 1;
-            }
-            else if (start < 0)
-            {
-                return Parent;
-            }
-
-            if (start == 0)
-                return new FilePath(_driveOrHost, _rootFolder, "", "", "", true);
-
-            string rest;
-            var newPrefix = _prefix.Substring(0, start - 1);
-            var newName = newPrefix.SubstringAfterLast('\\', out rest);
-            if (newName == "")
-            {
-                newName = newPrefix;
-                newPrefix = "";
-            }
-            else
-            {
-                newPrefix = rest + "\\";
-            }
-
-            rest = newName.SubstringAfterLast('.', out newName, true);
-            return new FilePath(_driveOrHost, _rootFolder, newPrefix, newName, rest, true);
+            return null;
         }
 
-        /// <summary>
-        /// Возвращает результат сравнения с заданным путем.
-        /// Сравнение произодится без учёта регистра и с инвариантной культурой.
-        /// </summary>
-        /// <returns></returns>
-        public override bool Equals(object obj)
+        private bool TryToRelativeCore(string basePath, string baseRoot, string baseLocalPath,
+            out FilePath relativePath)
         {
-            if (ReferenceEquals(null, obj))
+            if (_driveOrHost != baseRoot)
             {
-                return false;
-            }
-            if (ReferenceEquals(this, obj))
-            {
-                return true;
-            }
-            return obj is FilePath && Equals((FilePath)obj);
-        }
-
-        public override int GetHashCode()
-        {
-            return _path.GetHashCode();
-        }
-
-        public override string ToString()
-        {
-            return _path;
-        }
-
-        #region IEquatable<FilePath> Members
-
-        /// <summary>
-        /// Возвращает результат сравнения с заданным путем.
-        /// Сравнение произодится без учёта регистра и с инвариантной культурой.
-        /// </summary>
-        /// <returns></returns>
-        public bool Equals(FilePath other)
-        {
-            if (ReferenceEquals(null, other))
-            {
-                return false;
-            }
-            else if (ReferenceEquals(this, other))
-            {
-                return true;
-            }
-
-            if (_isDirectory != other._isDirectory)
-            {
-                var delta = _path.Length - other._path.Length;
-                if (delta == 1)
-                {
-                    return _path.StartsWith(other._path, StringComparison.OrdinalIgnoreCase) && _isDirectory;
-                }
-                else if (delta == -1)
-                {
-                    return other._path.StartsWith(_path, StringComparison.OrdinalIgnoreCase) && other._isDirectory;
-                }
-
+                relativePath = null;
                 return false;
             }
 
-            return _path.Equals(other._path, StringComparison.OrdinalIgnoreCase);
+            var path = WithoutRootFolderAsString();
+            var result = GetRelativePath(path, baseLocalPath);
+
+            // TODO Make the result FilePath without parsing
+            relativePath = Parse(result);
+            return true;
         }
 
-        #endregion
-
-        /// <summary>
-        /// Комбинирует два пути — базовый и относительный.
-        /// </summary>
-        /// <param name="left">Базовый путь</param>
-        /// <param name="right">Относительный путь</param>
-        /// <returns>Комбинированный путь</returns>
-        public static FilePath operator /(FilePath left, FilePath right)
+        private bool TryToRelativeStringCore(string basePath, string baseRoot, string baseLocalPath,
+            out string relativePath)
         {
-            if (ReferenceEquals(left, null))
-                return right;
+            if (_driveOrHost != baseRoot)
+            {
+                relativePath = null;
+                return false;
+            }
 
-            return left.Combine(right);
-        }
-
-        /// <summary>
-        /// Комбинирует два пути — базовый и относительный.
-        /// </summary>
-        /// <param name="left">Базовый путь</param>
-        /// <param name="right">Относительный путь</param>
-        /// <returns>Комбинированный путь</returns>
-        public static FilePath operator /(FilePath left, string right)
-        {
-            if (ReferenceEquals(left, null))
-                return Parse(right);
-
-            return left.Combine(right);
-        }
-
-        /// <summary>
-        /// Комбинирует два пути — базовый и относительный.
-        /// </summary>
-        /// <param name="left">Базовый путь</param>
-        /// <param name="right">Относительный путь</param>
-        /// <returns>Комбинированный путь</returns>
-        public static FilePath operator |(FilePath left, string right)
-        {
-            if (ReferenceEquals(left, null))
-                return Parse(right);
-
-            return left.Combine(right);
-        }
-
-        /// <summary>
-        /// Комбинирует два пути — базовый и относительный.
-        /// </summary>
-        /// <param name="left">Базовый путь</param>
-        /// <param name="right">Относительный путь</param>
-        /// <returns>Комбинированный путь</returns>
-        public static FilePath operator /(string left, FilePath right)
-        {
-            if (ReferenceEquals(left, null))
-                return Parse(right);
-
-            return Parse(left).Combine(right);
-        }
-
-        /// <summary>
-        /// Комбинирует два пути — базовый и относительный.
-        /// </summary>
-        /// <param name="left">Базовый путь</param>
-        /// <param name="right">Относительный путь</param>
-        /// <returns>Комбинированный путь</returns>
-        public static FilePath operator |(string left, FilePath right)
-        {
-            if (ReferenceEquals(left, null))
-                return Parse(right);
-
-            return Parse(left).Combine(right);
-        }
-
-        /// <summary>
-        /// Возвращает результат сравнения с двух путей.
-        /// Сравнение произодится без учёта регистра и с инвариантной культурой.
-        /// </summary>
-        public static bool operator ==(FilePath left, FilePath right)
-        {
-            return Equals(left, right);
-        }
-
-        /// <summary>
-        /// Возвращает результат сравнения с двух путей.
-        /// Сравнение произодится без учёта регистра и с инвариантной культурой.
-        /// </summary>
-        public static bool operator ==(FilePath left, string right)
-        {
-            if (ReferenceEquals(left, null))
-                return right == null;
-
-            return Equals(left.ToString(), right);
-        }
-
-        /// <summary>
-        /// Возвращает результат сравнения с двух путей.
-        /// Сравнение произодится без учёта регистра и с инвариантной культурой.
-        /// </summary>
-        public static bool operator ==(string left, FilePath right)
-        {
-            if (ReferenceEquals(right, null))
-                return left == null;
-
-            return Equals(left, right.ToString());
-        }
-
-        public static explicit operator FilePath(string path)
-        {
-            return path != null ? Parse(path) : null;
-        }
-
-        public static implicit operator string(FilePath path)
-        {
-            return path?.ToString();
-        }
-
-        /// <summary>
-        /// Возвращает результат сравнения двух путей.
-        /// Сравнение произодится без учёта регистра и с инвариантной культурой.
-        /// </summary>
-        public static bool operator !=(FilePath left, FilePath right)
-        {
-            return !Equals(left, right);
-        }
-
-        /// <summary>
-        /// Возвращает результат сравнения двух путей.
-        /// Сравнение произодится без учёта регистра и с инвариантной культурой.
-        /// </summary>
-        public static bool operator !=(FilePath left, string right)
-        {
-            if (ReferenceEquals(left, null))
-                return right != null;
-
-            return !Equals(left.ToString(), right);
-        }
-
-        /// <summary>
-        /// Возвращает результат сравнения двух путей.
-        /// Сравнение произодится без учёта регистра и с инвариантной культурой.
-        /// </summary>
-        public static bool operator !=(string left, FilePath right)
-        {
-            if (ReferenceEquals(right, null))
-                return left != null;
-
-            return !Equals(left, right.ToString());
-        }
-
-        /// <summary>
-        /// Создает относительный путь на основе базового из полного.
-        /// </summary>
-        /// <param name="absolutePath">Полный путь</param>
-        /// <param name="basePath">Базовый путь</param>
-        /// <returns>Относительный путь</returns>
-        public static FilePath operator %(FilePath absolutePath, FilePath basePath)
-        {
-            if (ReferenceEquals(absolutePath, null))
-                return basePath;
-
-            return absolutePath.ToRelative(basePath);
-        }
-
-        /// <summary>
-        /// Создает относительный путь на основе базового из полного.
-        /// </summary>
-        /// <param name="absolutePath">Полный путь</param>
-        /// <param name="basePath">Базовый путь</param>
-        /// <returns>Относительный путь</returns>
-        public static FilePath operator %(FilePath absolutePath, string basePath)
-        {
-            if (ReferenceEquals(absolutePath, null))
-                return Parse(basePath);
-
-            return absolutePath.ToRelative(Parse(basePath));
-        }
-
-        /// <summary>
-        /// Создает относительный путь на основе базового из полного.
-        /// </summary>
-        /// <param name="absolutePath">Полный путь</param>
-        /// <param name="basePath">Базовый путь</param>
-        /// <returns>Относительный путь</returns>
-        public static FilePath operator %(string absolutePath, FilePath basePath)
-        {
-            if (absolutePath == null)
-                return basePath;
-
-            return Parse(absolutePath).ToRelative(basePath);
+            var path = WithoutRootFolderAsString();
+            relativePath = GetRelativePath(path, baseLocalPath);
+            return true;
         }
     }
 
     public enum FilePathRelation
     {
         None,
+
         /// <summary>
-        /// Равенство
+        ///     Равенство
         /// </summary>
         Equal,
+
         /// <summary>
-        /// Вложенность
+        ///     Вложенность
         /// </summary>
         Child,
+
         /// <summary>
-        /// Включение
+        ///     Включение
         /// </summary>
         Parent,
+
         /// <summary>
-        /// Неявная вложенность
+        ///     Неявная вложенность
         /// </summary>
         ImplicitChild,
+
         /// <summary>
-        /// Неявное включение
+        ///     Неявное включение
         /// </summary>
         ImplicitParent,
+
         /// <summary>
-        /// Общая корневая папка
+        ///     Общая корневая папка
         /// </summary>
         Sibling,
+
         /// <summary>
-        /// Общая папка
+        ///     Общая папка
         /// </summary>
-        CommonAncestor,
+        CommonAncestor
     }
 }
 #endif
