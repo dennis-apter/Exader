@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net45;netstandard1.3</TargetFrameworks>
+    <AssemblyVersion>2.0.0.0</AssemblyVersion>
+    <FileVersion>2.0.0.0</FileVersion>
+    <Version>2.0.0</Version>
+    <RootNamespace>Exader</RootNamespace>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Authors>Dennis Apter</Authors>
+    <Description>Common utilities library</Description>
+    <PackageIconUrl>https://s3.amazonaws.com/cloud.ohloh.net/attachments/16636/Exader_med.png</PackageIconUrl>
+    <RepositoryUrl>https://github.com/dennis-apter/Exader</RepositoryUrl>
+    <PackageRequireLicenseAcceptance>False</PackageRequireLicenseAcceptance>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="JetBrains.Annotations" Version="11.0.0" />
+  </ItemGroup>
+
+</Project>
