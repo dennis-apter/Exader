@@ -20,7 +20,7 @@ namespace Exader
             Assert.Equal("Lorem", "lorem".Capitalize());
             Assert.Equal("L", "l".Capitalize());
             Assert.Equal(string.Empty, string.Empty.Capitalize());
-            Assert.Equal(string.Empty, ((string)null).Capitalize());
+            Assert.Equal(string.Empty, ((string) null).Capitalize());
         }
 
         [Fact]
@@ -67,7 +67,7 @@ namespace Exader
             Assert.Equal("lorem", "Lorem".Decapitalize());
             Assert.Equal("l", "L".Decapitalize());
             Assert.Equal(string.Empty, string.Empty.Decapitalize());
-            Assert.Equal(string.Empty, ((string)null).Decapitalize());
+            Assert.Equal(string.Empty, ((string) null).Decapitalize());
         }
 
         [Fact]
@@ -79,7 +79,7 @@ namespace Exader
             Assert.Equal("A", "A".Deparenthesize());
 
             Assert.Equal(string.Empty, string.Empty.Deparenthesize());
-            Assert.Equal(string.Empty, ((string)null).Deparenthesize());
+            Assert.Equal(string.Empty, ((string) null).Deparenthesize());
         }
 
         [Fact]
@@ -123,8 +123,8 @@ namespace Exader
         [Fact]
         public static void EnsureQuotesForNullStrings()
         {
-            Assert.Equal("_", ((string)null).EnsureStartsWith('_'));
-            Assert.Equal("_", ((string)null).EnsureEndsWith('_'));
+            Assert.Equal("_", ((string) null).EnsureStartsWith('_'));
+            Assert.Equal("_", ((string) null).EnsureEndsWith('_'));
 
             Assert.Equal("|", "|".EnsureStartsWith(null));
             Assert.Equal("|", "|".EnsureEndsWith(null));
@@ -147,7 +147,8 @@ namespace Exader
         [Fact]
         public static void ExpandCamelHumps()
         {
-            Assert.Equal("The Quick Brown Fox Jumps Over The Lazy Dog", "TheQuickBrownFoxJumpsOverTheLazyDog".ExpandCamelHumps());
+            Assert.Equal("The Quick Brown Fox Jumps Over The Lazy Dog",
+                "TheQuickBrownFoxJumpsOverTheLazyDog".ExpandCamelHumps());
         }
 
         [Fact]
@@ -194,8 +195,8 @@ namespace Exader
             Assert.Equal(string.Empty, string.Empty.Quote('_', false));
             Assert.Equal(".", ".".Quote(string.Empty));
 
-            Assert.Equal("__", ((string)null).Quote('_', true));
-            Assert.Equal(string.Empty, ((string)null).Quote('_', false));
+            Assert.Equal("__", ((string) null).Quote('_', true));
+            Assert.Equal(string.Empty, ((string) null).Quote('_', false));
             Assert.Equal(".", ".".Quote(null));
         }
 
@@ -203,6 +204,14 @@ namespace Exader
         public static void RemoveLeft()
         {
             Assert.Equal("bar", "Foo bar".RemoveLeft(4));
+        }
+
+        [Fact]
+        public static void RemoveLeftVersusSubstring()
+        {
+            Assert.Equal(string.Empty, "Foo bar".RemoveLeft(10));
+
+            Assert.Throws<ArgumentOutOfRangeException>(() => "Foo bar".Substring(10));
         }
 
         [Fact]
@@ -219,21 +228,13 @@ namespace Exader
         }
 
         [Fact]
-        public static void RemoveLeftVersusSubstring()
-        {
-            Assert.Equal(string.Empty, "Foo bar".RemoveLeft(10));
-
-            Assert.Throws<ArgumentOutOfRangeException>(() => "Foo bar".Substring(10));
-        }
-
-        [Fact]
         public static void ReplaceCharacters()
         {
             Assert.Equal("_lorem______ipsum__", "+lorem@#$%^&ipsum--".ReplaceCharacters("_", "+@#$%^&-"));
 
             Assert.Equal("+lorem@#$%^&ipsum--", "+lorem@#$%^&ipsum--".ReplaceCharacters("_", string.Empty));
-            Assert.Equal("+lorem@#$%^&ipsum--", "+lorem@#$%^&ipsum--".ReplaceCharacters("_", (string)null));
-            Assert.Equal("+lorem@#$%^&ipsum--", "+lorem@#$%^&ipsum--".ReplaceCharacters("_", (char[])null));
+            Assert.Equal("+lorem@#$%^&ipsum--", "+lorem@#$%^&ipsum--".ReplaceCharacters("_", (string) null));
+            Assert.Equal("+lorem@#$%^&ipsum--", "+lorem@#$%^&ipsum--".ReplaceCharacters("_", (char[]) null));
         }
 
         [Fact]
@@ -241,11 +242,9 @@ namespace Exader
         {
             const int tryes = 1000000;
 
-            Stopwatch stopwatch = Stopwatch.StartNew();
+            var stopwatch = Stopwatch.StartNew();
             foreach (var i in Enumerable.Range(1, tryes))
-            {
                 "+lorem@#$%^&ipsum--".ReplaceCharacters("_", '+', '@', '#', '$', '%', '^', '&', '-');
-            }
 
             stopwatch.Stop();
 
@@ -253,9 +252,7 @@ namespace Exader
 
             stopwatch.Restart();
             foreach (var i in Enumerable.Range(1, tryes))
-            {
                 "+lorem@#$%^&ipsum--".ReplaceCharacters("_", "+@#$%^&-");
-            }
 
             stopwatch.Stop();
 
@@ -279,6 +276,15 @@ namespace Exader
         {
             Assert.Equal("Foo", "Foo".Right(42));
             Assert.Equal("Foo", "Foo".Right(-42));
+        }
+
+        [Fact]
+        public static void ToTitleCase()
+        {
+            Assert.Equal("Kane And Lynch", "kane and lynch".ToTitleCase());
+            Assert.Equal("Game Of Thrones", "game of thrones".ToTitleCase());
+            Assert.Equal("Type_Of", "type_of".ToTitleCase());
+            Assert.Equal("Old_School", "old_school".ToTitleCase());
         }
 
         [Fact]

@@ -223,6 +223,16 @@ namespace Exader.IO
             System.IO.File.AppendAllText(ToString(), contents);
         }
 
+        public StreamWriter AppendText(Encoding encoding = null)
+        {
+#if NET45
+            return new StreamWriter(ToString(), true, encoding ?? Encoding.UTF8);
+#else
+            var stream = System.IO.File.OpenWrite(ToString());
+            return new StreamWriter(stream, encoding ?? Encoding.UTF8);
+#endif
+        }
+
         /// <summary>
         ///     Удаляет содержимое файла или директории,
         ///     сохраняя атрибуты и настройки безопастности.
@@ -341,6 +351,34 @@ namespace Exader.IO
             return this;
         }
 
+        public FilePath MoveTo(string destination)
+        {
+            return MoveTo((FilePath) destination);
+        }
+
+        public FilePath MoveTo(FilePath destination)
+        {
+            if (destination.IsDirectory)
+            {
+                destination = destination.EnsureDirectoryExists().File(Name);
+            }
+
+            System.IO.File.Move(this, destination);
+            return destination;
+        }
+
+        [Obsolete("Replaced to " + nameof(ReadText), true)]
+        public StreamReader OpenText(Encoding encoding = null)
+        {
+            return ReadText(encoding);
+        }
+
+        [Obsolete("Replaced to " + nameof(WriteText), true)]
+        public StreamWriter OverwriteText(Encoding encoding = null)
+        {
+            return WriteText(encoding);
+        }
+
         public string[] ReadAllLines(Encoding encoding = null)
         {
             return System.IO.File.ReadAllLines(this, encoding ?? Encoding.UTF8);
@@ -380,6 +418,21 @@ namespace Exader.IO
                     return reader.ReadToEnd();
                 }
             }
+        }
+
+        public IEnumerable<string> ReadLines(Encoding encoding = null)
+        {
+            return System.IO.File.ReadLines(this, encoding ?? Encoding.UTF8);
+        }
+
+        public StreamReader ReadText(Encoding encoding = null)
+        {
+#if NET45
+            return new StreamReader(ToString(), encoding ?? Encoding.UTF8);
+#else
+            var stream = System.IO.File.Open(ToString(), FileMode.Open, FileAccess.Read, FileShare.Read);
+            return new StreamReader(stream, encoding ?? Encoding.UTF8);
+#endif
         }
 
         public DirectoryInfo ToDirectoryInfo()
@@ -465,6 +518,17 @@ namespace Exader.IO
         {
             System.IO.File.WriteAllText(this, contents, encoding ?? Encoding.UTF8);
             return this;
+        }
+
+        public StreamWriter WriteText(Encoding encoding = null)
+        {
+#if NET45
+            return new StreamWriter(ToString(), false, encoding ?? Encoding.UTF8);
+#else
+            var stream = System.IO.File.OpenWrite(ToString());
+            stream.SetLength(0);
+            return new StreamWriter(stream, encoding ?? Encoding.UTF8);
+#endif
         }
 
         #region Travelsal
@@ -731,6 +795,6 @@ namespace Exader.IO
             return Siblings(AllItemsPattern);
         }
 
-        #endregion
+#endregion
     }
 }
