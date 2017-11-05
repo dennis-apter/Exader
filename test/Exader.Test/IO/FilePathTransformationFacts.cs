@@ -6,6 +6,106 @@ namespace Exader.IO
 {
     public class FilePathTransformationFacts
     {
+        [Theory]
+        [InlineData("/d")]
+        [InlineData("c:/d")]
+        public void WithRoot(string filePath)
+        {
+            var fp = FilePath.Parse(filePath);
+
+            Assert.Equal(@"a:\d", fp.WithRoot("a"));
+            Assert.Equal(@"a:\d", fp.WithRoot("a:/"));
+            Assert.Equal(@"a:\d", fp.WithRoot(@"a:\"));
+            Assert.Equal(@"a:\d", fp.WithRoot(@"\\?\a:\"));
+
+            var result = fp.WithRoot("a");
+            Assert.Equal("a:", result.DriveOrHost);
+            Assert.Equal(@"\", result.RootFolder);
+
+            Assert.Equal(@"\d", fp.WithRoot(""));
+            Assert.Equal(@"\d", fp.WithRoot(null));
+
+            Assert.Equal(@"\\s\s\d", fp.WithRoot(@"\s\s\"));
+            Assert.Equal(@"\\s\s\d", fp.WithRoot(@"\\s\s\"));
+            Assert.Equal(@"\\s\s\d", fp.WithRoot(@"\\\s\s\"));
+            Assert.Equal(@"\\s\s\d", fp.WithRoot(@"\\\\s\s\"));
+            Assert.Equal(@"\\s\s\d", fp.WithRoot(@"\\\\\s\s\"));
+            Assert.Equal(@"\\s\s\d", fp.WithRoot(@"\\\\\\s\s\"));
+            Assert.Equal(@"\\s\s\d", fp.WithRoot(@"\\\\\\\s\s\"));
+            Assert.Equal(@"\\s\s\d", fp.WithRoot(@"\\?\UNC\s\s\"));
+
+            result = fp.WithRoot(@"\\s\s\");
+            Assert.Equal(@"\\s", result.DriveOrHost);
+            Assert.Equal(@"\s\", result.RootFolder);
+        }
+
+        [Theory]
+        [InlineData("a/b/c/d/e/f", "f", @"a\b\c\d\e\")]
+        [InlineData("a/b/c/d/e/f", "e", @"a\b\c\d\")]
+        [InlineData("a/b/c/d/e/f", "c", @"a\b\")]
+        [InlineData("a/b/c/d/e/f", "b", @"a\")]
+        [InlineData("a/b/c/d/e/f", "a", @"")]
+        [InlineData("a/b/c/d/e/f", "c/d", @"a\b\")]
+        [InlineData("a/b/c/d/e/f", "c/d/e", @"a\b\")]
+        [InlineData("a/b/c/d/e/f", "c/d/e/f", @"a\b\")]
+        [InlineData("a/b/c/d/e/f", "/f/", @"a\b\c\d\e\")]
+        [InlineData("a/b/c/d/e/f", "/e/", @"a\b\c\d\")]
+        [InlineData("a/b/c/d/e/f", "/c/", @"a\b\")]
+        [InlineData("a/b/c/d/e/f", "/b/", @"a\")]
+        [InlineData("a/b/c/d/e/f", "/a/", @"")]
+        [InlineData("a/b/c/d/e/f", "/c/d/", @"a\b\")]
+        [InlineData("a/b/c/d/e/f", "/c/d/e/", @"a\b\")]
+        [InlineData("a/b/c/d/e/f", "/c/d/e/f/", @"a\b\")]
+        public void SubpathBefore(string p, string sp, string r)
+        {
+            Assert.Equal(r, FilePath.Parse(p).SubpathBefore(sp));
+        }
+
+        [Theory(Skip = "TODO")]
+        [InlineData("a/b/c/d/e/f", "f", @"")]
+        [InlineData("a/b/c/d/e/f", "e", @"f\")]
+        [InlineData("a/b/c/d/e/f", "c", @"d\e\f")]
+        [InlineData("a/b/c/d/e/f", "b", @"c\d\e\f")]
+        [InlineData("a/b/c/d/e/f", "a", @"b\c\d\e\f")]
+        [InlineData("a/b/c/d/e/f", "c/d", @"e\f")]
+        [InlineData("a/b/c/d/e/f", "c/d/e", @"f")]
+        [InlineData("a/b/c/d/e/f", "c/d/e/f", @"")]
+        [InlineData("a/b/c/d/e/f", "/f/", @"")]
+        [InlineData("a/b/c/d/e/f", "/e/", @"f")]
+        [InlineData("a/b/c/d/e/f", "/c/", @"d\e\f")]
+        [InlineData("a/b/c/d/e/f", "/b/", @"c\d\e\f")]
+        [InlineData("a/b/c/d/e/f", "/a/", @"b\c\d\e\f")]
+        [InlineData("a/b/c/d/e/f", "/c/d/", @"e\f")]
+        [InlineData("a/b/c/d/e/f", "/c/d/e/", @"f")]
+        [InlineData("a/b/c/d/e/f", "/c/d/e/f/", @"")]
+        public void SubpathAfter(string p, string sp, string r)
+        {
+            // TODO Assert.Equal(r, FilePath.Parse(p).SubpathAfter(sp));
+        }
+
+        [Theory]
+        [InlineData("a/b/c/d/e/f", "f", @"a\b\c\d\e\f")]
+        [InlineData("a/b/c/d/e/f", "e", @"a\b\c\d\e\")]
+        [InlineData("a/b/c/d/e/f", "c", @"a\b\c\")]
+        [InlineData("a/b/c/d/e/f", "b", @"a\b\")]
+        [InlineData("a/b/c/d/e/f", "a", @"a\")]
+        [InlineData("a/b/c/d/e/f", "c/d", @"a\b\c\d\")]
+        [InlineData("a/b/c/d/e/f", "c/d/e", @"a\b\c\d\e\")]
+        [InlineData("a/b/c/d/e/f", "c/d/e/f", @"a\b\c\d\e\f")]
+        [InlineData("a/b/c/d/e/f", "/f/", @"a\b\c\d\e\f")]
+        [InlineData("a/b/c/d/e/f", "/e/", @"a\b\c\d\e\")]
+        [InlineData("a/b/c/d/e/f", "/c/", @"a\b\c\")]
+        [InlineData("a/b/c/d/e/f", "/b/", @"a\b\")]
+        [InlineData("a/b/c/d/e/f", "/a/", @"a\")]
+        [InlineData("a/b/c/d/e/f", "/c/d/", @"a\b\c\d\")]
+        [InlineData("a/b/c/d/e/f", "/c/d/e/", @"a\b\c\d\e\")]
+        [InlineData("a/b/c/d/e/f", "/c/d/e/f/", @"a\b\c\d\e\f")]
+        public void SubpathBefore_Inclusive(string p, string sp, string r)
+        {
+            var fp = FilePath.Parse(p);
+            Assert.Equal(r, fp.SubpathBefore(sp, true).ToString());
+        }
+
         [Fact]
         public void Ancestor()
         {
@@ -51,84 +151,6 @@ namespace Exader.IO
             Assert.Equal(@"\\h\a\b\c", FilePath.Parse("//h/a/b/c").AsRooted());
         }
 
-        [Theory]
-        [InlineData("/d")]
-        [InlineData("c:/d")]
-        public void ChangeRoot(string filePath)
-        {
-            var fp = FilePath.Parse(filePath);
-
-            Assert.Equal(@"a:\d", fp.WithRoot("a"));
-            Assert.Equal(@"a:\d", fp.WithRoot("a:/"));
-            Assert.Equal(@"a:\d", fp.WithRoot(@"a:\"));
-            Assert.Equal(@"a:\d", fp.WithRoot(@"\\?\a:\"));
-
-            var result = fp.WithRoot("a");
-            Assert.Equal("a:", result.DriveOrHost);
-            Assert.Equal(@"\", result.RootFolder);
-
-            Assert.Equal(@"\d", fp.WithRoot(""));
-            Assert.Equal(@"\d", fp.WithRoot(null));
-
-            Assert.Equal(@"\\s\s\d", fp.WithRoot(@"\s\s\"));
-            Assert.Equal(@"\\s\s\d", fp.WithRoot(@"\\s\s\"));
-            Assert.Equal(@"\\s\s\d", fp.WithRoot(@"\\\s\s\"));
-            Assert.Equal(@"\\s\s\d", fp.WithRoot(@"\\\\s\s\"));
-            Assert.Equal(@"\\s\s\d", fp.WithRoot(@"\\\\\s\s\"));
-            Assert.Equal(@"\\s\s\d", fp.WithRoot(@"\\\\\\s\s\"));
-            Assert.Equal(@"\\s\s\d", fp.WithRoot(@"\\\\\\\s\s\"));
-            Assert.Equal(@"\\s\s\d", fp.WithRoot(@"\\?\UNC\s\s\"));
-
-            result = fp.WithRoot(@"\\s\s\");
-            Assert.Equal(@"\\s", result.DriveOrHost);
-            Assert.Equal(@"\s\", result.RootFolder);
-        }
-
-        [Fact]
-        public void ChangeRoot_InvalidDriveLetter()
-        {
-            var fp = FilePath.Parse("c:/d");
-
-            var ex = Assert.Throws<ArgumentOutOfRangeException>(() => fp.WithRoot("1"));
-            Assert.Contains("1", ex.Message);
-
-            ex = Assert.Throws<ArgumentOutOfRangeException>(() => fp.WithRoot("1:/"));
-            Assert.Contains("1:/", ex.Message);
-
-            var ex2 = Assert.Throws<ArgumentException>(() => fp.WithRoot("foo"));
-            Assert.Contains("foo", ex2.Message);
-        }
-
-        [Fact]
-        public void ChangeRoot_InvalidNetworkShare()
-        {
-            var ex = Assert.Throws<ArgumentException>(() => FilePath.Parse("d").WithRoot("//s"));
-            Assert.Contains("//s", ex.Message);
-
-            ex = Assert.Throws<ArgumentException>(() => FilePath.Parse("d").WithRoot("//s/s/s"));
-            Assert.Contains("//s/s/s", ex.Message);
-        }
-
-        [Fact]
-        public void ChangeRoot_Rootless()
-        {
-            var fp = FilePath.Parse("d");
-
-            var r1 = fp.WithRoot("a:");
-            Assert.Equal("a:d", r1);
-            Assert.Equal("a:", r1.Drive);
-            Assert.Equal('a', r1.DriveLetter);
-            Assert.Empty(r1.Host);
-            Assert.Empty(r1.RootFolder);
-
-            var r2 = fp.WithRoot(@"\\s\s\");
-            Assert.Equal(@"\\s\s\d", r2);
-            Assert.Empty(r2.Drive);
-            Assert.Null(r2.DriveLetter);
-            Assert.Equal(@"\\s", r2.Host);
-            Assert.Equal(@"\s\", r2.RootFolder);
-        }
-
         [Fact]
         public void Item()
         {
@@ -165,57 +187,29 @@ namespace Exader.IO
         }
 
         [Fact]
-        public void SubpathAfter()
+        public void WithBasename()
         {
-            Assert.Equal(FilePath.Parse("bar/baz"), FilePath.Parse("c:/foo/bar/baz").SubpathAfter());
-            Assert.Equal(FilePath.Parse("baz"), FilePath.Parse("c:/foo/bar/baz").SubpathAfter(2));
+            var fp = FilePath.Parse("C:/dir/f.e");
+            Assert.Equal(@"C:\dir\b.e", fp.WithBasename("b"));
+            Assert.Equal(@"C:\dir\.f.e", fp.WithBasename(".f"));
+            Assert.Equal(@"C:\dir\_._.e", fp.WithBasename("_._"));
 
-            Assert.Throws<ArgumentOutOfRangeException>(() => FilePath.Parse("c:/foo/bar/baz").SubpathAfter(3));
-        }
+            Assert.Throws<ArgumentException>(() => fp.WithBasename(null));
+            Assert.Throws<ArgumentException>(() => fp.WithBasename(""));
+            Assert.Throws<ArgumentException>(() => fp.WithBasename("."));
+            Assert.Throws<ArgumentException>(() => fp.WithBasename(".."));
+            Assert.Throws<ArgumentException>(() => fp.WithBasename("..."));
 
-        [Theory]
-        [InlineData("a/b/c/d/e/f", "f", @"a\b\c\d\e\")]
-        [InlineData("a/b/c/d/e/f", "e", @"a\b\c\d\")]
-        [InlineData("a/b/c/d/e/f", "c", @"a\b\")]
-        [InlineData("a/b/c/d/e/f", "b", @"a\")]
-        [InlineData("a/b/c/d/e/f", "a", @"")]
-        [InlineData("a/b/c/d/e/f", "c/d", @"a\b\")]
-        [InlineData("a/b/c/d/e/f", "c/d/e", @"a\b\")]
-        [InlineData("a/b/c/d/e/f", "c/d/e/f", @"a\b\")]
-        [InlineData("a/b/c/d/e/f", "/f/", @"a\b\c\d\e\")]
-        [InlineData("a/b/c/d/e/f", "/e/", @"a\b\c\d\")]
-        [InlineData("a/b/c/d/e/f", "/c/", @"a\b\")]
-        [InlineData("a/b/c/d/e/f", "/b/", @"a\")]
-        [InlineData("a/b/c/d/e/f", "/a/", @"")]
-        [InlineData("a/b/c/d/e/f", "/c/d/", @"a\b\")]
-        [InlineData("a/b/c/d/e/f", "/c/d/e/", @"a\b\")]
-        [InlineData("a/b/c/d/e/f", "/c/d/e/f/", @"a\b\")]
-        public void SubpathBefore(string p, string sp, string r)
-        {
-            Assert.Equal(r, FilePath.Parse(p).SubpathBefore(sp));
-        }
+            var dp = FilePath.Parse("C:/dir/subdir.e/");
+            Assert.Equal(@"C:\dir\b\", dp.WithBasename("b"));
+            Assert.Equal(@"C:\dir\.f\", dp.WithBasename(".f"));
+            Assert.Equal(@"C:\dir\_._\", dp.WithBasename("_._"));
 
-        [Theory]
-        [InlineData("a/b/c/d/e/f", "f", @"a\b\c\d\e\f")]
-        [InlineData("a/b/c/d/e/f", "e", @"a\b\c\d\e\")]
-        [InlineData("a/b/c/d/e/f", "c", @"a\b\c\")]
-        [InlineData("a/b/c/d/e/f", "b", @"a\b\")]
-        [InlineData("a/b/c/d/e/f", "a", @"a\")]
-        [InlineData("a/b/c/d/e/f", "c/d", @"a\b\c\d\")]
-        [InlineData("a/b/c/d/e/f", "c/d/e", @"a\b\c\d\e\")]
-        [InlineData("a/b/c/d/e/f", "c/d/e/f", @"a\b\c\d\e\f")]
-        [InlineData("a/b/c/d/e/f", "/f/", @"a\b\c\d\e\f")]
-        [InlineData("a/b/c/d/e/f", "/e/", @"a\b\c\d\e\")]
-        [InlineData("a/b/c/d/e/f", "/c/", @"a\b\c\")]
-        [InlineData("a/b/c/d/e/f", "/b/", @"a\b\")]
-        [InlineData("a/b/c/d/e/f", "/a/", @"a\")]
-        [InlineData("a/b/c/d/e/f", "/c/d/", @"a\b\c\d\")]
-        [InlineData("a/b/c/d/e/f", "/c/d/e/", @"a\b\c\d\e\")]
-        [InlineData("a/b/c/d/e/f", "/c/d/e/f/", @"a\b\c\d\e\f")]
-        public void SubpathBefore_Inclusive(string p, string sp, string r)
-        {
-            var fp = FilePath.Parse(p);
-            Assert.Equal(r, fp.SubpathBefore(sp, true).ToString());
+            Assert.Throws<ArgumentException>(() => dp.WithBasename(null));
+            Assert.Throws<ArgumentException>(() => dp.WithBasename(""));
+            Assert.Throws<ArgumentException>(() => dp.WithBasename("."));
+            Assert.Throws<ArgumentException>(() => dp.WithBasename(".."));
+            Assert.Throws<ArgumentException>(() => dp.WithBasename("..."));
         }
 
         [Fact]
@@ -232,28 +226,44 @@ namespace Exader.IO
         [Fact]
         public void WithExtensionPrefix()
         {
-            Assert.Equal("foo.x.bar", FilePath.Parse("foo.bar").WithExtensionPrefix("x").ToString());
-            Assert.Equal("foo.x.bar", FilePath.Parse("foo.bar").WithExtensionPrefix(".x").ToString());
+            var p = FilePath.Parse("foo.bar");
+            Assert.Equal("foo.x.bar", p.WithExtensionPrefix("x"));
+            Assert.Equal("foo.x.bar", p.WithExtensionPrefix(".x"));
         }
 
         [Fact]
         public void WithExtensionSuffix()
         {
-            Assert.Equal("foo.bar.x", FilePath.Parse("foo.bar").WithExtensionSuffix("x"));
+            var p = FilePath.Parse("foo.bar");
+            Assert.Equal("foo.bar.x", p.WithExtensionSuffix("x"));
+            Assert.Equal("foo.bar.x", p.WithExtensionSuffix(".x"));
+            Assert.Equal(".x", p.WithExtensionSuffix("x").Extension);
         }
 
         [Fact]
         public void WithName()
         {
-            Assert.Equal(@"C:\dir\b.e", FilePath.Parse("C:/dir/file.e").WithName("b"));
-            Assert.Equal(@"C:\dir\.e", FilePath.Parse("C:/dir/file.e").WithName(null));
-            Assert.Equal(@"C:\dir\.f", FilePath.Parse("C:/dir/file.e").WithName(".f"));
-            Assert.Equal(@"C:\dir\_._", FilePath.Parse("C:/dir/file.e").WithName("_._"));
+            var fp = FilePath.Parse("C:/dir/f.e");
+            Assert.Equal(@"C:\dir\b", fp.WithName("b"));
+            Assert.Equal(@"C:\dir\.f", fp.WithName(".f"));
+            Assert.Equal(@"C:\dir\_._", fp.WithName("_._"));
 
-            Assert.Equal(@"C:\dir\b\", FilePath.Parse("C:/dir/subdir.e/").WithName("b"));
-            Assert.Throws<ArgumentException>(() => FilePath.Parse("C:/dir/subdir.e/").WithName(null));
-            Assert.Equal(@"C:\dir\.f\", FilePath.Parse("C:/dir/subdir.e/").WithName(".f"));
-            Assert.Equal(@"C:\dir\_._\", FilePath.Parse("C:/dir/subdir.e/").WithName("_._"));
+            Assert.Throws<ArgumentException>(() => fp.WithName(null));
+            Assert.Throws<ArgumentException>(() => fp.WithName(""));
+            Assert.Throws<ArgumentException>(() => fp.WithName("."));
+            Assert.Throws<ArgumentException>(() => fp.WithName(".."));
+            Assert.Throws<ArgumentException>(() => fp.WithName("..."));
+
+            var dp = FilePath.Parse("C:/dir/d.e/");
+            Assert.Equal(@"C:\dir\b\", dp.WithName("b"));
+            Assert.Equal(@"C:\dir\.f\", dp.WithName(".f"));
+            Assert.Equal(@"C:\dir\_._\", dp.WithName("_._"));
+
+            Assert.Throws<ArgumentException>(() => dp.WithName(null));
+            Assert.Throws<ArgumentException>(() => dp.WithName(""));
+            Assert.Throws<ArgumentException>(() => dp.WithName("."));
+            Assert.Throws<ArgumentException>(() => dp.WithName(".."));
+            Assert.Throws<ArgumentException>(() => dp.WithName("..."));
         }
 
         [Fact]
@@ -270,8 +280,9 @@ namespace Exader.IO
         [Fact]
         public void WithNameSuffix()
         {
-            Assert.Equal("foo.bar.x", FilePath.Parse("foo.bar").WithNameSuffix("x").ToString());
-            Assert.Equal("foo.bar.x", FilePath.Parse("foo.bar").WithNameSuffix(".x").ToString());
+            var p = FilePath.Parse("foo.bar");
+            Assert.Equal("foo.barx", p.WithNameSuffix("x").ToString());
+            Assert.Equal("foo.bar.x", p.WithNameSuffix(".x").ToString());
         }
 
         [Fact]
@@ -353,6 +364,15 @@ namespace Exader.IO
         }
 
         [Fact]
+        public void WithoutAnscestors()
+        {
+            var p = FilePath.Parse("c:/foo/bar/baz");
+            Assert.Equal(@"bar\baz", p.WithoutAnscestors());
+            Assert.Equal(@"baz", p.WithoutAnscestors(2));
+            Assert.Throws<ArgumentOutOfRangeException>(() => p.WithoutAnscestors(3));
+        }
+
+        [Fact]
         public void WithoutDriveOrHostAndExtension()
         {
             var p1 = FilePath.Parse("c:/d/a.b.c");
@@ -415,6 +435,60 @@ namespace Exader.IO
             Assert.Equal("foo", path.WithoutExtensions(2));
 
             Assert.Throws<ArgumentOutOfRangeException>(() => path.WithoutExtensions(3));
+        }
+
+        [Fact]
+        public void WithoutParents()
+        {
+            var p = FilePath.Parse("c:/foo/bar/baz");
+            Assert.Equal(@"c:\foo\baz", p.WithoutParents());
+            Assert.Equal(@"c:\baz", p.WithoutParents(2));
+            Assert.Throws<ArgumentOutOfRangeException>(() => p.WithoutParents(3));
+        }
+
+        [Fact]
+        public void WithRoot_InvalidDriveLetter()
+        {
+            var fp = FilePath.Parse("c:/d");
+
+            var ex = Assert.Throws<ArgumentOutOfRangeException>(() => fp.WithRoot("1"));
+            Assert.Contains("1", ex.Message);
+
+            ex = Assert.Throws<ArgumentOutOfRangeException>(() => fp.WithRoot("1:/"));
+            Assert.Contains("1:/", ex.Message);
+
+            var ex2 = Assert.Throws<ArgumentException>(() => fp.WithRoot("foo"));
+            Assert.Contains("foo", ex2.Message);
+        }
+
+        [Fact]
+        public void WithRoot_InvalidNetworkShare()
+        {
+            var ex = Assert.Throws<ArgumentException>(() => FilePath.Parse("d").WithRoot("//s"));
+            Assert.Contains("//s", ex.Message);
+
+            ex = Assert.Throws<ArgumentException>(() => FilePath.Parse("d").WithRoot("//s/s/s"));
+            Assert.Contains("//s/s/s", ex.Message);
+        }
+
+        [Fact]
+        public void WithRoot_Rootless()
+        {
+            var fp = FilePath.Parse("d");
+
+            var r1 = fp.WithRoot("a:");
+            Assert.Equal("a:d", r1);
+            Assert.Equal("a:", r1.Drive);
+            Assert.Equal('a', r1.DriveLetter);
+            Assert.Empty(r1.Host);
+            Assert.Empty(r1.RootFolder);
+
+            var r2 = fp.WithRoot(@"\\s\s\");
+            Assert.Equal(@"\\s\s\d", r2);
+            Assert.Empty(r2.Drive);
+            Assert.Null(r2.DriveLetter);
+            Assert.Equal(@"\\s", r2.Host);
+            Assert.Equal(@"\s\", r2.RootFolder);
         }
     }
 }

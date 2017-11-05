@@ -6,24 +6,6 @@ namespace Exader.IO
 {
     public class FilePathConversionFacts
     {
-        [Fact]
-        public void CastNullString()
-        {
-            string nullString = null;
-            FilePath nullFilePath = (FilePath) nullString;
-            Assert.Null(nullFilePath);
-            
-            nullString = nullFilePath;
-            Assert.Null(nullString);
-        }
-
-        [Fact]
-        public void CastEmptyString()
-        {
-            FilePath emptyFilePath = (FilePath) "";
-            Assert.Equal(FilePath.Empty, emptyFilePath);
-        }
-
         [Theory]
         [InlineData("", "d:/c")]
         [InlineData("c:/d", "d:/c")]
@@ -39,7 +21,7 @@ namespace Exader.IO
         [InlineData("", @"\d\f", @"\d\f")]
         public void Combine(string l, string r, string f)
         {
-            Assert.Equal(f, (FilePath)l / (FilePath)r);
+            Assert.Equal(f, (FilePath) l / (FilePath) r);
         }
 
         [Theory]
@@ -48,7 +30,7 @@ namespace Exader.IO
         [InlineData("", @"\d\f", @"\d\f.e")]
         public void Combine_Or(string l, string r, string f)
         {
-            Assert.Equal(f, (FilePath)l | r + ".e");
+            Assert.Equal(f, (FilePath) l | (r + ".e"));
         }
 
         [Theory]
@@ -59,16 +41,6 @@ namespace Exader.IO
         public void Combine_Null(string a, string b)
         {
             Assert.Throws<ArgumentNullException>(() => FilePath.Combine(a, b));
-        }
-
-        [Fact]
-        public void ToAbsoluteString()
-        {
-            var currentDir = Path.GetFullPath(".\\");
-            var pathInfo = FilePath.Parse("f.e");
-
-            Assert.False(pathInfo.IsAbsolute);
-            Assert.Equal(currentDir + @"f.e", pathInfo.ToAbsoluteString());
         }
 
         [Theory]
@@ -102,7 +74,7 @@ namespace Exader.IO
         [InlineData("d/sd/ssd/", "d/x/", @"..\sd\ssd\")]
         public void ToRelative_DirectoryBase(string p, string b, string r)
         {
-            var fp = (FilePath)p;
+            var fp = (FilePath) p;
             var result = fp % b;
             var resultString = fp.ToRelativeString(b);
 
@@ -110,7 +82,7 @@ namespace Exader.IO
             Assert.Equal(r, result);
             Assert.Equal(r, resultString);
             Assert.Equal(fp, b / result);
-            Assert.Equal(fp, (FilePath)b / resultString);
+            Assert.Equal(fp, (FilePath) b / resultString);
         }
 
         [Theory]
@@ -128,7 +100,7 @@ namespace Exader.IO
         [InlineData("d/sd/ssd/", "d/f.e", @"..\sd\ssd\")]
         public void ToRelative_FileBase(string p, string b, string r)
         {
-            var fp = (FilePath)p;
+            var fp = (FilePath) p;
             var result = fp % b;
             var resultString = fp.ToRelativeString(b);
 
@@ -136,7 +108,7 @@ namespace Exader.IO
             Assert.Equal(r, result);
             Assert.Equal(r, resultString);
             Assert.Equal(fp, b / result);
-            Assert.Equal(fp, (FilePath)b / resultString);
+            Assert.Equal(fp, (FilePath) b / resultString);
         }
 
         [Theory]
@@ -158,6 +130,34 @@ namespace Exader.IO
             string s;
             Assert.False(FilePath.Parse(p).TryToRelativeString(b, out s));
             Assert.Null(s);
+        }
+
+        [Fact]
+        public void CastEmptyString()
+        {
+            var emptyFilePath = (FilePath) "";
+            Assert.Equal(FilePath.Empty, emptyFilePath);
+        }
+
+        [Fact]
+        public void CastNullString()
+        {
+            string nullString = null;
+            var nullFilePath = (FilePath) nullString;
+            Assert.Null(nullFilePath);
+
+            nullString = nullFilePath;
+            Assert.Null(nullString);
+        }
+
+        [Fact]
+        public void ToAbsoluteString()
+        {
+            var currentDir = Path.GetFullPath(".\\");
+            var pathInfo = FilePath.Parse("f.e");
+
+            Assert.False(pathInfo.IsAbsolute);
+            Assert.Equal(currentDir + @"f.e", pathInfo.ToAbsoluteString());
         }
     }
 }

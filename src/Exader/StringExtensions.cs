@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading;
 using JetBrains.Annotations;
 
 namespace Exader
@@ -19,15 +20,11 @@ namespace Exader
         public static string Capitalize(this string self)
         {
             if (string.IsNullOrEmpty(self))
-            {
                 return string.Empty;
-            }
 
             var upper = char.ToUpper(self[0]);
             if (self[0] == upper)
-            {
                 return self;
-            }
 
             return upper + self.Substring(1);
         }
@@ -38,14 +35,10 @@ namespace Exader
         public static string Collapse(this string self, char collapsible, int minWidth = 0)
         {
             if (string.IsNullOrEmpty(self))
-            {
                 return string.Empty;
-            }
 
             if (minWidth < 0)
-            {
                 minWidth = 0;
-            }
 
             var buffer = new StringBuilder();
             var width = 0; // Счётчик ширины
@@ -53,18 +46,12 @@ namespace Exader
             {
                 var c = self[i];
                 if (c == collapsible)
-                {
                     width++;
-                }
                 else
-                {
                     width = 0;
-                }
 
                 if (width <= minWidth)
-                {
                     buffer.Append(c);
-                }
             }
 
             return buffer.ToString();
@@ -77,23 +64,15 @@ namespace Exader
         public static string Collapse(this string self, string characterString, int minWidth = 0)
         {
             if (string.IsNullOrEmpty(self))
-            {
                 return string.Empty;
-            }
             if (string.IsNullOrEmpty(characterString))
-            {
                 return self;
-            }
 
             if (1 == characterString.Length)
-            {
                 return Collapse(self, characterString[0], minWidth);
-            }
 
             if (minWidth < 0)
-            {
                 minWidth = 0;
-            }
 
             var buffer = new StringBuilder();
             var width = 0; // Счётчик ширины
@@ -101,18 +80,12 @@ namespace Exader
             {
                 var c = self[i];
                 if (characterString.Contains(c))
-                {
                     width++;
-                }
                 else
-                {
                     width = 0;
-                }
 
                 if (width <= minWidth)
-                {
                     buffer.Append(c);
-                }
             }
 
             return buffer.ToString();
@@ -129,14 +102,10 @@ namespace Exader
         public static string CollapseWhiteSpaces(this string self, int minWidth = 0)
         {
             if (string.IsNullOrEmpty(self))
-            {
                 return string.Empty;
-            }
 
             if (minWidth < 0)
-            {
                 minWidth = 0;
-            }
 
             var buffer = new StringBuilder();
             var width = 0; // Счётчик ширины пробела
@@ -144,18 +113,12 @@ namespace Exader
             {
                 var c = self[i];
                 if (char.IsWhiteSpace(c))
-                {
                     width++;
-                }
                 else
-                {
                     width = 0;
-                }
 
                 if (width <= minWidth)
-                {
                     buffer.Append(c);
-                }
             }
 
             return buffer.ToString();
@@ -166,9 +129,7 @@ namespace Exader
         public static string CollapseWhiteSpacesToCamelHumps(this string self)
         {
             if (string.IsNullOrEmpty(self))
-            {
                 return string.Empty;
-            }
 
             var buffer = new StringBuilder();
             var hump = true;
@@ -206,14 +167,10 @@ namespace Exader
                 var lengh = Math.Min(self.Length, other.Length);
                 for (index = 0; index < lengh; index++)
                     if (self[index] != other[index])
-                    {
                         break;
-                    }
 
                 if (0 < index)
-                {
                     return self.Substring(0, index);
-                }
             }
 
             return null;
@@ -240,9 +197,7 @@ namespace Exader
         {
             for (var i = 0; i < chars.Length; i++)
                 if (-1 == self.IndexOf(chars[i]))
-                {
                     return false;
-                }
 
             return true;
         }
@@ -252,9 +207,7 @@ namespace Exader
         {
             for (var i = 0; i < chars.Length; i++)
                 if (0 <= self.IndexOf(chars[i]))
-                {
                     return true;
-                }
 
             return false;
         }
@@ -271,16 +224,12 @@ namespace Exader
         public static int Count(this string self, char ch)
         {
             if (self == null)
-            {
                 return 0;
-            }
 
             var count = 0;
             foreach (var c in self)
                 if (c == ch)
-                {
                     count++;
-                }
 
             return count;
         }
@@ -290,15 +239,11 @@ namespace Exader
         public static string Decapitalize(this string self)
         {
             if (string.IsNullOrEmpty(self))
-            {
                 return string.Empty;
-            }
 
             var lower = char.ToLower(self[0]);
             if (self[0] == lower)
-            {
                 return self;
-            }
 
             return lower + self.Substring(1);
         }
@@ -314,16 +259,12 @@ namespace Exader
         public static string Ellipsis(this string self, int maxLength, params char[] stops)
         {
             if (string.IsNullOrEmpty(self) || self.Length < maxLength)
-            {
                 return self;
-            }
 
             if (null == stops || 0 == stops.Length)
             {
                 if (string.IsNullOrEmpty(self) || self.Length < maxLength)
-                {
                     return self;
-                }
 
                 var result = self.Substring(0, maxLength / 2) + "…" + self.Right(maxLength / 2 - 1);
                 return result;
@@ -361,9 +302,7 @@ namespace Exader
         public static bool EndsWith(this string self, char end)
         {
             if (string.IsNullOrEmpty(self))
-            {
                 return false;
-            }
 
             return end == self[self.Length - 1];
         }
@@ -373,9 +312,7 @@ namespace Exader
         public static bool EndsWithIgnoreCase(this string self, string end)
         {
             if (null == self)
-            {
                 return false;
-            }
 
             return self.EndsWith(end, IgnoreCase);
         }
@@ -387,9 +324,7 @@ namespace Exader
             if (!string.IsNullOrEmpty(self))
             {
                 if (end != self[self.Length - 1])
-                {
                     return self + end;
-                }
 
                 return self;
             }
@@ -403,19 +338,13 @@ namespace Exader
         {
             // AND
             if (string.IsNullOrEmpty(self) && string.IsNullOrEmpty(end))
-            {
                 return string.Empty;
-            }
 
             // XOR
             if (string.IsNullOrEmpty(self))
-            {
                 return end;
-            }
             if (string.IsNullOrEmpty(end))
-            {
                 return self;
-            }
 
             return self.EndsWith(end) ? self : self + end;
         }
@@ -426,19 +355,13 @@ namespace Exader
         {
             // AND
             if (string.IsNullOrEmpty(self) && string.IsNullOrEmpty(end))
-            {
                 return string.Empty;
-            }
 
             // XOR
             if (string.IsNullOrEmpty(self))
-            {
                 return end;
-            }
             if (string.IsNullOrEmpty(end))
-            {
                 return self;
-            }
 
             return self.EndsWith(end, stringComparison) ? self : self + end;
         }
@@ -450,9 +373,7 @@ namespace Exader
             if (!string.IsNullOrEmpty(self))
             {
                 if (start != self[0])
-                {
                     return start + self;
-                }
 
                 return self;
             }
@@ -466,19 +387,13 @@ namespace Exader
         {
             // AND
             if (string.IsNullOrEmpty(self) && string.IsNullOrEmpty(start))
-            {
                 return string.Empty;
-            }
 
             // XOR
             if (string.IsNullOrEmpty(self))
-            {
                 return start;
-            }
             if (string.IsNullOrEmpty(start))
-            {
                 return self;
-            }
 
             return self.StartsWith(start) ? self : start + self;
         }
@@ -489,19 +404,13 @@ namespace Exader
         {
             // AND
             if (string.IsNullOrEmpty(self) && string.IsNullOrEmpty(start))
-            {
                 return string.Empty;
-            }
 
             // XOR
             if (string.IsNullOrEmpty(self))
-            {
                 return start;
-            }
             if (string.IsNullOrEmpty(start))
-            {
                 return self;
-            }
 
             return self.StartsWith(start, stringComparison) ? self : start + self;
         }
@@ -531,17 +440,13 @@ namespace Exader
         public static string ExpandCamelHumps(this string self, string delimeter = " ")
         {
             if (string.IsNullOrEmpty(self))
-            {
                 return string.Empty;
-            }
 
             var buffer = new StringBuilder();
             foreach (var c in self)
             {
                 if (char.IsUpper(c) && 0 < buffer.Length)
-                {
                     buffer.Append(delimeter);
-                }
 
                 buffer.Append(c);
             }
@@ -557,13 +462,9 @@ namespace Exader
             {
                 var c = self[i];
                 if ('\t' == c)
-                {
                     buffer.Append(' ', tabSize);
-                }
                 else
-                {
                     buffer.Append(c);
-                }
             }
 
             return buffer.ToString();
@@ -593,14 +494,10 @@ namespace Exader
             int count = int.MaxValue)
         {
             if (null == self)
-            {
                 return -1;
-            }
 
             if (count == int.MaxValue)
-            {
                 count = self.Length - startIndex;
-            }
 
             return self.IndexOf(other, startIndex, count, IgnoreCase);
         }
@@ -619,9 +516,7 @@ namespace Exader
             foreach (var line in lines)
             {
                 if (tail)
-                {
                     buffer.Append(delimiter);
-                }
                 tail = true;
 
                 buffer.Append(prefix);
@@ -660,23 +555,15 @@ namespace Exader
             int count = int.MaxValue)
         {
             if (null == self)
-            {
                 return -1;
-            }
 
             if (startIndex == int.MaxValue)
-            {
                 startIndex = self.Length - 1;
-            }
             else if (startIndex < 0)
-            {
                 startIndex = self.Length + startIndex - 1;
-            }
 
             if (count == int.MaxValue)
-            {
                 count = startIndex + 1;
-            }
 
             return self.LastIndexOf(other, startIndex, count, IgnoreCase);
         }
@@ -694,20 +581,14 @@ namespace Exader
             {
                 length = self.Length + length;
                 if (length < 0)
-                {
                     return self;
-                }
             }
 
             if (self.Length <= length)
-            {
                 return self;
-            }
 
             if (0 == length)
-            {
                 return string.Empty;
-            }
 
             return self.Substring(0, length);
         }
@@ -726,14 +607,10 @@ namespace Exader
             if (!string.IsNullOrEmpty(self))
             {
                 if (mark != self[0])
-                {
                     self = mark + self;
-                }
 
                 if (mark != self[self.Length - 1])
-                {
                     self = self + mark;
-                }
 
                 return self;
             }
@@ -750,14 +627,10 @@ namespace Exader
             if (!string.IsNullOrEmpty(self))
             {
                 if (open != self[0])
-                {
                     self = open + self;
-                }
 
                 if (close != self[self.Length - 1])
-                {
                     self = self + close;
-                }
 
                 return self;
             }
@@ -773,32 +646,22 @@ namespace Exader
         {
             // AND
             if (string.IsNullOrEmpty(self) && string.IsNullOrEmpty(mark))
-            {
                 return string.Empty;
-            }
 
             // XOR
             if (string.IsNullOrEmpty(self))
-            {
                 return valuable
                     ? mark + mark
                     : string.Empty;
-            }
 
             if (string.IsNullOrEmpty(mark))
-            {
                 return self;
-            }
 
             if (!self.StartsWith(mark))
-            {
                 self = mark + self;
-            }
 
             if (!self.EndsWith(mark))
-            {
                 self = self + mark;
-            }
 
             return self;
         }
@@ -811,31 +674,21 @@ namespace Exader
             if (string.IsNullOrEmpty(self) &&
                 string.IsNullOrEmpty(open) &&
                 string.IsNullOrEmpty(close))
-            {
                 return string.Empty;
-            }
 
             // XOR
             if (string.IsNullOrEmpty(self))
-            {
                 return open + close;
-            }
 
             if (string.IsNullOrEmpty(open) ||
                 string.IsNullOrEmpty(close))
-            {
                 return self;
-            }
 
             if (!self.StartsWith(open))
-            {
                 self = open + self;
-            }
 
             if (!self.EndsWith(close))
-            {
                 self = self + close;
-            }
 
             return self;
         }
@@ -844,16 +697,12 @@ namespace Exader
         public static string RemoveCharacter(this string self, params char[] charsToRemove)
         {
             if (string.IsNullOrEmpty(self))
-            {
                 return string.Empty;
-            }
 
             var builder = new StringBuilder(self.Length);
             foreach (var c in self)
                 if (-1 == Array.IndexOf(charsToRemove, c))
-                {
                     builder.Append(c);
-                }
 
             return builder.ToString();
         }
@@ -862,16 +711,12 @@ namespace Exader
         public static string RemoveCharacter(this string self, char charToRemove)
         {
             if (string.IsNullOrEmpty(self))
-            {
                 return string.Empty;
-            }
 
             var builder = new StringBuilder(self.Length);
             foreach (var c in self)
                 if (c != charToRemove)
-                {
                     builder.Append(c);
-                }
 
             return builder.ToString();
         }
@@ -881,14 +726,10 @@ namespace Exader
         public static string RemoveLeft([NotNull] this string self, int count)
         {
             if (self.Length <= count)
-            {
                 return string.Empty;
-            }
 
             if (0 == count)
-            {
                 return self;
-            }
 
             return self.Substring(count);
         }
@@ -907,9 +748,7 @@ namespace Exader
             foreach (var line in lines)
             {
                 if (tail)
-                {
                     buffer.Append(delimiter);
-                }
 
                 tail = true;
 
@@ -924,14 +763,10 @@ namespace Exader
         public static string RemoveRight([NotNull] this string self, int count)
         {
             if (self.Length <= count)
-            {
                 return string.Empty;
-            }
 
             if (0 == count)
-            {
                 return self;
-            }
 
             return self.Substring(0, self.Length - count);
         }
@@ -941,11 +776,20 @@ namespace Exader
         public static string RemoveSubstring(this string self, string str)
         {
             if (string.IsNullOrEmpty(self))
-            {
                 return string.Empty;
-            }
 
             return self.Replace(str, string.Empty);
+        }
+
+        [Pure]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsRepeatOf(this string self, char token, int startIndex = 0)
+        {
+            for (var j = startIndex; j < self.Length; j++)
+                if (self[j] != token)
+                    return false;
+
+            return true;
         }
 
 
@@ -953,9 +797,7 @@ namespace Exader
         public static string Repeat(this string self, int count)
         {
             if (count == 0)
-            {
                 return string.Empty;
-            }
 
             var buffer = self.ToBuilder();
             while (0 < --count)
@@ -991,25 +833,17 @@ namespace Exader
         public static string ReplaceCharacters(this string self, string replacement, string characterString)
         {
             if (string.IsNullOrEmpty(self))
-            {
                 return string.Empty;
-            }
 
             if (string.IsNullOrEmpty(characterString))
-            {
                 return self;
-            }
 
             var builder = new StringBuilder(self.Length);
             foreach (var c in self)
                 if (characterString.Contains(c))
-                {
                     builder.Append(replacement);
-                }
                 else
-                {
                     builder.Append(c);
-                }
 
             return builder.ToString();
         }
@@ -1018,25 +852,17 @@ namespace Exader
         public static string ReplaceCharacters(this string self, string replacement, params char[] charsToRemove)
         {
             if (string.IsNullOrEmpty(self))
-            {
                 return string.Empty;
-            }
 
             if (charsToRemove.IsNullOrEmpty())
-            {
                 return self;
-            }
 
             var builder = new StringBuilder(self.Length);
             foreach (var c in self)
                 if (-1 == Array.IndexOf(charsToRemove, c))
-                {
                     builder.Append(c);
-                }
                 else
-                {
                     builder.Append(replacement);
-                }
 
             return builder.ToString();
         }
@@ -1050,9 +876,7 @@ namespace Exader
         public static string ReplaceControlCharacters(this string self, string replacement = "")
         {
             if (string.IsNullOrEmpty(self))
-            {
                 return string.Empty;
-            }
 
             var buffer = new StringBuilder();
             foreach (var c in self)
@@ -1088,9 +912,7 @@ namespace Exader
                 startIndex = -1 * length;
                 length = self.Length + length;
                 if (length < 0)
-                {
                     return self;
-                }
             }
             else
             {
@@ -1098,14 +920,10 @@ namespace Exader
             }
 
             if (self.Length <= length)
-            {
                 return self;
-            }
 
             if (0 == length)
-            {
                 return string.Empty;
-            }
 
             return self.Substring(startIndex, length);
         }
@@ -1125,9 +943,7 @@ namespace Exader
         public static bool StartsWith(this string self, char start)
         {
             if (string.IsNullOrEmpty(self))
-            {
                 return false;
-            }
 
             return start == self[0];
         }
@@ -1137,9 +953,7 @@ namespace Exader
         public static bool StartsWithIgnoreCase(this string self, string start)
         {
             if (null == self)
-            {
                 return false;
-            }
 
             return self.StartsWith(start, IgnoreCase);
         }
@@ -1149,14 +963,10 @@ namespace Exader
         public static string TrimEnd(this string self, string end)
         {
             if (string.IsNullOrEmpty(self) || string.IsNullOrEmpty(end))
-            {
                 return string.Empty;
-            }
 
             if (!self.EndsWith(end))
-            {
                 return self;
-            }
 
             return self.Substring(0, self.Length - end.Length);
         }
@@ -1190,14 +1000,10 @@ namespace Exader
         public static string TrimExceed(this string self, int maxLength)
         {
             if (string.IsNullOrEmpty(self))
-            {
                 return string.Empty;
-            }
 
             if (self.Length < maxLength)
-            {
                 return self;
-            }
 
             var result = self.Substring(0, maxLength);
             return result;
@@ -1221,14 +1027,10 @@ namespace Exader
         public static string TrimStart(this string self, string start)
         {
             if (string.IsNullOrEmpty(self))
-            {
                 return string.Empty;
-            }
 
             if (!self.StartsWith(start))
-            {
                 return self;
-            }
 
             return self.Substring(start.Length);
         }
@@ -1269,9 +1071,7 @@ namespace Exader
                 var f = self[0];
                 var l = self[self.Length - 1];
                 if (f.IsQuotationMarks(l))
-                {
                     return self.Substring(1, self.Length - 2);
-                }
             }
 
             return self;
@@ -1281,14 +1081,10 @@ namespace Exader
         public static string Unquote(this string self, char open, char close)
         {
             if (string.IsNullOrEmpty(self))
-            {
                 return string.Empty;
-            }
 
             if (1 == self.Length)
-            {
                 return self;
-            }
 
             var oi = 0;
             var opened = false;
@@ -1318,9 +1114,7 @@ namespace Exader
             }
 
             if (opened && closed)
-            {
                 return self.Substring(oi, ci - oi);
-            }
 
             return self;
         }
@@ -1329,14 +1123,10 @@ namespace Exader
         public static string Unrepeat(this string self, params char[] charsToRemove)
         {
             if (string.IsNullOrEmpty(self))
-            {
                 return string.Empty;
-            }
 
             if (1 == self.Length)
-            {
                 return self;
-            }
 
             var builder = new StringBuilder(self.Length).Append(self[0]);
 
@@ -1347,9 +1137,7 @@ namespace Exader
                 if (charsToRemove.Contains(c))
                 {
                     if (prevChar != c)
-                    {
                         builder.Append(c);
-                    }
                 }
                 else
                 {
@@ -1365,9 +1153,7 @@ namespace Exader
         public static string Unwrap(this string self, bool collapse = false)
         {
             if (string.IsNullOrEmpty(self))
-            {
                 return self;
-            }
 
             var repeats = 0;
             StringBuilder builder = null;
@@ -1379,15 +1165,11 @@ namespace Exader
                     repeats++;
 
                     if (builder == null)
-                    {
                         builder = new StringBuilder(self.Length)
                             .Append(self, 0, i);
-                    }
 
                     if (!collapse || repeats == 1)
-                    {
                         builder.Append(' ');
-                    }
                 }
                 else if (builder != null)
                 {
@@ -1400,34 +1182,6 @@ namespace Exader
             return builder == null ? self : builder.ToString();
         }
 
-#if NET45
-        /// <summary>
-        /// Converts the specified string to titlecase.
-        /// </summary>
-        /// <returns> The specified string converted to titlecase.</returns>
-        /// <param name="self">The string to convert to titlecase.</param>
-        /// <exception cref="T:System.ArgumentNullException">When <paramref name="self"/> is null.</exception>
-        public static string ToTitleCase(this string self)
-        {
-            CultureInfo cultureInfo = System.Threading.Thread.CurrentThread.CurrentCulture;
-            TextInfo textInfo = cultureInfo.TextInfo;
-            return textInfo.ToTitleCase(self);
-        }
-
-        /// <summary>
-        /// Converts the specified string to titlecase.
-        /// </summary>
-        /// <returns>The specified string converted to titlecase.</returns>
-        /// <param name="self">The string to convert to titlecase.</param>
-        /// <param name="culture"></param>
-        /// <exception cref="T:System.ArgumentNullException">self is null.</exception>
-        public static string ToTitleCase(this string self, CultureInfo culture)
-        {
-            TextInfo textInfo = culture.TextInfo;
-            return textInfo.ToTitleCase(self);
-        }
-#endif
-
         [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
         public struct IndexedCharEnumerator : IEnumerator<char>
         {
@@ -1436,9 +1190,7 @@ namespace Exader
             internal IndexedCharEnumerator(string source)
             {
                 if (source == null)
-                {
                     throw new ArgumentNullException(nameof(source));
-                }
 
                 _source = source;
                 Index = -1;
@@ -1476,9 +1228,7 @@ namespace Exader
             public void Dispose()
             {
                 if (_source != null)
-                {
                     Index = _source.Length;
-                }
 
                 _source = null;
             }
@@ -1488,9 +1238,7 @@ namespace Exader
                 if (IsStarted)
                 {
                     if (!IsFinished)
-                    {
                         return Current.ToString(); // TODO ...prefix<Current>suffix...
-                    }
 
                     return "Finished";
                 }
@@ -1502,9 +1250,7 @@ namespace Exader
             {
                 while (MoveNext())
                     if (other.Current == Current)
-                    {
                         return Index;
-                    }
 
                 return -1;
             }
@@ -1515,21 +1261,15 @@ namespace Exader
                 while (MoveNext())
                 {
                     if (other.Current != Current)
-                    {
                         continue;
-                    }
 
                     start = Index;
                     while (other.MoveNext() & MoveNext())
                         if (other.Current != Current)
-                        {
                             break;
-                        }
 
                     if (other.IsFinished || IsFinished)
-                    {
                         break;
-                    }
 
                     Index = start;
                     start = -1;
@@ -1540,5 +1280,33 @@ namespace Exader
                 return start;
             }
         }
+
+#if NET45
+        /// <summary>
+        ///     Converts the specified string to titlecase.
+        /// </summary>
+        /// <returns> The specified string converted to titlecase.</returns>
+        /// <param name="self">The string to convert to titlecase.</param>
+        /// <exception cref="T:System.ArgumentNullException">When <paramref name="self" /> is null.</exception>
+        public static string ToTitleCase(this string self)
+        {
+            var cultureInfo = Thread.CurrentThread.CurrentCulture;
+            var textInfo = cultureInfo.TextInfo;
+            return textInfo.ToTitleCase(self);
+        }
+
+        /// <summary>
+        ///     Converts the specified string to titlecase.
+        /// </summary>
+        /// <returns>The specified string converted to titlecase.</returns>
+        /// <param name="self">The string to convert to titlecase.</param>
+        /// <param name="culture"></param>
+        /// <exception cref="T:System.ArgumentNullException">self is null.</exception>
+        public static string ToTitleCase(this string self, CultureInfo culture)
+        {
+            var textInfo = culture.TextInfo;
+            return textInfo.ToTitleCase(self);
+        }
+#endif
     }
 }

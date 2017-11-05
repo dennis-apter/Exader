@@ -11,19 +11,17 @@ namespace Exader.IO
     {
         public bool IsDirectoryExists => System.IO.Directory.Exists(ToAbsoluteString());
 
+        public bool IsExists => IsDirectory ? IsDirectoryExists : IsFileExists;
+
         public bool IsEmptyFileOrDirectory
         {
             get
             {
                 if (IsFileExists)
-                {
                     return 0 == new FileInfo(ToString()).Length;
-                }
 
                 if (IsDirectoryExists)
-                {
-                    return 0 == System.IO.Directory.GetFileSystemEntries(ToString()).Length;
-                }
+                    return !System.IO.Directory.EnumerateFileSystemEntries(ToString()).Any();
 
                 return true;
             }
@@ -51,7 +49,6 @@ namespace Exader.IO
                 if (System.IO.Directory.Exists(destPath))
                 {
                     var name = Path.GetFileName(sourcePath);
-
                     destPath = Path.Combine(destPath, name);
                 }
 
@@ -62,13 +59,9 @@ namespace Exader.IO
         public static string Temporary(string fileName = null, bool sanitize = false)
         {
             if (null == fileName)
-            {
                 fileName = Path.GetTempFileName();
-            }
             else if (sanitize)
-            {
                 fileName = SanitizeFileName(fileName);
-            }
 
             return Path.Combine(Path.GetTempPath(), fileName);
         }
@@ -100,9 +93,7 @@ namespace Exader.IO
             if (!System.IO.Directory.Exists(sourceDir))
             {
                 if (options.ContinueOnError)
-                {
                     return;
-                }
 
                 throw new DirectoryNotFoundException("Source directory does not exist or could not be found: " +
                                                      sourceDir);
@@ -118,16 +109,13 @@ namespace Exader.IO
                 var existsFiles = System.IO.Directory.EnumerateFiles(destDir);
                 foreach (var existsFile in existsFiles)
                     if (options.IsAccept(existsFile, true))
-                    {
                         try
                         {
                             if (ClearCondition.IfOlderThenBaseTime == options.Clear)
                             {
                                 var lastWriteTime = System.IO.File.GetLastWriteTime(existsFile);
                                 if (lastWriteTime < options.BaseTime)
-                                {
                                     continue;
-                                }
                             }
 
                             System.IO.File.Delete(existsFile);
@@ -135,11 +123,8 @@ namespace Exader.IO
                         catch (Exception)
                         {
                             if (!options.ContinueOnError)
-                            {
                                 throw;
-                            }
                         }
-                    }
             }
 
             // Get the file contents of the directory to copy.
@@ -156,9 +141,7 @@ namespace Exader.IO
 
             // If copySubDirs is true, copy the subdirectories.
             if (!options.Recursive)
-            {
                 return;
-            }
 
             var sourceSubdirs = System.IO.Directory.EnumerateDirectories(sourceDir);
             foreach (var sourceSubdir in sourceSubdirs)
@@ -171,19 +154,15 @@ namespace Exader.IO
                     CopyDirectory(sourceSubdir, destSubdir, options);
 
                     if (options.ExcludeEmptyDirectories)
-                    {
                         try
                         {
                             if (!System.IO.Directory.EnumerateFileSystemEntries(destSubdir).Any())
-                            {
                                 System.IO.Directory.Delete(destSubdir);
-                            }
                         }
                         catch (Exception ex)
                         {
                             // TODO Добавить опции по обработке ошибок
                         }
-                    }
                 }
         }
 
@@ -192,30 +171,43 @@ namespace Exader.IO
             try
             {
                 if (OverwriteCondition.Always != options.Overwrite && System.IO.File.Exists(destFile))
-                {
                     switch (options.Overwrite)
                     {
                         case OverwriteCondition.IfNewer:
                             var destLastWriteTime = System.IO.File.GetLastWriteTime(destFile);
                             var sourceLastWriteTime = System.IO.File.GetLastWriteTime(sourceFile);
                             if (sourceLastWriteTime < destLastWriteTime)
-                            {
                                 return;
-                            }
 
                             break;
                     }
-                }
 
                 System.IO.File.Copy(sourceFile, destFile, true);
             }
             catch (Exception)
             {
                 if (!options.ContinueOnError)
-                {
                     throw;
-                }
             }
+        }
+
+        /// <summary>
+        ///     Checks if file or directory exists and generate a unique name if necessary.
+        /// </summary>
+        /// <param name="format">New name format.</param>
+        /// <returns></returns>
+        public FilePath AsUnique(string format = "{0} ({1})")
+        {
+            var path = this;
+            var i = 0;
+            var name = path.NameWithoutExtension;
+            while (path.IsExists)
+            {
+                var newName = string.Format(format, name, ++i);
+                path = path.WithBasename(newName + path.Extension);
+            }
+
+            return path;
         }
 
         public void AppendAllText(string contents)
@@ -242,9 +234,7 @@ namespace Exader.IO
             if (IsFileExists)
             {
                 if (includeReadOnly)
-                {
                     ToFileInfo().IsReadOnly = false;
-                }
 
                 using (var fs = System.IO.File.Open(ToString(), FileMode.Open, FileAccess.Write))
                 {
@@ -330,9 +320,7 @@ namespace Exader.IO
         public FilePath EnsureDirectoryExists()
         {
             if (!IsDirectoryExists)
-            {
                 System.IO.Directory.CreateDirectory(ToString());
-            }
 
             return this;
         }
@@ -344,9 +332,7 @@ namespace Exader.IO
         public FilePath EnsureParentExists()
         {
             if (!IsParentExists)
-            {
                 System.IO.Directory.CreateDirectory(WithoutNameAsString());
-            }
 
             return this;
         }
@@ -359,9 +345,7 @@ namespace Exader.IO
         public FilePath MoveTo(FilePath destination)
         {
             if (destination.IsDirectory)
-            {
                 destination = destination.EnsureDirectoryExists().File(Name);
-            }
 
             System.IO.File.Move(this, destination);
             return destination;
@@ -379,6 +363,16 @@ namespace Exader.IO
             return WriteText(encoding);
         }
 
+        public FileStream Read()
+        {
+            return System.IO.File.OpenRead(ToString());
+        }
+
+        public byte[] ReadAllBytes()
+        {
+            return System.IO.File.ReadAllBytes(ToString());
+        }
+
         public string[] ReadAllLines(Encoding encoding = null)
         {
             return System.IO.File.ReadAllLines(this, encoding ?? Encoding.UTF8);
@@ -392,17 +386,12 @@ namespace Exader.IO
         public string ReadAllTextWithDecoding(int maxFileSize = 64 * 1024, Encoding defaultEncoding = null)
         {
             if (defaultEncoding == null)
-            {
                 defaultEncoding = Encoding.UTF8;
-            }
 
             using (var stream = System.IO.File.Open(ToString(), FileMode.Open, FileAccess.Read, FileShare.Read))
             {
                 if (maxFileSize < stream.Length)
-                {
-                    throw new ArgumentException(string.Format("Размер файла “{0}” превышает {1} КБ.", ToString(),
-                        maxFileSize / 1024));
-                }
+                    throw new ArgumentException($"Размер файла “{ToString()}” превышает {maxFileSize / 1024} КБ.");
 
                 var encoding = Encoding.UTF8;
                 while (stream.CanRead)
@@ -449,13 +438,9 @@ namespace Exader.IO
         public FileSystemInfo ToFileSystemInfo()
         {
             if (IsDirectoryExists)
-            {
                 return new DirectoryInfo(this);
-            }
             if (IsFileExists)
-            {
                 return new FileInfo(this);
-            }
 
             return null;
         }
@@ -463,27 +448,18 @@ namespace Exader.IO
         public bool TryRecodeToUtf8(int maxFileSize = 64 * 1024, Encoding fromEncoding = null)
         {
             if (fromEncoding == null)
-            {
                 fromEncoding = Encoding.UTF8;
-            }
             else if (Encoding.UTF8.Equals(fromEncoding))
-            {
                 return false;
-            }
 
             FilePath copy;
             using (var stream = System.IO.File.Open(ToString(), FileMode.Open, FileAccess.Read, FileShare.Read))
             {
                 if (maxFileSize < stream.Length)
-                {
-                    throw new ArgumentException(string.Format("Размер файла “{0}” превышает {1} КБ.", ToString(),
-                        maxFileSize / 1024));
-                }
+                    throw new ArgumentException($"Размер файла “{ToString()}” превышает {maxFileSize / 1024} КБ.");
 
                 if (stream.IsUtf8())
-                {
                     return false;
-                }
 
                 copy = WithExtension(Extension + "__fixed");
                 using (var fixStream = System.IO.File.Create(copy))
@@ -500,6 +476,17 @@ namespace Exader.IO
             }
 
             return true;
+        }
+
+        public FileStream Write()
+        {
+            return System.IO.File.OpenWrite(ToString());
+        }
+
+        public FilePath WriteAllBytes(byte[] bytes)
+        {
+            System.IO.File.WriteAllBytes(ToString(), bytes);
+            return this;
         }
 
         public FilePath WriteAllLines(string[] contents, Encoding encoding = null)
@@ -537,16 +524,12 @@ namespace Exader.IO
             string basePath, string selfPath, string searchPattern, SearchOption searchOption)
         {
             if (basePath == "")
-            {
                 basePath = ".";
-            }
 
             foreach (var directory in System.IO.Directory.EnumerateDirectories(basePath, searchPattern, searchOption))
             {
                 if (!string.IsNullOrEmpty(selfPath) && selfPath.Equals(directory, StringComparison.OrdinalIgnoreCase))
-                {
                     continue;
-                }
 
                 yield return Parse(directory);
             }
@@ -556,16 +539,12 @@ namespace Exader.IO
             string basePath, string selfPath, string searchPattern, SearchOption searchOption)
         {
             if (basePath == "")
-            {
                 basePath = ".";
-            }
 
             foreach (var file in System.IO.Directory.EnumerateFiles(basePath, searchPattern, searchOption))
             {
                 if (!string.IsNullOrEmpty(selfPath) && selfPath.Equals(file, StringComparison.OrdinalIgnoreCase))
-                {
                     continue;
-                }
 
                 yield return Parse(file);
             }
@@ -574,18 +553,14 @@ namespace Exader.IO
         public FilePath Ancestor(int offset)
         {
             if (offset < 1)
-            {
                 throw new ArgumentOutOfRangeException(nameof(offset));
-            }
 
             var ancestor = this;
             do
             {
                 ancestor = ancestor.Parent;
                 if (ancestor == null)
-                {
                     throw new ArgumentOutOfRangeException(nameof(offset));
-                }
             } while (0 < --offset);
 
             return ancestor;
@@ -748,12 +723,10 @@ namespace Exader.IO
         public FilePath Sibling(string relativePath)
         {
             if (null == Parent)
-            {
                 throw new ArgumentException(
                     $"Невозможно получить смежный путь {relativePath} на базе путя без основания {ToString()}.",
                     nameof(relativePath)
                 );
-            }
 
             return Parent.Combine(relativePath);
         }
@@ -795,6 +768,6 @@ namespace Exader.IO
             return Siblings(AllItemsPattern);
         }
 
-#endregion
+        #endregion
     }
 }

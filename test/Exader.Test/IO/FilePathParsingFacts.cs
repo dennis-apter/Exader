@@ -128,21 +128,6 @@ namespace Exader.IO
             Assert.Equal(result, FilePath.Parse(value));
         }
 
-        [Fact]
-        public void Extension()
-        {
-            var fp = FilePath.Parse("foo.bar");
-            Assert.Equal(".bar", fp.Extension);
-            Assert.Equal("foo.bar", fp.Name);
-            Assert.Equal("foo", fp.NameWithoutExtension);
-
-            fp = FilePath.Parse("foo.bar/");
-            Assert.True(fp.IsDirectory);
-            Assert.Equal(".bar", fp.Extension);
-            Assert.Equal("foo.bar", fp.Name);
-            Assert.Equal("foo", fp.NameWithoutExtension);
-        }
-
         [Theory]
         [InlineData("..e", ".")]
         [InlineData("...e", "..")]
@@ -178,7 +163,7 @@ namespace Exader.IO
         {
             var ex = Assert.Throws<ArgumentException>(() => FilePath.Parse(s));
             Assert.Contains("xyz", ex.Message);
-            
+
             Assert.False(FilePath.TryParse(s, out var result, out var error));
             Assert.Equal(FilePathParseErrorType.InvalidDriveLetter, error.ErrorType);
         }
@@ -225,7 +210,7 @@ namespace Exader.IO
                 Assert.Equal("c:", fp.Drive);
                 Assert.Empty(fp.Host);
                 Assert.Empty(fp.Extension);
-                Assert.Empty(fp.Prefix);
+                Assert.Empty(fp.ParentPath);
                 Assert.True(fp.IsDirectory);
                 Assert.True(fp.IsLocal);
                 Assert.False(fp.IsNetwork);
@@ -262,7 +247,7 @@ namespace Exader.IO
                 Assert.Equal("\\\\h", fp.Host);
                 Assert.Empty(fp.Drive);
                 Assert.Empty(fp.Extension);
-                Assert.Empty(fp.Prefix);
+                Assert.Empty(fp.ParentPath);
                 Assert.True(fp.IsDirectory);
                 Assert.False(fp.IsLocal);
                 Assert.True(fp.IsNetwork);
@@ -359,6 +344,21 @@ namespace Exader.IO
         {
             var fp = FilePath.Parse(value);
             Assert.Equal(result, fp);
+        }
+
+        [Fact]
+        public void Extension()
+        {
+            var fp = FilePath.Parse("foo.bar");
+            Assert.Equal(".bar", fp.Extension);
+            Assert.Equal("foo.bar", fp.Name);
+            Assert.Equal("foo", fp.NameWithoutExtension);
+
+            fp = FilePath.Parse("foo.bar/");
+            Assert.True(fp.IsDirectory);
+            Assert.Equal(".bar", fp.Extension);
+            Assert.Equal("foo.bar", fp.Name);
+            Assert.Equal("foo", fp.NameWithoutExtension);
         }
     }
 }

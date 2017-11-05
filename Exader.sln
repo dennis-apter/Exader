@@ -1,13 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26430.16
+VisualStudioVersion = 15.0.27004.2006
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{5119576E-9A2B-4BDD-BD46-8C491EC55C1A}"
-	ProjectSection(SolutionItems) = preProject
-		Exader.sln.DotSettings = Exader.sln.DotSettings
-	EndProjectSection
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{9914801A-3DF7-48DC-BBB4-D59C6B2DAB2D}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Exader.Test", "test\Exader.Test\Exader.Test.csproj", "{7AEAFFA6-DCBC-409D-8064-1878A764CDC1}"
@@ -82,5 +77,8 @@ Global
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{7AEAFFA6-DCBC-409D-8064-1878A764CDC1} = {9914801A-3DF7-48DC-BBB4-D59C6B2DAB2D}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {2D91E73C-488E-41A0-9693-A603EC2933D6}
 	EndGlobalSection
 EndGlobal

@@ -32,35 +32,9 @@ namespace Exader.IO
         [InlineData(@"dir1\dir2\..\..\", "", "", @"dir1\dir2\..\..\")]
         public void Canonicalize(string v, string r, string f, string p)
         {
-            string driveOrHost;
-            string rootFolder;
-
-            Assert.Equal(p, FilePath.CanonicalizePath(v, out driveOrHost, out rootFolder));
+            Assert.Equal(p, FilePath.CanonicalizePath(v, out var driveOrHost, out var rootFolder));
             Assert.Equal(f, rootFolder);
             Assert.Equal(r, driveOrHost);
-        }
-
-        [Fact]
-        public void IsLocal()
-        {
-            Assert.True(FilePath.Parse("c:").IsLocal);
-            Assert.True(FilePath.Parse("c:/").IsLocal);
-            Assert.False(FilePath.Parse("//s/s/").IsLocal);
-            Assert.False(FilePath.Parse("").IsLocal);
-            Assert.False(FilePath.Parse(".").IsLocal);
-            Assert.False(FilePath.Parse("..").IsLocal);
-            Assert.False(FilePath.Parse("/").IsLocal);
-        }
-
-        [Fact]
-        public void IsNetwork()
-        {
-            Assert.True(FilePath.Parse("//s/s/").IsNetwork);
-            Assert.False(FilePath.Parse("c:/").IsNetwork);
-            Assert.False(FilePath.Parse("").IsNetwork);
-            Assert.False(FilePath.Parse(".").IsNetwork);
-            Assert.False(FilePath.Parse("..").IsNetwork);
-            Assert.False(FilePath.Parse("/").IsNetwork);
         }
 
         [Theory]
@@ -86,16 +60,101 @@ namespace Exader.IO
         }
 
         [Fact]
-        public void IsExternal()
+        public void FileExtension()
         {
-            var fp = FilePath.Parse("../../..");
+            Assert.Equal("", FilePath.Parse("f").FileExtension);
+            Assert.Equal(".e", FilePath.Parse("f.e").FileExtension);
+            Assert.Equal(".e", FilePath.Parse("f.r.e").FileExtension);
+            Assert.Equal("", FilePath.Parse("d/").FileExtension);
+            Assert.Equal("", FilePath.Parse("d.e/").FileExtension);
+            Assert.Equal("", FilePath.Parse("d.r.e/").FileExtension);
+            Assert.Equal(".e", FilePath.Parse(".e").FileExtension);
+            Assert.Equal("", FilePath.Parse(".e/").FileExtension);
+            Assert.Equal("", FilePath.Parse("").FileExtension);
+            Assert.Equal("", FilePath.Parse(".").FileExtension);
+            Assert.Equal("", FilePath.Parse("..").FileExtension);
+            Assert.Equal("", FilePath.Parse("../").FileExtension);
+            Assert.Equal("", FilePath.Parse("../.").FileExtension);
+            Assert.Equal("", FilePath.Parse("../..").FileExtension);
+            Assert.Equal("", FilePath.Parse("/").FileExtension);
+        }
 
-            Assert.NotNull(fp.Parent);
-            Assert.NotNull(fp.Parent.Parent);
-            Assert.Null(fp.Parent.Parent.Parent);
-            Assert.True(fp.IsExternal);
-            Assert.True(fp.Parent.IsExternal);
-            Assert.True(fp.Parent.Parent.IsExternal);
+        [Fact]
+        public void Basename()
+        {
+            Assert.Equal("f", FilePath.Parse("f").Basename);
+            Assert.Equal("f", FilePath.Parse("f.e").Basename);
+            Assert.Equal("f.r", FilePath.Parse("f.r.e").Basename);
+            Assert.Equal("d", FilePath.Parse("d/").Basename);
+            Assert.Equal("d.e", FilePath.Parse("d.e/").Basename);
+            Assert.Equal("d.r.e", FilePath.Parse("d.r.e/").Basename);
+            Assert.Equal("", FilePath.Parse(".e").Basename);
+            Assert.Equal(".e", FilePath.Parse(".e/").Basename);
+            Assert.Equal("", FilePath.Parse("").Basename);
+            Assert.Equal("", FilePath.Parse(".").Basename);
+            Assert.Equal("..", FilePath.Parse("..").Basename);
+            Assert.Equal("..", FilePath.Parse("../").Basename);
+            Assert.Equal("..", FilePath.Parse("../.").Basename);
+            Assert.Equal("..", FilePath.Parse("../..").Basename);
+            Assert.Equal("", FilePath.Parse("/").Basename);
+        }
+
+        [Fact]
+        public void DirectoryPath_Directory()
+        {
+            Assert.Equal(@"d\sd\", FilePath.Parse("c:/d/sd/").DirectoryPath);
+            Assert.Equal(@"d\sd\", FilePath.Parse("/d/sd/").DirectoryPath);
+            Assert.Equal(@"d\sd\", FilePath.Parse("d/sd/").DirectoryPath);
+            Assert.Equal(@"sd\", FilePath.Parse("/sd/").DirectoryPath);
+            Assert.Equal(@"sd\", FilePath.Parse("sd/").DirectoryPath);
+            Assert.Equal(@"", FilePath.Parse("./").DirectoryPath);
+            Assert.Equal(@"", FilePath.Parse(".").DirectoryPath);
+            Assert.Equal(@"", FilePath.Parse("").DirectoryPath);
+        }
+
+        [Fact]
+        public void DirectoryPath_File()
+        {
+            Assert.Equal(@"d\", FilePath.Parse("c:/d/f.e").DirectoryPath);
+            Assert.Equal(@"d\", FilePath.Parse("/d/f.e").DirectoryPath);
+            Assert.Equal(@"d\", FilePath.Parse("d/f.e").DirectoryPath);
+            Assert.Equal(@"", FilePath.Parse("f.e").DirectoryPath);
+        }
+
+        [Fact]
+        public void DriveLetter()
+        {
+            var fp1 = FilePath.Parse("c:\\d");
+
+            Assert.True(fp1.HasDriveOrHost);
+            Assert.Equal("c:", fp1.Drive);
+            Assert.Equal('c', fp1.DriveLetter);
+
+            var fp2 = FilePath.Parse("\\d");
+
+            Assert.False(fp2.HasDriveOrHost);
+            Assert.Empty(fp2.Drive);
+            Assert.Null(fp2.DriveLetter);
+        }
+
+        [Fact]
+        public void Extension()
+        {
+            Assert.Equal("", FilePath.Parse("f").Extension);
+            Assert.Equal(".e", FilePath.Parse("f.e").Extension);
+            Assert.Equal(".e", FilePath.Parse("f.r.e").Extension);
+            Assert.Equal("", FilePath.Parse("d/").Extension);
+            Assert.Equal(".e", FilePath.Parse("d.e/").Extension);
+            Assert.Equal(".e", FilePath.Parse("d.r.e/").Extension);
+            Assert.Equal(".e", FilePath.Parse(".e").Extension);
+            Assert.Equal(".e", FilePath.Parse(".e/").Extension);
+            Assert.Equal("", FilePath.Parse("").Extension);
+            Assert.Equal("", FilePath.Parse(".").Extension);
+            Assert.Equal("", FilePath.Parse("..").Extension);
+            Assert.Equal("", FilePath.Parse("../").Extension);
+            Assert.Equal("", FilePath.Parse("../.").Extension);
+            Assert.Equal("", FilePath.Parse("../..").Extension);
+            Assert.Equal("", FilePath.Parse("/").Extension);
         }
 
         [Fact]
@@ -166,41 +225,39 @@ namespace Exader.IO
         }
 
         [Fact]
-        public void DirectoryPath_File()
+        public void IsExternal()
         {
-            Assert.Equal(@"d\", FilePath.Parse("c:/d/f.e").DirectoryPath);
-            Assert.Equal(@"d\", FilePath.Parse("/d/f.e").DirectoryPath);
-            Assert.Equal(@"d\", FilePath.Parse("d/f.e").DirectoryPath);
-            Assert.Equal(@"", FilePath.Parse("f.e").DirectoryPath);
+            var fp = FilePath.Parse("../../..");
+
+            Assert.NotNull(fp.Parent);
+            Assert.NotNull(fp.Parent.Parent);
+            Assert.Null(fp.Parent.Parent.Parent);
+            Assert.True(fp.IsExternal);
+            Assert.True(fp.Parent.IsExternal);
+            Assert.True(fp.Parent.Parent.IsExternal);
         }
 
         [Fact]
-        public void DirectoryPath_Directory()
+        public void IsLocal()
         {
-            Assert.Equal(@"d\sd\", FilePath.Parse("c:/d/sd/").DirectoryPath);
-            Assert.Equal(@"d\sd\", FilePath.Parse("/d/sd/").DirectoryPath);
-            Assert.Equal(@"d\sd\", FilePath.Parse("d/sd/").DirectoryPath);
-            Assert.Equal(@"sd\", FilePath.Parse("/sd/").DirectoryPath);
-            Assert.Equal(@"sd\", FilePath.Parse("sd/").DirectoryPath);
-            Assert.Equal(@"", FilePath.Parse("./").DirectoryPath);
-            Assert.Equal(@"", FilePath.Parse(".").DirectoryPath);
-            Assert.Equal(@"", FilePath.Parse("").DirectoryPath);
+            Assert.True(FilePath.Parse("c:").IsLocal);
+            Assert.True(FilePath.Parse("c:/").IsLocal);
+            Assert.False(FilePath.Parse("//s/s/").IsLocal);
+            Assert.False(FilePath.Parse("").IsLocal);
+            Assert.False(FilePath.Parse(".").IsLocal);
+            Assert.False(FilePath.Parse("..").IsLocal);
+            Assert.False(FilePath.Parse("/").IsLocal);
         }
 
         [Fact]
-        public void DriveLetter()
+        public void IsNetwork()
         {
-            var fp1 = FilePath.Parse("c:\\d");
-
-            Assert.True(fp1.HasDriveOrHost);
-            Assert.Equal("c:", fp1.Drive);
-            Assert.Equal('c', fp1.DriveLetter);
-
-            var fp2 = FilePath.Parse("\\d");
-
-            Assert.False(fp2.HasDriveOrHost);
-            Assert.Empty(fp2.Drive);
-            Assert.Null(fp2.DriveLetter);
+            Assert.True(FilePath.Parse("//s/s/").IsNetwork);
+            Assert.False(FilePath.Parse("c:/").IsNetwork);
+            Assert.False(FilePath.Parse("").IsNetwork);
+            Assert.False(FilePath.Parse(".").IsNetwork);
+            Assert.False(FilePath.Parse("..").IsNetwork);
+            Assert.False(FilePath.Parse("/").IsNetwork);
         }
 
         [Fact]
@@ -221,26 +278,6 @@ namespace Exader.IO
             Assert.Equal("..", FilePath.Parse("../.").NameWithoutExtension);
             Assert.Equal("..", FilePath.Parse("../..").NameWithoutExtension);
             Assert.Equal("", FilePath.Parse("/").NameWithoutExtension);
-        }
-
-        [Fact]
-        public void Extension()
-        {
-            Assert.Equal("", FilePath.Parse("f").Extension);
-            Assert.Equal(".e", FilePath.Parse("f.e").Extension);
-            Assert.Equal(".e", FilePath.Parse("f.r.e").Extension);
-            Assert.Equal("", FilePath.Parse("d/").Extension);
-            Assert.Equal(".e", FilePath.Parse("d.e/").Extension);
-            Assert.Equal(".e", FilePath.Parse("d.r.e/").Extension);
-            Assert.Equal(".e", FilePath.Parse(".e").Extension);
-            Assert.Equal(".e", FilePath.Parse(".e/").Extension);
-            Assert.Equal("", FilePath.Parse("").Extension);
-            Assert.Equal("", FilePath.Parse(".").Extension);
-            Assert.Equal("", FilePath.Parse("..").Extension);
-            Assert.Equal("", FilePath.Parse("../").Extension);
-            Assert.Equal("", FilePath.Parse("../.").Extension);
-            Assert.Equal("", FilePath.Parse("../..").Extension);
-            Assert.Equal("", FilePath.Parse("/").Extension);
         }
 
         [Fact]
