@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Exader
 {
-    public class StringExtensionsFacts
+    public class StringExtensionsTest
     {
         private const string ClassFooMethodBar = "\nclass Foo\n{\nmethod Bar {}\n}\n";
         private const string ClassFooMethodBarIndent1 = "\t\n\tclass Foo\n\t{\n\tmethod Bar {}\n\t}\n\t";
@@ -276,6 +276,15 @@ namespace Exader
         {
             Assert.Equal("Foo", "Foo".Right(42));
             Assert.Equal("Foo", "Foo".Right(-42));
+        }
+
+        [Fact]
+        public static void ToCamelCase()
+        {
+            Assert.Equal("aBC", "ABC".ToCamelCase());
+            Assert.Equal("abc", "Abc".ToCamelCase());
+            Assert.Equal("aBC", "aBC".ToCamelCase());
+            Assert.Equal("abc", "abc".ToCamelCase());
         }
 
         [Fact]

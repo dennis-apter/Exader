@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Exader
 {
-    public class DateTimeTests
+    public class DateTimeExtensionsTest
     {
         [Fact]
         public void AddDate()

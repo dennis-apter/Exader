@@ -4,7 +4,7 @@
     <TargetFrameworks>net45;netstandard1.3</TargetFrameworks>
     <AssemblyVersion>2.0.0.0</AssemblyVersion>
     <FileVersion>2.0.0.0</FileVersion>
-    <Version>2.0.2</Version>
+    <Version>2.0.3</Version>
     <RootNamespace>Exader</RootNamespace>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Authors>Dennis Apter</Authors>

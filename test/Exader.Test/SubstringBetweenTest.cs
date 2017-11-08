@@ -2,7 +2,7 @@
 
 namespace Exader
 {
-    public class SubstringBetweenFacts
+    public class SubstringBetweenTest
     {
         [Fact]
         public static void Between()
