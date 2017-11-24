@@ -9,7 +9,7 @@ namespace Exader
 
         public static FilePath Temp()
         {
-            return (Path / "PleaseIgnore").EnsureDirectoryExists();
+            return (Path / "PleaseIgnore/").Ensure();
         }
 
         public static FilePath Get(string fileName)
