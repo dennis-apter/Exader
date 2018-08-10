@@ -11,6 +11,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Exader", "src\Exader\Exader
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Exader.IO", "src\Exader.IO\Exader.IO.csproj", "{C75F3B76-3847-4711-BC7F-3786037F6F48}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Exader.Test.Core", "test\Exader.Test.Core\Exader.Test.Core.csproj", "{5557F252-3EE7-44F0-B708-C6CF50FB5E4B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -71,12 +73,29 @@ Global
 		{C75F3B76-3847-4711-BC7F-3786037F6F48}.Release|x64.Build.0 = Release|Any CPU
 		{C75F3B76-3847-4711-BC7F-3786037F6F48}.Release|x86.ActiveCfg = Release|Any CPU
 		{C75F3B76-3847-4711-BC7F-3786037F6F48}.Release|x86.Build.0 = Release|Any CPU
+		{5557F252-3EE7-44F0-B708-C6CF50FB5E4B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5557F252-3EE7-44F0-B708-C6CF50FB5E4B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5557F252-3EE7-44F0-B708-C6CF50FB5E4B}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{5557F252-3EE7-44F0-B708-C6CF50FB5E4B}.Debug|ARM.Build.0 = Debug|Any CPU
+		{5557F252-3EE7-44F0-B708-C6CF50FB5E4B}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{5557F252-3EE7-44F0-B708-C6CF50FB5E4B}.Debug|x64.Build.0 = Debug|Any CPU
+		{5557F252-3EE7-44F0-B708-C6CF50FB5E4B}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{5557F252-3EE7-44F0-B708-C6CF50FB5E4B}.Debug|x86.Build.0 = Debug|Any CPU
+		{5557F252-3EE7-44F0-B708-C6CF50FB5E4B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5557F252-3EE7-44F0-B708-C6CF50FB5E4B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5557F252-3EE7-44F0-B708-C6CF50FB5E4B}.Release|ARM.ActiveCfg = Release|Any CPU
+		{5557F252-3EE7-44F0-B708-C6CF50FB5E4B}.Release|ARM.Build.0 = Release|Any CPU
+		{5557F252-3EE7-44F0-B708-C6CF50FB5E4B}.Release|x64.ActiveCfg = Release|Any CPU
+		{5557F252-3EE7-44F0-B708-C6CF50FB5E4B}.Release|x64.Build.0 = Release|Any CPU
+		{5557F252-3EE7-44F0-B708-C6CF50FB5E4B}.Release|x86.ActiveCfg = Release|Any CPU
+		{5557F252-3EE7-44F0-B708-C6CF50FB5E4B}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{7AEAFFA6-DCBC-409D-8064-1878A764CDC1} = {9914801A-3DF7-48DC-BBB4-D59C6B2DAB2D}
+		{5557F252-3EE7-44F0-B708-C6CF50FB5E4B} = {9914801A-3DF7-48DC-BBB4-D59C6B2DAB2D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {2D91E73C-488E-41A0-9693-A603EC2933D6}

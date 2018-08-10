@@ -71,9 +71,8 @@ namespace Exader.IO
         {
             public Fixture()
             {
-                Root = TestData.Temp() / "Copy";
-                Root.Clear(true)
-                    .Combine("A").CreateAsDirectory()
+                Root = TestData.Path.Directory(Guid.NewGuid().ToString());
+                Root.Combine("A").CreateAsDirectory()
                     .Combine("a.txt").WriteAllText("Test").Parent
                     .Combine("B").CreateAsDirectory()
                     .Combine("b.txt").WriteAllText("Test");

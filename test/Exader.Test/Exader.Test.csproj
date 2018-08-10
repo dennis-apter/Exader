@@ -16,10 +16,4 @@
     <ProjectReference Include="..\..\src\Exader\Exader.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Update="TestData\_._">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
 </Project>

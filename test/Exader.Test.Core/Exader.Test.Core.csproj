@@ -1,0 +1,81 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netcoreapp2.0</TargetFramework>
+
+        <IsPackable>false</IsPackable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.7.0" />
+        <PackageReference Include="xunit" Version="2.3.1" />
+        <PackageReference Include="xunit.runner.visualstudio" Version="2.3.1" />
+        <DotNetCliToolReference Include="dotnet-xunit" Version="2.3.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\src\Exader.IO\Exader.IO.csproj" />
+      <ProjectReference Include="..\..\src\Exader\Exader.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Include="..\Exader.Test\ArrayExtensionsTest.cs">
+        <Link>ArrayExtensionsTest.cs</Link>
+      </Compile>
+      <Compile Include="..\Exader.Test\DateTimeExtensionsTest.cs">
+        <Link>DateTimeExtensionsTest.cs</Link>
+      </Compile>
+      <Compile Include="..\Exader.Test\HierarchyTest.cs">
+        <Link>HierarchyTest.cs</Link>
+      </Compile>
+      <Compile Include="..\Exader.Test\IO\FilePathBuilderFacts.cs">
+        <Link>IO\FilePathBuilderFacts.cs</Link>
+      </Compile>
+      <Compile Include="..\Exader.Test\IO\FilePathConversionFacts.cs">
+        <Link>IO\FilePathConversionFacts.cs</Link>
+      </Compile>
+      <Compile Include="..\Exader.Test\IO\FilePathCopyingFacts.cs">
+        <Link>IO\FilePathCopyingFacts.cs</Link>
+      </Compile>
+      <Compile Include="..\Exader.Test\IO\FilePathParsingFacts.cs">
+        <Link>IO\FilePathParsingFacts.cs</Link>
+      </Compile>
+      <Compile Include="..\Exader.Test\IO\FilePathPatternTests.cs">
+        <Link>IO\FilePathPatternTests.cs</Link>
+      </Compile>
+      <Compile Include="..\Exader.Test\IO\FilePathPropertiesFacts.cs">
+        <Link>IO\FilePathPropertiesFacts.cs</Link>
+      </Compile>
+      <Compile Include="..\Exader.Test\IO\FilePathRelationFacts.cs">
+        <Link>IO\FilePathRelationFacts.cs</Link>
+      </Compile>
+      <Compile Include="..\Exader.Test\IO\FilePathTransformationFacts.cs">
+        <Link>IO\FilePathTransformationFacts.cs</Link>
+      </Compile>
+      <Compile Include="..\Exader.Test\IO\FilePathTravelsalFacts.cs">
+        <Link>IO\FilePathTravelsalFacts.cs</Link>
+      </Compile>
+      <Compile Include="..\Exader.Test\IO\InvalidFilePathTests.cs">
+        <Link>IO\InvalidFilePathTests.cs</Link>
+      </Compile>
+      <Compile Include="..\Exader.Test\IO\StreamExtensionsFacts.cs">
+        <Link>IO\StreamExtensionsFacts.cs</Link>
+      </Compile>
+      <Compile Include="..\Exader.Test\Reflection\TypeExtensionsTest.cs">
+        <Link>Reflection\TypeExtensionsTest.cs</Link>
+      </Compile>
+      <Compile Include="..\Exader.Test\StringExtensionsTest.cs">
+        <Link>StringExtensionsTest.cs</Link>
+      </Compile>
+      <Compile Include="..\Exader.Test\SubstringBetweenTest.cs">
+        <Link>SubstringBetweenTest.cs</Link>
+      </Compile>
+      <Compile Include="..\Exader.Test\SubstringTest.cs">
+        <Link>SubstringTest.cs</Link>
+      </Compile>
+      <Compile Include="..\Exader.Test\TestData.cs">
+        <Link>TestData.cs</Link>
+      </Compile>
+    </ItemGroup>
+
+</Project>

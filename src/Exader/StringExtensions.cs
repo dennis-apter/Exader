@@ -1350,6 +1350,53 @@ namespace Exader
             var textInfo = culture.TextInfo;
             return textInfo.ToTitleCase(self);
         }
+#else
+        /// <summary>
+        ///     Converts the specified string to titlecase.
+        /// </summary>
+        /// <returns> The specified string converted to titlecase.</returns>
+        /// <param name="self">The string to convert to titlecase.</param>
+        /// <exception cref="T:System.ArgumentNullException">When <paramref name="self" /> is null.</exception>
+        public static string ToTitleCase(this string self)
+        {
+            return ToTitleCase(self, CultureInfo.CurrentCulture);
+        }
+
+        /// <summary>
+        ///     Converts the specified string to titlecase.
+        /// </summary>
+        /// <returns>The specified string converted to titlecase.</returns>
+        /// <param name="self">The string to convert to titlecase.</param>
+        /// <param name="culture"></param>
+        /// <exception cref="T:System.ArgumentNullException">self is null.</exception>
+        public static string ToTitleCase(this string self, CultureInfo culture)
+        {
+            if (self.Length <= 1) return self;
+
+            var textInfo = culture.TextInfo;
+            var start = true;
+            var buffer = new StringBuilder();
+            foreach (var c in self)
+            {
+                if (char.IsLetter(c))
+                {
+                    if (start)
+                    {
+                        buffer.Append(textInfo.ToUpper(c));
+                        start = false;
+                        continue;
+                    }
+                }
+                else
+                {
+                    start = true;
+                }
+                
+                buffer.Append(c);
+            }
+
+            return buffer.ToString();
+        }
 #endif
     }
 }
