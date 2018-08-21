@@ -176,7 +176,6 @@ namespace Exader
             return null;
         }
 
-
         [Pure]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool Contains(this string self, char c)
@@ -813,8 +812,52 @@ namespace Exader
             return self + self;
         }
 
+#if NET45
+        public static string Replace(this string self, string token, string replacement, StringComparison comparison)
+        {
+            if (self == null)
+                throw new ArgumentNullException(nameof(self));
+
+            if (token == null)
+                throw new ArgumentNullException(nameof(token));
+
+            int index = self.IndexOf(token, comparison);
+            if (index != -1)
+            {
+                var buffer = new StringBuilder();
+                int start = 0;
+                do
+                {
+                    var head = self.Substring(start, index - start);
+                    buffer.Append(head).Append(replacement);
+                    start = index + token.Length;
+                    index = self.IndexOf(token, start, comparison);
+                }
+                while (index > 0);
+
+                buffer.Append(self.Substring(start));
+                return buffer.ToString();
+            }
+
+            return self;
+        }
+#endif
+
+        [Obsolete("Use ReplaceCharacters instead")]
         public static string Replace(this string self, Func<char, char> replacer)
         {
+            return ReplaceCharacters(self, replacer);
+        }
+
+        [NotNull]
+        public static string ReplaceCharacters(this string self, Func<char, char> replacer)
+        {
+            if (replacer == null)
+                throw new ArgumentNullException(nameof(replacer), "Replace delegate is null.");
+
+            if (string.IsNullOrEmpty(self))
+                return string.Empty;
+
             var result = new StringBuilder(self.Length);
             foreach (var c in self)
                 result.Append(replacer(c));

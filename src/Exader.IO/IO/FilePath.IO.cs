@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Xml;
 using JetBrains.Annotations;
 
 namespace Exader.IO
@@ -505,6 +506,11 @@ namespace Exader.IO
 #endif
         }
 
+        public XmlReader ReadXml(Encoding encoding = null, XmlReaderSettings settings = null)
+        {
+            return XmlReader.Create(ReadText(encoding), settings);
+        }
+
         public DirectoryInfo ToDirectoryInfo()
         {
             return new DirectoryInfo(this);
@@ -609,6 +615,11 @@ namespace Exader.IO
             stream.SetLength(0);
             return new StreamWriter(stream, encoding ?? Encoding.UTF8);
 #endif
+        }
+
+        public XmlWriter WriteXml(Encoding encoding = null, XmlWriterSettings settings = null)
+        {
+            return XmlWriter.Create(WriteText(encoding), settings);
         }
 
         #region Travelsal
