@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using JetBrains.Annotations;
 
 namespace Exader.IO
@@ -22,7 +23,123 @@ namespace Exader.IO
 
             return FilePath.Parse(path);
         }
-        
+
+        /// <summary>
+        /// Возвращает путь к переносимому корневому каталогу пользовательских данных приложений (%APPDATA% или ~/.config/).
+        /// </summary>
+        public static FilePath ApplicationData
+        {
+            get
+            {
+#if NET45
+                return SafeCreateFilePath(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
+#else
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    return SafeCreateFilePath(Environment.GetEnvironmentVariable("APPDATA"));
+                }
+                else
+                {
+                    return UserProfile / ".config/";
+                }
+#endif
+            }
+        }
+
+        /// <summary>
+        /// Возвращает путь к локальному корневому каталогу пользовательских данных приложений (%LOCALAPPDATA% или ~/.local/share/).
+        /// </summary>
+        public static FilePath LocalApplicationData
+        {
+            get
+            {
+#if NET45
+                return SafeCreateFilePath(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
+#else
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    return SafeCreateFilePath(Environment.GetEnvironmentVariable("LOCALAPPDATA"));
+                }
+                else
+                {
+                    return UserProfile / ".local/share/";
+                }
+#endif
+            }
+        }
+
+        /// <summary>
+        /// Возвращает путь к каталогу общих данных приложений (%ProgramData% или /usr/share/).
+        /// </summary>
+        public static FilePath CommonApplicationData
+        {
+            get
+            {
+#if NET45
+                return SafeCreateFilePath(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData));
+#else
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    return SafeCreateFilePath(Environment.GetEnvironmentVariable("ProgramData"));
+                }
+                else
+                {
+                    return FilePath.Parse("/usr/share/");
+                }
+#endif
+            }
+        }
+
+        /// <summary>
+        /// Возвращает путь к каталогу рабочего стола (%USERPROFILE%\Desktop или ~/Desktop/).
+        /// </summary>
+        public static FilePath Desktop
+        {
+            get
+            {
+#if NET45
+                return SafeCreateFilePath(Environment.GetFolderPath(Environment.SpecialFolder.Desktop));
+#else
+                return UserProfile / "Desktop/";
+#endif
+            }
+        }
+
+        public static FilePath UserProfile
+        {
+            get
+            {
+#if NET45
+                return SafeCreateFilePath(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile));
+#else
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    return SafeCreateFilePath(Environment.GetEnvironmentVariable("USERPROFILE"));
+                }
+                else
+                {
+                    return SafeCreateFilePath(Environment.GetEnvironmentVariable("HOME"));
+                }
+#endif
+            }
+        }
+
+        /// <summary>
+        /// Возвращает путь к каталогу с исполняемым кодом.
+        /// </summary>
+        [CanBeNull]
+        public static FilePath ExecutingAssemblyDirectory
+        {
+            get
+            {
+#if NET45
+                return GetDirectoryPath(Assembly.GetExecutingAssembly());
+#else
+                return SafeCreateFilePath(AppContext.BaseDirectory);
+#endif
+            }
+        }
+
 #if NETSTANDARD1_5 || NET45
 
         [CanBeNull]
@@ -63,23 +180,12 @@ namespace Exader.IO
         /// Возвращает обертку для пути <see cref="Assembly.GetExecutingAssembly"/>.
         /// </remarks>
         [CanBeNull]
-        public static FilePath ExecutingAssemblyDirectory => GetDirectoryPath(Assembly.GetExecutingAssembly());
-
-        /// <remarks>
-        /// Возвращает обертку для пути <see cref="Assembly.GetExecutingAssembly"/>.
-        /// </remarks>
-        [CanBeNull]
         public static FilePath ExecutingAssemblyFile => GetPath(Assembly.GetExecutingAssembly());
 
         public static FilePath GetPath(this Environment.SpecialFolder folder)
         {
             return SafeCreateFilePath(Environment.GetFolderPath(folder));
         }
-
-        /// <summary>
-        /// Возвращает обертку для пути <see cref="Environment.SpecialFolder.ApplicationData"/>.
-        /// </summary>
-        public static FilePath ApplicationData => SafeCreateFilePath(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
 
         /// <remarks>
         /// Возвращает обертку для пути <see cref="Assembly.GetCallingAssembly"/>.
@@ -93,15 +199,6 @@ namespace Exader.IO
         [CanBeNull]
         public static FilePath CallingAssemblyFile => GetPath(Assembly.GetCallingAssembly());
 
-        /// <summary>
-        /// Represents the file system directory that serves as a common repository for application-specific data that
-        /// is used by all users.
-        /// </summary>
-        /// <remarks>
-        /// Возвращает обертку для пути <see cref="Environment.SpecialFolder.CommonApplicationData"/>.
-        /// </remarks>
-        public static FilePath CommonApplicationData => GetPath(Environment.SpecialFolder.CommonApplicationData);
-
         /// <remarks>
         /// Возвращает обертку для пути <see cref="Environment.SpecialFolder.CommonProgramFiles"/>.
         /// </remarks>
@@ -111,11 +208,6 @@ namespace Exader.IO
         /// Возвращает обертку для пути <see cref="Environment.SpecialFolder.Cookies"/>.
         /// </remarks>
         public static FilePath Cookies => GetPath(Environment.SpecialFolder.Cookies);
-
-        /// <remarks>
-        /// Возвращает обертку для пути <see cref="Environment.SpecialFolder.DesktopDirectory"/>.
-        /// </remarks>
-        public static FilePath Desktop => GetPath(Environment.SpecialFolder.DesktopDirectory);
 
         /// <remarks>
         /// Возвращает обертку для пути <see cref="Environment.SpecialFolder.Favorites"/>.
@@ -131,11 +223,6 @@ namespace Exader.IO
         /// Возвращает обертку для пути <see cref="Environment.SpecialFolder.InternetCache"/>.
         /// </remarks>
         public static FilePath InternetCache => GetPath(Environment.SpecialFolder.InternetCache);
-
-        /// <remarks>
-        /// Возвращает обертку для пути <see cref="Environment.SpecialFolder.LocalApplicationData"/>.
-        /// </remarks>
-        public static FilePath LocalApplicationData => GetPath(Environment.SpecialFolder.LocalApplicationData);
 
         /// <remarks>
         /// Возвращает обертку для пути <see cref="Environment.SpecialFolder.MyDocuments"/>.
@@ -186,7 +273,7 @@ namespace Exader.IO
         /// Возвращает обертку для пути <see cref="Environment.SystemDirectory"/>.
         /// </remarks>
         public static FilePath System => SafeCreateFilePath(Environment.SystemDirectory);
-    
+
         /// <remarks>
         /// Возвращает обертку для пути <see cref="Environment.SpecialFolder.Templates"/>.
         /// </remarks>

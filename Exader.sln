@@ -11,7 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Exader", "src\Exader\Exader
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Exader.IO", "src\Exader.IO\Exader.IO.csproj", "{C75F3B76-3847-4711-BC7F-3786037F6F48}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Exader.Test.Core", "test\Exader.Test.Core\Exader.Test.Core.csproj", "{5557F252-3EE7-44F0-B708-C6CF50FB5E4B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Exader.Test.Core", "test\Exader.Test.Core\Exader.Test.Core.csproj", "{5557F252-3EE7-44F0-B708-C6CF50FB5E4B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

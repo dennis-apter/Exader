@@ -360,5 +360,11 @@ namespace Exader.IO
             Assert.Equal("foo.bar", fp.Name);
             Assert.Equal("foo", fp.NameWithoutExtension);
         }
+
+        [Fact]
+        public void UserProfile()
+        {
+            Assert.Equal("~\\", FilePath.Parse("~/"));
+        }
     }
 }

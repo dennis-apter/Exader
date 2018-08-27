@@ -29,6 +29,40 @@ namespace Exader.IO
 
     public partial class FilePath
     {
+        private static readonly char Sep;
+        private static readonly char AltSep;
+        private static readonly string Separator;
+        private static readonly string AltSeparator;
+        private static readonly string Network;
+        private static readonly string Localhost;
+
+        internal static readonly string CurDir;
+        internal static readonly string DirSfx;
+        internal static readonly string SchSfx;
+
+        public const char HorizontalEllipsisFillerChar = '…';
+
+        public const char TildeFillerChar = '~';
+        public const char UnderscoreFillerChar = '_';
+        private const char VolumeSeparatorChar = ':';
+
+        static FilePath()
+        {
+            Sep = System.IO.Path.DirectorySeparatorChar;
+            AltSep = Sep == '/' ? '\\' : '/';
+            Separator = Sep.ToString();
+            AltSeparator = AltSep.ToString();
+
+            CurDir = "." + Separator;
+            DirSfx = Separator + "." + Separator;
+            SchSfx = ":" + Separator + Separator;
+
+            Network = Separator + Separator;
+            Localhost = Network + "localhost";
+
+            RelativeRoot = new FilePath("", Separator, "", "", "", false);
+        }
+
         public static FilePath Parse(string value)
         {
             return Parse(value, FilePathStyles.None);
@@ -129,25 +163,26 @@ namespace Exader.IO
                     {
                         case '\\':
                         case '/':
-                            c = '\\';
+                            c = Sep;
                             switch (p)
                             {
                                 case '\\':
+                                case '/':
                                     // \\
                                     if (DriveOrHost == "")
                                     {
                                         // \\server
                                         //  ^
-                                        DriveOrHost = @"\\";
-                                        buffer.Append('\\');
+                                        DriveOrHost = Network;
+                                        buffer.Append(Separator);
                                     }
                                     break;
                                 case '.':
-                                    if (buffer.Length > 0 && buffer[0] == '\\')
+                                    if (buffer.Length > 0 && buffer[0] == Sep)
                                     {
                                         // \.\
                                         //   ^
-                                        RootFolder = @"\";
+                                        RootFolder = Separator;
                                         buffer.Remove(0, 1);
                                     }
 
@@ -156,21 +191,21 @@ namespace Exader.IO
                                 case '\0':
                                     // \
                                     // ^
-                                    buffer.Append('\\');
+                                    buffer.Append(Separator);
                                     break;
                                 default:
                                     if (DriveOrHost == "" && isUri)
                                     {
                                         // file:\server
                                         //      ^
-                                        DriveOrHost = @"\\";
-                                        buffer.Append('\\');
+                                        DriveOrHost = Network;
+                                        buffer.Append(Separator);
                                         if (buffer.Length == 1)
                                         {
-                                            buffer.Append('\\');
+                                            buffer.Append(Separator);
                                         }
                                     }
-                                    else if (DriveOrHost == @"\\")
+                                    else if (DriveOrHost == Network)
                                     {
                                         if (buffer.Length == 3 && p == '?')
                                         {
@@ -194,7 +229,7 @@ namespace Exader.IO
                                                 //    ^
                                                 i += 3;
                                                 DriveOrHost = ss;
-                                                buffer.Append('\\');
+                                                buffer.Append(Separator);
                                                 p = value[j];
                                             }
                                             else if ("UNC".EqualsIgnoreCase(ss))
@@ -202,7 +237,7 @@ namespace Exader.IO
                                                 // \\?\UNC\
                                                 //    ^
                                                 i += 4;
-                                                buffer.Append(@"\\");
+                                                buffer.Append(Network);
                                                 p = value[j];
                                             }
                                             else
@@ -220,15 +255,15 @@ namespace Exader.IO
                                         //         ^
                                         DriveOrHost = buffer.ToString();
                                         buffer.Clear();
-                                        buffer.Append('\\');
+                                        buffer.Append(Separator);
                                     }
-                                    else if (buffer.Length > 0 && buffer[0] == '\\')
+                                    else if (buffer.Length > 0 && buffer[0] == Sep)
                                     {
                                         if (DriveOrHost.Length > 2)
                                         {
                                             // \\server\folder\
                                             //                ^
-                                            buffer.Append('\\');
+                                            buffer.Append(Separator);
                                             RootFolder = buffer.ToString();
                                             buffer.Clear();
                                         }
@@ -236,11 +271,11 @@ namespace Exader.IO
                                         {
                                             // \dir\
                                             //     ^
-                                            RootFolder = @"\";
+                                            RootFolder = Separator;
 
                                             TrimEnd(buffer);
 
-                                            buffer.Remove(0, 1).Append('\\');
+                                            buffer.Remove(0, 1).Append(Separator);
                                             sep = buffer.Length - 1;
                                         }
                                     }
@@ -250,7 +285,7 @@ namespace Exader.IO
 
                                         // dir\
                                         //    ^
-                                        buffer.Append('\\');
+                                        buffer.Append(Separator);
                                         if (buffer.Length > 1)
                                         {
                                             if (0 < sep)
@@ -268,10 +303,10 @@ namespace Exader.IO
                             break;
 
                         case ':':
-                            if (isUri && (@"\\".EqualsIgnoreCase(DriveOrHost) ||
-                                          @"\\localhost".EqualsIgnoreCase(DriveOrHost)))
+                            if (isUri && (Network.EqualsIgnoreCase(DriveOrHost) ||
+                                          Localhost.EqualsIgnoreCase(DriveOrHost)))
                             {
-                                if (DriveOrHost == @"\\")
+                                if (DriveOrHost == Network)
                                 {
                                     // file://C:
                                     //         ^
@@ -333,10 +368,10 @@ namespace Exader.IO
                             break;
 
                         case '|':
-                            if (isUri && (@"\\".EqualsIgnoreCase(DriveOrHost) ||
-                                          @"\\localhost".EqualsIgnoreCase(DriveOrHost)))
+                            if (isUri && (Network.EqualsIgnoreCase(DriveOrHost) ||
+                                          Localhost.EqualsIgnoreCase(DriveOrHost)))
                             {
-                                if (DriveOrHost == @"\\")
+                                if (DriveOrHost == Network)
                                 {
                                     // file://C|
                                     //         ^
@@ -402,7 +437,7 @@ namespace Exader.IO
                     p = c;
                 }
 
-                if (DriveOrHost == @"\\")
+                if (DriveOrHost == Network)
                 {
                     // \\server
                     //         ^
@@ -410,15 +445,15 @@ namespace Exader.IO
                     return;
                 }
 
-                if (buffer.Length == 1 && buffer[0] == '\\')
+                if (buffer.Length == 1 && buffer[0] == Sep)
                 {
-                    RootFolder = @"\";
+                    RootFolder = Separator;
                     return;
                 }
 
-                if (buffer.Length > 0 && buffer[0] == '\\')
+                if (buffer.Length > 0 && buffer[0] == Sep)
                 {
-                    RootFolder = @"\";
+                    RootFolder = Separator;
                     buffer.Remove(0, 1);
                 }
 
@@ -469,7 +504,7 @@ namespace Exader.IO
                 }
             }
 
-            public string DirectoryPath => IsDirectory ? Prefix + Name + Extension + "\\" : Prefix;
+            public string DirectoryPath => IsDirectory ? Prefix + Name + Extension + Separator : Prefix;
 
             public string DriveOrHost { get; } = string.Empty;
 
@@ -547,7 +582,6 @@ namespace Exader.IO
                 return true;
             }
 
-
             private static bool IsInvalidCharacter(char c)
             {
                 switch (c)
@@ -622,7 +656,7 @@ namespace Exader.IO
                     return;
                 }
 
-                if (buffer.Length > 2 && buffer[buffer.Length - 3] == '\\' && buffer[buffer.Length - 2] == '.' &&
+                if (buffer.Length > 2 && buffer[buffer.Length - 3] == Sep && buffer[buffer.Length - 2] == '.' &&
                     buffer[buffer.Length - 1] == '.')
                 {
                     return;
@@ -677,7 +711,6 @@ namespace Exader.IO
                 return len;
             }
 
-
             private int TryTerminateRepeatOfDots(StringBuilder buffer, int sep, Stack<int> separators,
                 bool appendSeparator, bool isLast)
             {
@@ -710,7 +743,7 @@ namespace Exader.IO
                             }
                             else if (appendSeparator)
                             {
-                                buffer.Append('\\');
+                                buffer.Append(Separator);
                                 if (0 < sep && isLast)
                                 {
                                     separators.Push(sep);
@@ -728,7 +761,7 @@ namespace Exader.IO
 
                             if (appendSeparator)
                             {
-                                buffer.Append('\\');
+                                buffer.Append(Separator);
                                 if (0 < sep)
                                 {
                                     separators.Push(sep);
@@ -763,7 +796,7 @@ namespace Exader.IO
 
                         if (appendSeparator)
                         {
-                            buffer.Append('\\');
+                            buffer.Append(Separator);
                             sep = buffer.Length - 1;
                         }
                     }

@@ -9,17 +9,6 @@ namespace Exader.IO
 {
     public partial class FilePath
     {
-        private const char AltDirectorySeparatorChar = '/';
-        internal const string CurrentDirectoryPrefix = @".\";
-
-        private const char DirectorySeparatorChar = '\\';
-        public const char HorizontalEllipsisFillerChar = '…';
-
-        internal const string NetworkSharePrefix = @"\\";
-        public const char TildeFillerChar = '~';
-        public const char UnderscoreFillerChar = '_';
-        private const char VolumeSeparatorChar = ':';
-
         /// <summary>
         ///     Заменяет в пути разделитель директорий <c>\</c> на <c>/</c>;
         ///     удаляет схему URL <c>file://</c>;
@@ -55,27 +44,27 @@ namespace Exader.IO
             if (!strict)
             {
                 // Замена всех символов / на \
-                path = path.Replace(AltDirectorySeparatorChar, DirectorySeparatorChar);
+                path = path.Replace(AltSep, Sep);
             }
 
-            if (path.StartsWith(NetworkSharePrefix))
+            if (path.StartsWith(Network))
             {
-                driveOrHost = path.Between(NetworkSharePrefix, @"\").ToUpperInvariant();
+                driveOrHost = path.Between(Network, Separator).ToUpperInvariant();
                 if (driveOrHost == string.Empty)
                 {
                     driveOrHost = path.ToUpperInvariant();
                     path = string.Empty;
-                    rootFolder = @"\";
+                    rootFolder = Separator;
                 }
                 else
                 {
-                    driveOrHost = NetworkSharePrefix + driveOrHost;
+                    driveOrHost = Network + driveOrHost;
                     path = path.SubstringAfter(driveOrHost.Length);
                 }
             }
-            else if (path.StartsWith(CurrentDirectoryPrefix))
+            else if (path.StartsWith(CurDir))
             {
-                path = path.SubstringAfter(CurrentDirectoryPrefix.Length);
+                path = path.SubstringAfter(CurDir.Length);
             }
             else
             {
@@ -85,7 +74,7 @@ namespace Exader.IO
                 // – или даже так —
                 // c:./Logs/log.txt
 
-                var schemaIndex = path.IndexOf(@":\\", StringComparison.Ordinal);
+                var schemaIndex = path.IndexOf(SchSfx, StringComparison.Ordinal);
 
                 if (0 <= schemaIndex)
                 {
@@ -166,22 +155,22 @@ namespace Exader.IO
                 if (!strict)
                 {
                     // Бывает и такое как file:///d|/files/
-                    driveOrHost = driveOrHost.Replace('|', ':').TrimStart('\\');
+                    driveOrHost = driveOrHost.Replace('|', ':').TrimStart(Sep);
                 }
             }
 
-            if (path.StartsWith("\\"))
+            if (path.StartsWith(Sep))
             {
                 // network share
                 if (driveOrHost.Length > 2)
                 {
                     path = path.Substring(1);
-                    rootFolder = path.SubstringBeforeOrSelf('\\', out path, true);
-                    rootFolder = "\\" + rootFolder;
+                    rootFolder = path.SubstringBeforeOrSelf(Sep, out path, true);
+                    rootFolder = Separator + rootFolder;
                 }
                 else
                 {
-                    rootFolder = "\\";
+                    rootFolder = Separator;
                     path = path.Substring(1);
                 }
 
@@ -194,7 +183,7 @@ namespace Exader.IO
                 }
             }
 
-            while (path.EndsWith("\\.\\"))
+            while (path.EndsWith(DirSfx))
                 path = path.RemoveRight(2);
 
             return path;
@@ -363,7 +352,7 @@ namespace Exader.IO
             /// <returns></returns>
             public static Builder Parse(string path)
             {
-                return Parse(path, DirectorySeparatorChar);
+                return Parse(path, Sep);
             }
 
             public static Builder Parse(string path, params char[] directorySeparatorChars)
@@ -416,7 +405,7 @@ namespace Exader.IO
             /// <returns></returns>
             public static Builder ParseAlt(string path)
             {
-                return Parse(path, AltDirectorySeparatorChar);
+                return Parse(path, AltSep);
             }
 
             public Builder Add(string path)
@@ -602,7 +591,7 @@ namespace Exader.IO
 
             public string ToAltString()
             {
-                return ToString(AltDirectorySeparatorChar, HorizontalEllipsisFillerChar);
+                return ToString(AltSep, HorizontalEllipsisFillerChar);
             }
 
             public FilePath ToFilePath()
@@ -626,7 +615,7 @@ namespace Exader.IO
 
             public override string ToString()
             {
-                return ToString(DirectorySeparatorChar, HorizontalEllipsisFillerChar);
+                return ToString(Sep, HorizontalEllipsisFillerChar);
             }
 
             public void Trim(int maxLength = MaxNameLength, int minLength = MinNameLength)

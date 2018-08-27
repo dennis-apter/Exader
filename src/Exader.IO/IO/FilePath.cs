@@ -15,7 +15,7 @@ namespace Exader.IO
         private static readonly string DirectoryName = ".";
 
         public static readonly FilePath Empty = new FilePath();
-        public static readonly FilePath RelativeRoot = new FilePath("", "\\", "", "", "", false);
+        public static readonly FilePath RelativeRoot;
 
         /// <summary>
         ///     Storing drive letter or server computer name of shared folder.
@@ -97,7 +97,7 @@ namespace Exader.IO
             {
                 var rootLength = _driveOrHost.Length + _rootFolder.Length;
                 return _isDirectory && _path.Length > rootLength
-                    ? ParentPath + NameWithoutExtension + Extension + "\\"
+                    ? ParentPath + NameWithoutExtension + Extension + Separator
                     : ParentPath;
             }
         }
@@ -484,7 +484,7 @@ namespace Exader.IO
         {
             fileName = fileName.Trim();
             var sb = new StringBuilder();
-            var parts = fileName.Split(DirectorySeparatorChar);
+            var parts = fileName.Split(Sep);
             for (var i = 0; i < parts.Length; i++)
             {
                 var part = parts[i].Trim();
@@ -530,15 +530,15 @@ namespace Exader.IO
         private static string CombinePath(string driveOrHost, string rootFolder, string prefix, string name,
             string extension, bool isDirectory)
         {
-            var trailingSlash = isDirectory && (name != "" || extension != "") ? "\\" : "";
+            var trailingSlash = isDirectory && (name != "" || extension != "") ? Separator : "";
             var path = driveOrHost + rootFolder + prefix + name + extension + trailingSlash;
             return path; // == "" ? "." : path;
         }
 
         private static string GetRelativePath(string path, string basePath)
         {
-            var basePathParts = basePath.SplitAndRemoveEmpties(DirectorySeparatorChar);
-            var pathParts = path.Split(DirectorySeparatorChar);
+            var basePathParts = basePath.SplitAndRemoveEmpties(Sep);
+            var pathParts = path.Split(Sep);
             var partsCount = Math.Min(basePathParts.Length, pathParts.Length);
             var samePartCount = 0;
             for (var i = 0; i < partsCount; i++)
@@ -556,13 +556,13 @@ namespace Exader.IO
             for (var i = samePartCount; i < basePathParts.Length; i++)
             {
                 relativePath.Append("..");
-                relativePath.Append(DirectorySeparatorChar);
+                relativePath.Append(Separator);
             }
 
             for (var i = samePartCount; i < pathParts.Length; i++)
             {
                 if (samePartCount < i)
-                    relativePath.Append(DirectorySeparatorChar);
+                    relativePath.Append(Separator);
 
                 relativePath.Append(pathParts[i]);
             }
@@ -583,7 +583,7 @@ namespace Exader.IO
             if (HasRootFolder)
                 return this;
 
-            return new FilePath(_driveOrHost, "\\", ParentPath, NameWithoutExtension, Extension, _isDirectory);
+            return new FilePath(_driveOrHost, Separator, ParentPath, NameWithoutExtension, Extension, _isDirectory);
         }
 
         public FilePath Combine(FilePath other)
@@ -604,7 +604,7 @@ namespace Exader.IO
 
             var basePath = WithoutRootFolderAsString();
             if (basePath != "" && !_isDirectory)
-                basePath += "\\";
+                basePath += Separator;
 
             var com = new Parser(basePath + other.ParentPath, true, _rootFolder);
             return new FilePath(_driveOrHost, _rootFolder, com.DirectoryPath, other.NameWithoutExtension,
@@ -636,7 +636,7 @@ namespace Exader.IO
             else if (_isDirectory)
                 value = value + rel.Prefix;
             else
-                value = value + "\\" + rel.Prefix;
+                value = value + Separator + rel.Prefix;
 
             var com = new Parser(value, true, _rootFolder);
             return new FilePath(_driveOrHost, _rootFolder, com.DirectoryPath, rel.Name, rel.Extension, rel.IsDirectory);
@@ -754,14 +754,13 @@ namespace Exader.IO
 
         public FilePath WithoutAnscestors(int count = 1)
         {
-            var parents = ParentPath.SplitAndRemoveEmpties(DirectorySeparatorChar);
+            var parents = ParentPath.SplitAndRemoveEmpties(Sep);
             if (parents.Length < count)
                 throw Guard.FilePathParentsOutOfRange(this, count);
 
             var newParentPath = "";
             if (count < parents.Length)
-                newParentPath = string.Join(DirectorySeparatorChar.ToString(), parents.Subarray(count)) +
-                                DirectorySeparatorChar;
+                newParentPath = string.Join(Separator, parents.Subarray(count)) + Separator;
 
             return new FilePath("", "", newParentPath, NameWithoutExtension, Extension, _isDirectory);
         }
@@ -853,7 +852,7 @@ namespace Exader.IO
             }
             else
             {
-                newPrefix = rest + "\\";
+                newPrefix = rest + Separator;
             }
 
             rest = newName.SubstringAfterLast('.', out newName, true);
@@ -1271,7 +1270,7 @@ namespace Exader.IO
         public string WithoutDriveOrHostAndFileNameAsString()
         {
             return _isDirectory
-                ? _rootFolder + ParentPath + NameWithoutExtension + Extension + "\\"
+                ? _rootFolder + ParentPath + NameWithoutExtension + Extension + Separator
                 : _rootFolder + ParentPath;
         }
 
@@ -1288,7 +1287,7 @@ namespace Exader.IO
 
         public string WithoutDriveOrHostAsString()
         {
-            return _rootFolder + ParentPath + NameWithoutExtension + Extension + (_isDirectory ? "\\" : "");
+            return _rootFolder + ParentPath + NameWithoutExtension + Extension + (_isDirectory ? Separator : "");
         }
 
         public FilePath WithoutExtension()
@@ -1362,7 +1361,7 @@ namespace Exader.IO
 
         public string WithoutRootFolderAndFileNameAsString()
         {
-            return _isDirectory ? ParentPath + NameWithoutExtension + Extension + "\\" : ParentPath;
+            return _isDirectory ? ParentPath + NameWithoutExtension + Extension + Separator : ParentPath;
         }
 
         [CanBeNull]
@@ -1378,7 +1377,7 @@ namespace Exader.IO
 
         public string WithoutRootFolderAsString()
         {
-            return ParentPath + NameWithoutExtension + Extension + (_isDirectory ? "\\" : "");
+            return ParentPath + NameWithoutExtension + Extension + (_isDirectory ? Separator : "");
         }
 
         public FilePath WithRoot(string newRoot)
@@ -1406,7 +1405,7 @@ namespace Exader.IO
                     if (!IsDriveLetter(root[0]))
                         throw new ArgumentOutOfRangeException(nameof(newRoot), $"Invalid drive letter '{newRoot}'.");
 
-                    newRootFolder = "\\";
+                    newRootFolder = Separator;
                     root = root[0] + ":";
                 }
                 else if (root.StartsWith('\\'))
@@ -1417,9 +1416,9 @@ namespace Exader.IO
                         throw new ArgumentException($"Invalid network share root '{newRoot}'.");
 
                     root = root.RemoveRight(share.Length + 1);
-                    newRootFolder = '\\' + share.EnsureEndsWith(DirectorySeparatorChar);
+                    newRootFolder = '\\' + share.EnsureEndsWith(Sep);
 
-                    root = @"\\" + root;
+                    root = Network + root;
                 }
                 else
                 {
