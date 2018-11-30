@@ -152,6 +152,16 @@ namespace Exader.IO
         }
 
         [Fact]
+        public void AsLocal()
+        {
+            Assert.Equal(@"a\b\c", FilePath.Parse("/a/b/c").AsLocal());
+            Assert.Equal(@"a\b\c", FilePath.Parse("c:/a/b/c").AsLocal());
+            Assert.Equal(@"a\b\c", FilePath.Parse("c:a/b/c").AsLocal());
+            Assert.Equal(@"a\b\c", FilePath.Parse("a/b/c").AsLocal());
+            Assert.Equal(@"b\c", FilePath.Parse("//h/a/b/c").AsLocal());
+        }
+
+        [Fact]
         public void Item()
         {
             Assert.Equal(@"C:\dir\file.e", FilePath.Parse("C:/dir/").File("file.e"));

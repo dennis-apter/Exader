@@ -586,6 +586,14 @@ namespace Exader.IO
             return new FilePath(_driveOrHost, Separator, ParentPath, NameWithoutExtension, Extension, _isDirectory);
         }
 
+        public FilePath AsLocal()
+        {
+            if (HasRootFolder || HasDriveOrHost)
+                return WithoutRootFolder();
+
+            return this;
+        }
+
         public FilePath Combine(FilePath other)
         {
             if (other == null)
@@ -784,6 +792,12 @@ namespace Exader.IO
         public FilePath SubpathAfter(int offset = 1)
         {
             return WithoutAnscestors(offset);
+        }
+
+        [Obsolete("Use " + nameof(SubpathBefore) + " instead", true)]
+        public FilePath Upon(string subpath, bool include = false)
+        {
+            return SubpathBefore(subpath, include);
         }
 
         public FilePath SubpathBefore(string subpath, bool include = false)
