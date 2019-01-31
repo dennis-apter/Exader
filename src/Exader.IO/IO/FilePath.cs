@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 using JetBrains.Annotations;
 
@@ -121,7 +122,7 @@ namespace Exader.IO
         ///     Указывает на то, что путь является абсолютным и обладает именем диска.
         /// </summary>
         /// <example>\</example>
-        public bool IsAbsolute => _driveOrHost != "" && _rootFolder != "";
+        public bool IsAbsolute => RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? _driveOrHost != "" && _rootFolder != "" : _rootFolder != "";
 
         public bool IsCurrent => _rootFolder == "" && ParentPath == "" && NameWithoutExtension == "" && Extension == "";
 

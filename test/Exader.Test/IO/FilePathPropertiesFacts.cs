@@ -1,4 +1,5 @@
-﻿using Xunit;
+﻿using System.Runtime.InteropServices;
+using Xunit;
 
 namespace Exader.IO
 {
@@ -166,7 +167,16 @@ namespace Exader.IO
             Assert.False(FilePath.Parse("").IsAbsolute);
             Assert.False(FilePath.Parse(".").IsAbsolute);
             Assert.False(FilePath.Parse("..").IsAbsolute);
-            Assert.False(FilePath.Parse("/").IsAbsolute);
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                Assert.False(FilePath.Parse("/").IsAbsolute);
+            }
+            else
+            {
+                Assert.True(FilePath.Parse("/").IsAbsolute);
+            }
+
             Assert.False(FilePath.Parse("f").IsAbsolute);
             Assert.False(FilePath.Parse("d/").IsAbsolute);
             Assert.False(FilePath.Parse("c:").IsAbsolute);
