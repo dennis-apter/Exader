@@ -48,7 +48,7 @@ namespace Exader.IO
                 var root = !path.IsAbsolute
                     ? (path.HasRootFolder ? @"\\" : string.Empty)
                     : Regex.Escape(path.DriveOrHost);
-                var partialPath = Regex.Escape(path.WithoutNameAsString())
+                var partialPath = Regex.Escape(path.WithoutNameAsWindowsString())
                     .Replace(@"\\\*\*\\", @"\\(.*)")
                     .Replace(@"\*\*\\", @"(.*)\\")
                     .Replace(@"\*", @"([^\\]*)")

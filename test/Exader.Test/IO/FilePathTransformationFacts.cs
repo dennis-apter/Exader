@@ -13,30 +13,30 @@ namespace Exader.IO
         {
             var fp = FilePath.Parse(filePath);
 
-            Assert.Equal(@"a:\d", fp.WithRoot("a"));
-            Assert.Equal(@"a:\d", fp.WithRoot("a:/"));
-            Assert.Equal(@"a:\d", fp.WithRoot(@"a:\"));
-            Assert.Equal(@"a:\d", fp.WithRoot(@"\\?\a:\"));
+            Assert.Equal(@"a:\d", fp.WithRoot("a").ToWindowsString());
+            Assert.Equal(@"a:\d", fp.WithRoot("a:/").ToWindowsString());
+            Assert.Equal(@"a:\d", fp.WithRoot(@"a:\").ToWindowsString());
+            Assert.Equal(@"a:\d", fp.WithRoot(@"\\?\a:\").ToWindowsString());
 
             var result = fp.WithRoot("a");
-            Assert.Equal("a:", result.DriveOrHost);
-            Assert.Equal(@"\", result.RootFolder);
+            Assert.Equal("a:", result.DriveOrHostWindows);
+            Assert.Equal(@"\", result.RootFolderWindows);
 
-            Assert.Equal(@"\d", fp.WithRoot(""));
-            Assert.Equal(@"\d", fp.WithRoot(null));
+            Assert.Equal(@"\d", fp.WithRoot("").ToWindowsString());
+            Assert.Equal(@"\d", fp.WithRoot(null).ToWindowsString());
 
-            Assert.Equal(@"\\s\s\d", fp.WithRoot(@"\s\s\"));
-            Assert.Equal(@"\\s\s\d", fp.WithRoot(@"\\s\s\"));
-            Assert.Equal(@"\\s\s\d", fp.WithRoot(@"\\\s\s\"));
-            Assert.Equal(@"\\s\s\d", fp.WithRoot(@"\\\\s\s\"));
-            Assert.Equal(@"\\s\s\d", fp.WithRoot(@"\\\\\s\s\"));
-            Assert.Equal(@"\\s\s\d", fp.WithRoot(@"\\\\\\s\s\"));
-            Assert.Equal(@"\\s\s\d", fp.WithRoot(@"\\\\\\\s\s\"));
-            Assert.Equal(@"\\s\s\d", fp.WithRoot(@"\\?\UNC\s\s\"));
+            Assert.Equal(@"\\s\s\d", fp.WithRoot(@"\s\s\").ToWindowsString());
+            Assert.Equal(@"\\s\s\d", fp.WithRoot(@"\\s\s\").ToWindowsString());
+            Assert.Equal(@"\\s\s\d", fp.WithRoot(@"\\\s\s\").ToWindowsString());
+            Assert.Equal(@"\\s\s\d", fp.WithRoot(@"\\\\s\s\").ToWindowsString());
+            Assert.Equal(@"\\s\s\d", fp.WithRoot(@"\\\\\s\s\").ToWindowsString());
+            Assert.Equal(@"\\s\s\d", fp.WithRoot(@"\\\\\\s\s\").ToWindowsString());
+            Assert.Equal(@"\\s\s\d", fp.WithRoot(@"\\\\\\\s\s\").ToWindowsString());
+            Assert.Equal(@"\\s\s\d", fp.WithRoot(@"\\?\UNC\s\s\").ToWindowsString());
 
             result = fp.WithRoot(@"\\s\s\");
-            Assert.Equal(@"\\s", result.DriveOrHost);
-            Assert.Equal(@"\s\", result.RootFolder);
+            Assert.Equal(@"\\s", result.DriveOrHostWindows);
+            Assert.Equal(@"\s\", result.RootFolderWindows);
         }
 
         [Theory]
@@ -58,7 +58,7 @@ namespace Exader.IO
         [InlineData("a/b/c/d/e/f", "/c/d/e/f/", @"a\b\")]
         public void SubpathBefore(string p, string sp, string r)
         {
-            Assert.Equal(r, FilePath.Parse(p).SubpathBefore(sp));
+            Assert.Equal(r, FilePath.Parse(p).SubpathBefore(sp).ToWindowsString());
         }
 
         [Theory(Skip = "TODO")]
@@ -103,7 +103,7 @@ namespace Exader.IO
         public void SubpathBefore_Inclusive(string p, string sp, string r)
         {
             var fp = FilePath.Parse(p);
-            Assert.Equal(r, fp.SubpathBefore(sp, true).ToString());
+            Assert.Equal(r, fp.SubpathBefore(sp, true).ToWindowsString());
         }
 
         [Fact]
@@ -137,48 +137,48 @@ namespace Exader.IO
         [Fact]
         public void AsDirectory()
         {
-            Assert.Equal(@"a\b\c\", FilePath.Parse("a/b/c").AsDirectory());
-            Assert.Equal(@"a\b\c\", FilePath.Parse("a/b/c/").AsDirectory());
+            Assert.Equal(@"a\b\c\", FilePath.Parse("a/b/c").AsDirectory().ToWindowsString());
+            Assert.Equal(@"a\b\c\", FilePath.Parse("a/b/c/").AsDirectory().ToWindowsString());
         }
 
         [Fact]
         public void AsRooted()
         {
-            Assert.Equal(@"\a\b\c", FilePath.Parse("a/b/c").AsRooted());
-            Assert.Equal(@"c:\a\b\c", FilePath.Parse("c:a/b/c").AsRooted());
-            Assert.Equal(@"\a\b\c", FilePath.Parse("/a/b/c").AsRooted());
-            Assert.Equal(@"c:\a\b\c", FilePath.Parse("c:/a/b/c").AsRooted());
-            Assert.Equal(@"\\h\a\b\c", FilePath.Parse("//h/a/b/c").AsRooted());
+            Assert.Equal(@"\a\b\c", FilePath.Parse("a/b/c").AsRooted().ToWindowsString());
+            Assert.Equal(@"c:\a\b\c", FilePath.Parse("c:a/b/c").AsRooted().ToWindowsString());
+            Assert.Equal(@"\a\b\c", FilePath.Parse("/a/b/c").AsRooted().ToWindowsString());
+            Assert.Equal(@"c:\a\b\c", FilePath.Parse("c:/a/b/c").AsRooted().ToWindowsString());
+            Assert.Equal(@"\\h\a\b\c", FilePath.Parse("//h/a/b/c").AsRooted().ToWindowsString());
         }
 
         [Fact]
         public void AsLocal()
         {
-            Assert.Equal(@"a\b\c", FilePath.Parse("/a/b/c").AsLocal());
-            Assert.Equal(@"a\b\c", FilePath.Parse("c:/a/b/c").AsLocal());
-            Assert.Equal(@"a\b\c", FilePath.Parse("c:a/b/c").AsLocal());
-            Assert.Equal(@"a\b\c", FilePath.Parse("a/b/c").AsLocal());
-            Assert.Equal(@"b\c", FilePath.Parse("//h/a/b/c").AsLocal());
+            Assert.Equal(@"a\b\c", FilePath.Parse("/a/b/c").AsLocal().ToWindowsString());
+            Assert.Equal(@"a\b\c", FilePath.Parse("c:/a/b/c").AsLocal().ToWindowsString());
+            Assert.Equal(@"a\b\c", FilePath.Parse("c:a/b/c").AsLocal().ToWindowsString());
+            Assert.Equal(@"a\b\c", FilePath.Parse("a/b/c").AsLocal().ToWindowsString());
+            Assert.Equal(@"b\c", FilePath.Parse("//h/a/b/c").AsLocal().ToWindowsString());
         }
 
         [Fact]
         public void Item()
         {
-            Assert.Equal(@"C:\dir\file.e", FilePath.Parse("C:/dir/").File("file.e"));
-            Assert.Equal(@"C:\dir\file.e", FilePath.Parse("C:/dir/f.e").File("file.e"));
-            Assert.Equal(@"C:\dir\dir.e\", FilePath.Parse("C:/dir/").Directory("dir.e"));
-            Assert.Equal(@"C:\dir\dir.e\", FilePath.Parse("C:/dir/f.e").Directory("dir.e"));
+            Assert.Equal(@"C:\dir\file.e", FilePath.Parse("C:/dir/").File("file.e").ToWindowsString());
+            Assert.Equal(@"C:\dir\file.e", FilePath.Parse("C:/dir/f.e").File("file.e").ToWindowsString());
+            Assert.Equal(@"C:\dir\dir.e\", FilePath.Parse("C:/dir/").Directory("dir.e").ToWindowsString());
+            Assert.Equal(@"C:\dir\dir.e\", FilePath.Parse("C:/dir/f.e").Directory("dir.e").ToWindowsString());
         }
 
         [Fact]
         public void Parent()
         {
-            Assert.Equal(@"\", FilePath.Parse(@"\f").Parent);
-            Assert.Equal(@"\", FilePath.Parse(@"\d\").Parent);
-            Assert.Equal(@"\d\", FilePath.Parse(@"\d\f").Parent);
-            Assert.Equal(@"\d\", FilePath.Parse(@"\d\f.e").Parent);
-            Assert.Equal(@"\d\", FilePath.Parse(@"\d\.e").Parent);
-            Assert.Equal(@"\d\", FilePath.Parse(@"\d\sd\").Parent);
+            Assert.Equal(@"\", FilePath.Parse(@"\f").Parent.ToWindowsString());
+            Assert.Equal(@"\", FilePath.Parse(@"\d\").Parent.ToWindowsString());
+            Assert.Equal(@"\d\", FilePath.Parse(@"\d\f").Parent.ToWindowsString());
+            Assert.Equal(@"\d\", FilePath.Parse(@"\d\f.e").Parent.ToWindowsString());
+            Assert.Equal(@"\d\", FilePath.Parse(@"\d\.e").Parent.ToWindowsString());
+            Assert.Equal(@"\d\", FilePath.Parse(@"\d\sd\").Parent.ToWindowsString());
 
             Assert.Null(FilePath.Parse("").Parent);
             Assert.Null(FilePath.Parse(".").Parent);
@@ -200,9 +200,9 @@ namespace Exader.IO
         public void WithBasename()
         {
             var fp = FilePath.Parse("C:/dir/f.e");
-            Assert.Equal(@"C:\dir\b.e", fp.WithBasename("b"));
-            Assert.Equal(@"C:\dir\.f.e", fp.WithBasename(".f"));
-            Assert.Equal(@"C:\dir\_._.e", fp.WithBasename("_._"));
+            Assert.Equal(@"C:\dir\b.e", fp.WithBasename("b").ToWindowsString());
+            Assert.Equal(@"C:\dir\.f.e", fp.WithBasename(".f").ToWindowsString());
+            Assert.Equal(@"C:\dir\_._.e", fp.WithBasename("_._").ToWindowsString());
 
             Assert.Throws<ArgumentException>(() => fp.WithBasename(null));
             Assert.Throws<ArgumentException>(() => fp.WithBasename(""));
@@ -211,9 +211,9 @@ namespace Exader.IO
             Assert.Throws<ArgumentException>(() => fp.WithBasename("..."));
 
             var dp = FilePath.Parse("C:/dir/subdir.e/");
-            Assert.Equal(@"C:\dir\b\", dp.WithBasename("b"));
-            Assert.Equal(@"C:\dir\.f\", dp.WithBasename(".f"));
-            Assert.Equal(@"C:\dir\_._\", dp.WithBasename("_._"));
+            Assert.Equal(@"C:\dir\b\", dp.WithBasename("b").ToWindowsString());
+            Assert.Equal(@"C:\dir\.f\", dp.WithBasename(".f").ToWindowsString());
+            Assert.Equal(@"C:\dir\_._\", dp.WithBasename("_._").ToWindowsString());
 
             Assert.Throws<ArgumentException>(() => dp.WithBasename(null));
             Assert.Throws<ArgumentException>(() => dp.WithBasename(""));
@@ -226,7 +226,7 @@ namespace Exader.IO
         public void WithExtension()
         {
             Assert.Equal("foo.x", FilePath.Parse("foo").WithExtension("x"));
-            Assert.Equal("foo.x\\", FilePath.Parse("foo/").WithExtension("x"));
+            Assert.Equal("foo.x\\", FilePath.Parse("foo/").WithExtension("x").ToWindowsString());
             Assert.Equal("foo.x", FilePath.Parse("foo.bar").WithExtension("x"));
             Assert.Equal(".x", FilePath.Parse("foo.bar").WithExtension("x").Extension);
             Assert.Equal(".x", FilePath.Parse("foo.bar").WithExtension(".x").Extension);
@@ -254,9 +254,9 @@ namespace Exader.IO
         public void WithName()
         {
             var fp = FilePath.Parse("C:/dir/f.e");
-            Assert.Equal(@"C:\dir\b", fp.WithName("b"));
-            Assert.Equal(@"C:\dir\.f", fp.WithName(".f"));
-            Assert.Equal(@"C:\dir\_._", fp.WithName("_._"));
+            Assert.Equal(@"C:\dir\b", fp.WithName("b").ToWindowsString());
+            Assert.Equal(@"C:\dir\.f", fp.WithName(".f").ToWindowsString());
+            Assert.Equal(@"C:\dir\_._", fp.WithName("_._").ToWindowsString());
 
             Assert.Throws<ArgumentException>(() => fp.WithName(null));
             Assert.Throws<ArgumentException>(() => fp.WithName(""));
@@ -265,9 +265,9 @@ namespace Exader.IO
             Assert.Throws<ArgumentException>(() => fp.WithName("..."));
 
             var dp = FilePath.Parse("C:/dir/d.e/");
-            Assert.Equal(@"C:\dir\b\", dp.WithName("b"));
-            Assert.Equal(@"C:\dir\.f\", dp.WithName(".f"));
-            Assert.Equal(@"C:\dir\_._\", dp.WithName("_._"));
+            Assert.Equal(@"C:\dir\b\", dp.WithName("b").ToWindowsString());
+            Assert.Equal(@"C:\dir\.f\", dp.WithName(".f").ToWindowsString());
+            Assert.Equal(@"C:\dir\_._\", dp.WithName("_._").ToWindowsString());
 
             Assert.Throws<ArgumentException>(() => dp.WithName(null));
             Assert.Throws<ArgumentException>(() => dp.WithName(""));
@@ -300,38 +300,38 @@ namespace Exader.IO
         {
             var p = FilePath.Parse("c:/d/sd/");
 
-            Assert.Equal(@"\d\sd\", p.WithoutDriveOrHost());
-            Assert.Equal(@"\d\sd\", p.WithoutDriveOrHostAsString());
+            Assert.Equal(@"\d\sd\", p.WithoutDriveOrHost().ToWindowsString());
+            Assert.Equal(@"\d\sd\", p.WithoutDriveOrHostAsWindowsString());
 
-            Assert.Equal(@"\d\sd", p.WithoutDriveOrHostAndExtension());
-            Assert.Equal(@"\d\sd", p.WithoutDriveOrHostAndExtensionAsString());
+            Assert.Equal(@"\d\sd", p.WithoutDriveOrHostAndExtension().ToWindowsString());
+            Assert.Equal(@"\d\sd", p.WithoutDriveOrHostAndExtensionAsWindowsString());
 
-            Assert.Equal(@"\d\", p.WithoutDriveOrHostAndName());
-            Assert.Equal(@"\d\", p.WithoutDriveOrHostAndNameAsString());
+            Assert.Equal(@"\d\", p.WithoutDriveOrHostAndName().ToWindowsString());
+            Assert.Equal(@"\d\", p.WithoutDriveOrHostAndNameAsWindowsString());
 
-            Assert.Equal(@"d\sd\", p.WithoutRootFolder());
-            Assert.Equal(@"d\sd\", p.WithoutRootFolderAsString());
+            Assert.Equal(@"d\sd\", p.WithoutRootFolder().ToWindowsString());
+            Assert.Equal(@"d\sd\", p.WithoutRootFolderAsWindowsString());
 
-            Assert.Equal(@"d\sd", p.WithoutRootFolderAndExtension());
-            Assert.Equal(@"d\sd", p.WithoutRootFolderAndExtensionAsString());
+            Assert.Equal(@"d\sd", p.WithoutRootFolderAndExtension().ToWindowsString());
+            Assert.Equal(@"d\sd", p.WithoutRootFolderAndExtensionAsWindowsString());
 
-            Assert.Equal(@"d\", p.WithoutRootFolderAndName());
-            Assert.Equal(@"d\", p.WithoutRootFolderAndNameAsString());
+            Assert.Equal(@"d\", p.WithoutRootFolderAndName().ToWindowsString());
+            Assert.Equal(@"d\", p.WithoutRootFolderAndNameAsWindowsString());
 
-            Assert.Equal(@"c:\d\sd", p.WithoutExtension());
-            Assert.Equal(@"c:\d\sd", p.WithoutExtensionAsString());
+            Assert.Equal(@"c:\d\sd", p.WithoutExtension().ToWindowsString());
+            Assert.Equal(@"c:\d\sd", p.WithoutExtensionAsWindowsString());
 
-            Assert.Equal(@"c:\d\", p.WithoutName());
-            Assert.Equal(@"c:\d\", p.WithoutNameAsString());
+            Assert.Equal(@"c:\d\", p.WithoutName().ToWindowsString());
+            Assert.Equal(@"c:\d\", p.WithoutNameAsWindowsString());
 
-            Assert.Equal(@"c:\d\sd\", p.WithoutFileName());
-            Assert.Equal(@"c:\d\sd\", p.WithoutFileNameAsString());
+            Assert.Equal(@"c:\d\sd\", p.WithoutFileName().ToWindowsString());
+            Assert.Equal(@"c:\d\sd\", p.WithoutFileNameAsWindowsString());
 
-            Assert.Equal(@"\d\sd\", p.WithoutDriveOrHostAndFileName());
-            Assert.Equal(@"\d\sd\", p.WithoutDriveOrHostAndFileNameAsString());
+            Assert.Equal(@"\d\sd\", p.WithoutDriveOrHostAndFileName().ToWindowsString());
+            Assert.Equal(@"\d\sd\", p.WithoutDriveOrHostAndFileNameAsWindowsString());
 
-            Assert.Equal(@"d\sd\", p.WithoutRootFolderAndFileName());
-            Assert.Equal(@"d\sd\", p.WithoutRootFolderAndFileNameAsString());
+            Assert.Equal(@"d\sd\", p.WithoutRootFolderAndFileName().ToWindowsString());
+            Assert.Equal(@"d\sd\", p.WithoutRootFolderAndFileNameAsWindowsString());
         }
 
         [Fact]
@@ -339,45 +339,45 @@ namespace Exader.IO
         {
             var p = FilePath.Parse("c:/d/f.e");
 
-            Assert.Equal(@"\d\f.e", p.WithoutDriveOrHost());
-            Assert.Equal(@"\d\f.e", p.WithoutDriveOrHostAsString());
+            Assert.Equal(@"\d\f.e", p.WithoutDriveOrHost().ToWindowsString());
+            Assert.Equal(@"\d\f.e", p.WithoutDriveOrHostAsWindowsString());
 
-            Assert.Equal(@"\d\f", p.WithoutDriveOrHostAndExtension());
-            Assert.Equal(@"\d\f", p.WithoutDriveOrHostAndExtensionAsString());
+            Assert.Equal(@"\d\f", p.WithoutDriveOrHostAndExtension().ToWindowsString());
+            Assert.Equal(@"\d\f", p.WithoutDriveOrHostAndExtensionAsWindowsString());
 
-            Assert.Equal(@"\d\", p.WithoutDriveOrHostAndName());
-            Assert.Equal(@"\d\", p.WithoutDriveOrHostAndNameAsString());
+            Assert.Equal(@"\d\", p.WithoutDriveOrHostAndName().ToWindowsString());
+            Assert.Equal(@"\d\", p.WithoutDriveOrHostAndNameAsWindowsString());
+            
+            Assert.Equal(@"d\f.e", p.WithoutRootFolder().ToWindowsString());
+            Assert.Equal(@"d\f.e", p.WithoutRootFolderAsWindowsString());
 
-            Assert.Equal(@"d\f.e", p.WithoutRootFolder());
-            Assert.Equal(@"d\f.e", p.WithoutRootFolderAsString());
+            Assert.Equal(@"d\f", p.WithoutRootFolderAndExtension().ToWindowsString());
+            Assert.Equal(@"d\f", p.WithoutRootFolderAndExtensionAsWindowsString());
 
-            Assert.Equal(@"d\f", p.WithoutRootFolderAndExtension());
-            Assert.Equal(@"d\f", p.WithoutRootFolderAndExtensionAsString());
+            Assert.Equal(@"d\", p.WithoutRootFolderAndName().ToWindowsString());
+            Assert.Equal(@"d\", p.WithoutRootFolderAndNameAsWindowsString());
 
-            Assert.Equal(@"d\", p.WithoutRootFolderAndName());
-            Assert.Equal(@"d\", p.WithoutRootFolderAndNameAsString());
+            Assert.Equal(@"c:\d\f", p.WithoutExtension().ToWindowsString());
+            Assert.Equal(@"c:\d\f", p.WithoutExtensionAsWindowsString());
 
-            Assert.Equal(@"c:\d\f", p.WithoutExtension());
-            Assert.Equal(@"c:\d\f", p.WithoutExtensionAsString());
+            Assert.Equal(@"c:\d\", p.WithoutName().ToWindowsString());
+            Assert.Equal(@"c:\d\", p.WithoutNameAsWindowsString());
 
-            Assert.Equal(@"c:\d\", p.WithoutName());
-            Assert.Equal(@"c:\d\", p.WithoutNameAsString());
+            Assert.Equal(@"c:\d\", p.WithoutFileName().ToWindowsString());
+            Assert.Equal(@"c:\d\", p.WithoutFileNameAsWindowsString());
 
-            Assert.Equal(@"c:\d\", p.WithoutFileName());
-            Assert.Equal(@"c:\d\", p.WithoutFileNameAsString());
+            Assert.Equal(@"\d\", p.WithoutDriveOrHostAndFileName().ToWindowsString());
+            Assert.Equal(@"\d\", p.WithoutDriveOrHostAndFileNameAsWindowsString());
 
-            Assert.Equal(@"\d\", p.WithoutDriveOrHostAndFileName());
-            Assert.Equal(@"\d\", p.WithoutDriveOrHostAndFileNameAsString());
-
-            Assert.Equal(@"d\", p.WithoutRootFolderAndFileName());
-            Assert.Equal(@"d\", p.WithoutRootFolderAndFileNameAsString());
+            Assert.Equal(@"d\", p.WithoutRootFolderAndFileName().ToWindowsString());
+            Assert.Equal(@"d\", p.WithoutRootFolderAndFileNameAsWindowsString());
         }
 
         [Fact]
         public void WithoutAnscestors()
         {
             var p = FilePath.Parse("c:/foo/bar/baz");
-            Assert.Equal(@"bar\baz", p.WithoutAnscestors());
+            Assert.Equal(@"bar\baz", p.WithoutAnscestors().ToWindowsString());
             Assert.Equal(@"baz", p.WithoutAnscestors(2));
             Assert.Throws<ArgumentOutOfRangeException>(() => p.WithoutAnscestors(3));
         }
@@ -386,25 +386,25 @@ namespace Exader.IO
         public void WithoutDriveOrHostAndExtension()
         {
             var p1 = FilePath.Parse("c:/d/a.b.c");
-            Assert.Equal(@"\d\a.b", p1.WithoutDriveOrHostAndExtensionAsString());
+            Assert.Equal(@"\d\a.b", p1.WithoutDriveOrHostAndExtensionAsWindowsString());
 
             var p2 = p1.WithoutDriveOrHostAndExtension();
-            Assert.Equal(@"\d\a.b", p2);
-            Assert.Equal(@"\d\a", p2.WithoutDriveOrHostAndExtensionAsString());
+            Assert.Equal(@"\d\a.b", p2.ToWindowsString());
+            Assert.Equal(@"\d\a", p2.WithoutDriveOrHostAndExtensionAsWindowsString());
             Assert.Equal(@".b", p2.Extension);
 
             var p3 = p2.WithoutDriveOrHostAndExtension();
-            Assert.Equal(@"\d\a", p3);
-            Assert.Equal(@"\d\a", p3.WithoutDriveOrHostAndExtensionAsString());
+            Assert.Equal(@"\d\a", p3.ToWindowsString());
+            Assert.Equal(@"\d\a", p3.WithoutDriveOrHostAndExtensionAsWindowsString());
             Assert.Equal(@"", p3.Extension);
-            Assert.Equal(@"\d\a", p3.WithoutDriveOrHostAndExtension());
+            Assert.Equal(@"\d\a", p3.WithoutDriveOrHostAndExtension().ToWindowsString());
 
             var p4 = FilePath.Parse("c:/d/a.b.c/");
-            Assert.Equal(@"\d\a.b", p4.WithoutDriveOrHostAndExtensionAsString());
+            Assert.Equal(@"\d\a.b", p4.WithoutDriveOrHostAndExtensionAsWindowsString());
             Assert.True(p4.IsDirectory);
 
             var p5 = p4.WithoutDriveOrHostAndExtension();
-            Assert.Equal(@"\d\a.b", p5);
+            Assert.Equal(@"\d\a.b", p5.ToWindowsString());
             Assert.False(p5.IsDirectory);
             Assert.Equal(@".b", p5.Extension);
         }
@@ -413,25 +413,25 @@ namespace Exader.IO
         public void WithoutExtension()
         {
             var p1 = FilePath.Parse("c:/d/a.b.c");
-            Assert.Equal(@"c:\d\a.b", p1.WithoutExtensionAsString());
+            Assert.Equal(@"c:\d\a.b", p1.WithoutExtensionAsWindowsString());
 
             var p2 = p1.WithoutExtension();
-            Assert.Equal(@"c:\d\a.b", p2);
-            Assert.Equal(@"c:\d\a", p2.WithoutExtensionAsString());
+            Assert.Equal(@"c:\d\a.b", p2.ToWindowsString());
+            Assert.Equal(@"c:\d\a", p2.WithoutExtensionAsWindowsString());
             Assert.Equal(@".b", p2.Extension);
 
             var p3 = p2.WithoutExtension();
-            Assert.Equal(@"c:\d\a", p3);
-            Assert.Equal(@"c:\d\a", p3.WithoutExtensionAsString());
+            Assert.Equal(@"c:\d\a", p3.ToWindowsString());
+            Assert.Equal(@"c:\d\a", p3.WithoutExtensionAsWindowsString());
             Assert.Equal(@"", p3.Extension);
-            Assert.Equal(@"c:\d\a", p3.WithoutExtension());
+            Assert.Equal(@"c:\d\a", p3.WithoutExtension().ToWindowsString());
 
             var p4 = FilePath.Parse("c:/d/a.b.c/");
-            Assert.Equal(@"c:\d\a.b", p4.WithoutExtensionAsString());
+            Assert.Equal(@"c:\d\a.b", p4.WithoutExtensionAsWindowsString());
             Assert.True(p4.IsDirectory);
 
             var p5 = p4.WithoutExtension();
-            Assert.Equal(@"c:\d\a.b", p5);
+            Assert.Equal(@"c:\d\a.b", p5.ToWindowsString());
             Assert.False(p5.IsDirectory);
             Assert.Equal(@".b", p5.Extension);
         }
@@ -451,8 +451,8 @@ namespace Exader.IO
         public void WithoutParents()
         {
             var p = FilePath.Parse("c:/foo/bar/baz");
-            Assert.Equal(@"c:\foo\baz", p.WithoutParents());
-            Assert.Equal(@"c:\baz", p.WithoutParents(2));
+            Assert.Equal(@"c:\foo\baz", p.WithoutParents().ToWindowsString());
+            Assert.Equal(@"c:\baz", p.WithoutParents(2).ToWindowsString());
             Assert.Throws<ArgumentOutOfRangeException>(() => p.WithoutParents(3));
         }
 
@@ -494,11 +494,11 @@ namespace Exader.IO
             Assert.Empty(r1.RootFolder);
 
             var r2 = fp.WithRoot(@"\\s\s\");
-            Assert.Equal(@"\\s\s\d", r2);
+            Assert.Equal(@"\\s\s\d", r2.ToWindowsString());
             Assert.Empty(r2.Drive);
             Assert.Null(r2.DriveLetter);
-            Assert.Equal(@"\\s", r2.Host);
-            Assert.Equal(@"\s\", r2.RootFolder);
+            Assert.Equal(@"\\s", r2.HostWindows);
+            Assert.Equal(@"\s\", r2.RootFolderWindows);
         }
     }
 }

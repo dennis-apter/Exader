@@ -29,16 +29,42 @@ namespace Exader.IO
 
     public partial class FilePath
     {
-        private static readonly char Sep;
-        private static readonly char AltSep;
-        private static readonly string Separator;
-        private static readonly string AltSeparator;
-        private static readonly string Network;
-        private static readonly string Localhost;
+        private const char WinSep = '\\';
+        private const string WinSeparator = "\\";
+        private const char UnixSep = '/';
+        private const string UnixSeparator = "/";
 
-        internal static readonly string CurDir;
-        internal static readonly string DirSfx;
-        internal static readonly string SchSfx;
+        /// <summary>
+        /// Directory separator character (platform specific)
+        /// </summary>
+        private static char Sep;
+
+        /// <summary>
+        /// Alternate directory separator character (platform specific)
+        /// </summary>
+        private static char AltSep;
+
+        /// <summary>
+        /// Directory separator string (platform specific)
+        /// </summary>
+        private static string Separator;
+
+        /// <summary>
+        /// Alternate directory separator string (platform specific)
+        /// </summary>
+        private static string AltSeparator;
+
+        private static string Unc;
+        private static string LongPath;
+        private static string Network;
+        private static string Localhost;
+        private static string RelativeParent;
+
+        internal static string CurDir;
+        internal static string DirSfx;
+        internal static string SchSfx;
+
+        private static bool _isWindows;
 
         public const char HorizontalEllipsisFillerChar = '…';
 
@@ -48,19 +74,33 @@ namespace Exader.IO
 
         static FilePath()
         {
-            Sep = System.IO.Path.DirectorySeparatorChar;
-            AltSep = Sep == '/' ? '\\' : '/';
-            Separator = Sep.ToString();
-            AltSeparator = AltSep.ToString();
+            IsWindows = System.IO.Path.DirectorySeparatorChar == WinSep;
+        }
 
-            CurDir = "." + Separator;
-            DirSfx = Separator + "." + Separator;
-            SchSfx = ":" + Separator + Separator;
+        public static bool IsWindows
+        {
+            get => _isWindows;
+            set
+            {
+                _isWindows = value;
 
-            Network = Separator + Separator;
-            Localhost = Network + "localhost";
+                Sep = value ? WinSep : UnixSep;
+                AltSep = value ? UnixSep : WinSep;
+                Separator = Sep.ToString();
+                AltSeparator = AltSep.ToString();
 
-            RelativeRoot = new FilePath("", Separator, "", "", "", false);
+                CurDir = "." + Separator;
+                DirSfx = Separator + "." + Separator;
+                SchSfx = ":" + Separator + Separator;
+
+                Network = Separator + Separator;
+                Localhost = Network + "localhost";
+                LongPath = Network + "?" + Separator; // \\?\
+                Unc = LongPath + "UNC" + Separator; // \\?\UNC\
+
+                RelativeParent = ".." + Separator;
+                RelativeRoot = new FilePath("", Separator, "", "", "", false);
+            }
         }
 
         public static FilePath Parse(string value)

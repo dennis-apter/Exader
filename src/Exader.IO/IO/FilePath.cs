@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Text;
 using JetBrains.Annotations;
 
@@ -16,7 +15,7 @@ namespace Exader.IO
         private static readonly string DirectoryName = ".";
 
         public static readonly FilePath Empty = new FilePath();
-        public static readonly FilePath RelativeRoot;
+        public static FilePath RelativeRoot;
 
         /// <summary>
         ///     Storing drive letter or server computer name of shared folder.
@@ -103,10 +102,34 @@ namespace Exader.IO
             }
         }
 
+        public string DirectoryWindowsPath
+        {
+            get
+            {
+                var rootLength = _driveOrHost.Length + _rootFolder.Length;
+                return _isDirectory && _path.Length > rootLength
+                    ? ParentWindowsPath + NameWithoutExtension + Extension + WinSeparator
+                    : ParentWindowsPath;
+            }
+        }
+
+        public string DirectoryUnixPath
+        {
+            get
+            {
+                var rootLength = _driveOrHost.Length + _rootFolder.Length;
+                return _isDirectory && _path.Length > rootLength
+                    ? ParentUnixPath + NameWithoutExtension + Extension + UnixSeparator
+                    : ParentUnixPath;
+            }
+        }
+
         public string Drive => IsLocal ? _driveOrHost : "";
         public char? DriveLetter => IsLocal ? (char?) _driveOrHost[0] : null;
 
         public string DriveOrHost => _driveOrHost;
+        public string DriveOrHostWindows => IsWindows ? _driveOrHost : _driveOrHost.Replace(UnixSep, WinSep);
+        public string DriveOrHostUnix => IsWindows ? _driveOrHost.Replace(WinSep, UnixSep) : _driveOrHost;
 
         [NotNull]
         public string Extension { get; }
@@ -116,13 +139,16 @@ namespace Exader.IO
 
         public bool HasDriveOrHost => _driveOrHost != "";
         public bool HasRootFolder => _rootFolder != "";
+
         public string Host => IsNetwork ? _driveOrHost : "";
+        public string HostWindows => IsWindows ? Host : Host.Replace(UnixSep, WinSep);
+        public string HostUnix => IsWindows ? Host.Replace(WinSep, UnixSep) : Host;
 
         /// <summary>
         ///     Указывает на то, что путь является абсолютным и обладает именем диска.
         /// </summary>
         /// <example>\</example>
-        public bool IsAbsolute => RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? _driveOrHost != "" && _rootFolder != "" : _rootFolder != "";
+        public bool IsAbsolute => IsWindows ? _driveOrHost != "" && _rootFolder != "" : _rootFolder != "";
 
         public bool IsCurrent => _rootFolder == "" && ParentPath == "" && NameWithoutExtension == "" && Extension == "";
 
@@ -131,7 +157,7 @@ namespace Exader.IO
         public bool IsExternal => NameWithoutExtension == ".." || ParentPath.StartsWith("..");
 
         public bool IsLocal => _driveOrHost.Length == 2 && _driveOrHost[1] == ':';
-        public bool IsNetwork => 2 < _driveOrHost.Length && _driveOrHost[0] == '\\';
+        public bool IsNetwork => 2 < _driveOrHost.Length && _driveOrHost[0] == Sep;
 
         /// <summary>
         ///     Relative or Absolute
@@ -172,7 +198,7 @@ namespace Exader.IO
                     string fullName;
                     string name;
                     string ext;
-                    var i = ParentPath.LastIndexOf('\\', ParentPath.Length - 2);
+                    var i = ParentPath.LastIndexOf(Sep, ParentPath.Length - 2);
                     if (i == -1)
                     {
                         fullName = ParentPath.Substring(0, ParentPath.Length - 1);
@@ -206,14 +232,17 @@ namespace Exader.IO
             }
         }
 
-        [NotNull]
-        public string ParentPath { get; }
+        [NotNull] public string ParentPath { get; }
+        [NotNull] public string ParentWindowsPath => IsWindows ? ParentPath : ParentPath.Replace(UnixSep, WinSep);
+        [NotNull] public string ParentUnixPath => IsWindows ? ParentPath.Replace(WinSep, UnixSep) : ParentPath;
 
         [NotNull]
         [Obsolete("Use " + nameof(ParentPath) + " instead", true)]
         public string Prefix => ParentPath;
 
         public string RootFolder => _rootFolder;
+        public string RootFolderWindows => IsWindows ? _rootFolder : _rootFolder.Replace(UnixSep, WinSep);
+        public string RootFolderUnix => IsWindows ? _rootFolder.Replace(WinSep, UnixSep) : _rootFolder;
 
         #region IEquatable<FilePath> Members
 
@@ -536,10 +565,10 @@ namespace Exader.IO
             return path; // == "" ? "." : path;
         }
 
-        private static string GetRelativePath(string path, string basePath)
+        private static string GetRelativePath(string path, string basePath, char sep, string separator)
         {
-            var basePathParts = basePath.SplitAndRemoveEmpties(Sep);
-            var pathParts = path.Split(Sep);
+            var basePathParts = basePath.SplitAndRemoveEmpties(sep);
+            var pathParts = path.Split(sep);
             var partsCount = Math.Min(basePathParts.Length, pathParts.Length);
             var samePartCount = 0;
             for (var i = 0; i < partsCount; i++)
@@ -551,19 +580,19 @@ namespace Exader.IO
             }
 
             if (0 == samePartCount)
-                return "..\\".Repeat(basePathParts.Length) + path;
+                return RelativeParent.Repeat(basePathParts.Length) + path;
 
             var relativePath = new StringBuilder();
             for (var i = samePartCount; i < basePathParts.Length; i++)
             {
                 relativePath.Append("..");
-                relativePath.Append(Separator);
+                relativePath.Append(separator);
             }
 
             for (var i = samePartCount; i < pathParts.Length; i++)
             {
                 if (samePartCount < i)
-                    relativePath.Append(Separator);
+                    relativePath.Append(separator);
 
                 relativePath.Append(pathParts[i]);
             }
@@ -806,7 +835,7 @@ namespace Exader.IO
             if (subpath == null)
                 throw new ArgumentNullException(nameof(subpath));
 
-            subpath = subpath.Replace('/', '\\').Trim('\\');
+            subpath = subpath.Replace(AltSep, Sep).Trim(Sep);
 
             var s = ParentPath.GetIndexedEnumerator();
             var t = subpath.GetIndexedEnumerator();
@@ -859,7 +888,7 @@ namespace Exader.IO
                 return new FilePath(_driveOrHost, _rootFolder, "", "", "", true);
 
             var newPrefix = ParentPath.Substring(0, start - 1);
-            var newName = newPrefix.SubstringAfterLast('\\', out var rest);
+            var newName = newPrefix.SubstringAfterLast(Sep, out var rest);
             if (newName == "")
             {
                 newName = newPrefix;
@@ -903,15 +932,40 @@ namespace Exader.IO
                 : throw new ArgumentException("Invalid base path.", nameof(basePath));
         }
 
+        public string ToRelativeWindowsString(FilePath basePath)
+        {
+            return TryToRelativeWindowsString(basePath, out var result)
+                ? result
+                : throw new ArgumentException("Invalid base path.", nameof(basePath));
+        }
+
+        public string ToRelativeUnixString(FilePath basePath)
+        {
+            return TryToRelativeUnixString(basePath, out var result)
+                ? result
+                : throw new ArgumentException("Invalid base path.", nameof(basePath));
+        }
+
         public string ToRelativeString(string basePath)
         {
             return ToRelativeString(Parse(basePath));
         }
 
-        public override string ToString()
+        public string ToRelativeWindowsString(string basePath)
         {
-            return _path;
+            return ToRelativeWindowsString(Parse(basePath));
         }
+
+        public string ToRelativeUnixString(string basePath)
+        {
+            return ToRelativeUnixString(Parse(basePath));
+        }
+
+        public override string ToString() => _path;
+
+        public string ToWindowsString() => IsWindows ? ToString() : _path.Replace(Sep, AltSep);
+
+        public string ToUnixString() => IsWindows ? _path.Replace(Sep, AltSep) : ToString();
 
         [Obsolete("Use " + nameof(WithoutAnscestors) + " instead", true)]
         public FilePath TrimAnscestors(int offset = 1)
@@ -1004,7 +1058,7 @@ namespace Exader.IO
 
                             end++;
 
-                            if (self.Current == '\\')
+                            if (self.Current == Sep)
                                 hasSeparator = true;
                         }
                         else if (end < start)
@@ -1122,27 +1176,49 @@ namespace Exader.IO
         public bool TryToRelative(FilePath basePath, out FilePath relativePath)
         {
             var blp = basePath.WithoutRootFolderAsString();
-            return TryToRelativeCore(basePath.ToString(), basePath._driveOrHost, blp, out relativePath);
+            return TryToRelativeCore(basePath.ToString(), basePath._driveOrHost, blp, Sep, Separator, out relativePath);
         }
 
         public bool TryToRelative(string basePath, out FilePath relativePath)
         {
-            string br;
-            string bf;
-            var blp = CanonicalizePath(basePath, out br, out bf);
-            return TryToRelativeCore(basePath, br + bf, blp, out relativePath);
+            var blp = CanonicalizePath(basePath, out var br, out var bf);
+            return TryToRelativeCore(basePath, br + bf, blp, Sep, Separator, out relativePath);
         }
 
         public bool TryToRelativeString(FilePath basePath, out string relativePath)
         {
             var blp = basePath.WithoutRootFolderAsString();
-            return TryToRelativeStringCore(basePath.ToString(), basePath._driveOrHost, blp, out relativePath);
+            return TryToRelativeStringCore(basePath.ToString(), basePath._driveOrHost, blp, Sep, Separator, out relativePath);
+        }
+
+        public bool TryToRelativeWindowsString(FilePath basePath, out string relativePath)
+        {
+            var blp = basePath.WithoutRootFolderAsWindowsString();
+            return TryToRelativeStringCore(basePath.ToWindowsString(), basePath._driveOrHost, blp, WinSep, WinSeparator, out relativePath);
+        }
+
+        public bool TryToRelativeUnixString(FilePath basePath, out string relativePath)
+        {
+            var blp = basePath.WithoutRootFolderAsUnixString();
+            return TryToRelativeStringCore(basePath.ToUnixString(), basePath._driveOrHost, blp, UnixSep, UnixSeparator, out relativePath);
         }
 
         public bool TryToRelativeString(string basePath, out string relativePath)
         {
             var blp = CanonicalizePath(basePath, out var br, out var bf);
-            return TryToRelativeStringCore(basePath, br + bf, blp, out relativePath);
+            return TryToRelativeStringCore(basePath, br + bf, blp, Sep, Separator, out relativePath);
+        }
+
+        public bool TryToRelativeWindowsString(string basePath, out string relativePath)
+        {
+            var blp = CanonicalizePath(basePath, out var br, out var bf);
+            return TryToRelativeStringCore(basePath, br + bf, blp, WinSep, WinSeparator, out relativePath);
+        }
+
+        public bool TryToRelativeUnixString(string basePath, out string relativePath)
+        {
+            var blp = CanonicalizePath(basePath, out var br, out var bf);
+            return TryToRelativeStringCore(basePath, br + bf, blp, UnixSep, UnixSeparator, out relativePath);
         }
 
         /// <summary>
@@ -1271,10 +1347,9 @@ namespace Exader.IO
             return new FilePath("", _rootFolder, ParentPath, newName, newExt, false);
         }
 
-        public string WithoutDriveOrHostAndExtensionAsString()
-        {
-            return _rootFolder + ParentPath + NameWithoutExtension;
-        }
+        public string WithoutDriveOrHostAndExtensionAsString() => _rootFolder + ParentPath + NameWithoutExtension;
+        public string WithoutDriveOrHostAndExtensionAsWindowsString() => RootFolderWindows + ParentWindowsPath + NameWithoutExtension;
+        public string WithoutDriveOrHostAndExtensionAsUnixString() => RootFolderUnix + ParentUnixPath + NameWithoutExtension;
 
         [CanBeNull]
         public FilePath WithoutDriveOrHostAndFileName()
@@ -1289,21 +1364,30 @@ namespace Exader.IO
                 : _rootFolder + ParentPath;
         }
 
+        public string WithoutDriveOrHostAndFileNameAsWindowsString()
+        {
+            return _isDirectory
+                ? RootFolderWindows + ParentWindowsPath + NameWithoutExtension + Extension + WinSeparator
+                : RootFolderWindows + ParentWindowsPath;
+        }
+
+        public string WithoutDriveOrHostAndFileNameAsUNixString()
+        {
+            return _isDirectory
+                ? RootFolderUnix + ParentUnixPath + NameWithoutExtension + Extension + UnixSeparator
+                : RootFolderUnix + ParentUnixPath;
+        }
+
         [CanBeNull]
-        public FilePath WithoutDriveOrHostAndName()
-        {
-            return Parent?.WithoutDriveOrHost();
-        }
+        public FilePath WithoutDriveOrHostAndName() => Parent?.WithoutDriveOrHost();
 
-        public string WithoutDriveOrHostAndNameAsString()
-        {
-            return _rootFolder + ParentPath;
-        }
+        public string WithoutDriveOrHostAndNameAsString() => RootFolder + ParentPath;
+        public string WithoutDriveOrHostAndNameAsWindowsString() => RootFolderWindows + ParentWindowsPath;
+        public string WithoutDriveOrHostAndNameAsUnixString() => RootFolderUnix + ParentUnixPath;
 
-        public string WithoutDriveOrHostAsString()
-        {
-            return _rootFolder + ParentPath + NameWithoutExtension + Extension + (_isDirectory ? Separator : "");
-        }
+        public string WithoutDriveOrHostAsString() => RootFolder + ParentPath + NameWithoutExtension + Extension + (_isDirectory ? Separator : "");
+        public string WithoutDriveOrHostAsWindowsString() => RootFolderWindows + ParentWindowsPath + NameWithoutExtension + Extension + (_isDirectory ? WinSeparator : "");
+        public string WithoutDriveOrHostAsUnixString() => RootFolderUnix + ParentUnixPath + NameWithoutExtension + Extension + (_isDirectory ? UnixSeparator : "");
 
         public FilePath WithoutExtension()
         {
@@ -1311,10 +1395,9 @@ namespace Exader.IO
             return new FilePath(_driveOrHost, _rootFolder, ParentPath, newName, newExt, false);
         }
 
-        public string WithoutExtensionAsString()
-        {
-            return _driveOrHost + _rootFolder + ParentPath + NameWithoutExtension;
-        }
+        public string WithoutExtensionAsString() => DriveOrHost + RootFolder + ParentPath + NameWithoutExtension;
+        public string WithoutExtensionAsWindowsString() => DriveOrHostWindows + RootFolderWindows + ParentWindowsPath + NameWithoutExtension;
+        public string WithoutExtensionAsUnixString() => DriveOrHostUnix + RootFolderUnix + ParentUnixPath + NameWithoutExtension;
 
         public FilePath WithoutExtensions(int count = 1)
         {
@@ -1332,26 +1415,18 @@ namespace Exader.IO
         }
 
         [CanBeNull]
-        public FilePath WithoutFileName()
-        {
-            return _isDirectory ? this : Parent;
-        }
+        public FilePath WithoutFileName() => _isDirectory ? this : Parent;
 
-        public string WithoutFileNameAsString()
-        {
-            return _isDirectory ? _path : _driveOrHost + _rootFolder + ParentPath;
-        }
+        public string WithoutFileNameAsString() => _isDirectory ? _path : _driveOrHost + _rootFolder + ParentPath;
+        public string WithoutFileNameAsWindowsString() => _isDirectory ? ToWindowsString() : DriveOrHostWindows + RootFolderWindows + ParentWindowsPath;
+        public string WithoutFileNameAsUnixString() => _isDirectory ? ToUnixString() : DriveOrHostUnix + RootFolderUnix + ParentUnixPath;
 
         [CanBeNull]
-        public FilePath WithoutName()
-        {
-            return Parent;
-        }
+        public FilePath WithoutName() => Parent;
 
-        public string WithoutNameAsString()
-        {
-            return _driveOrHost + _rootFolder + ParentPath;
-        }
+        public string WithoutNameAsString() => DriveOrHost + RootFolder + ParentPath;
+        public string WithoutNameAsWindowsString() => DriveOrHostWindows + RootFolderWindows + ParentWindowsPath;
+        public string WithoutNameAsUnixString() => DriveOrHostUnix + RootFolderUnix + ParentUnixPath;
 
         public FilePath WithoutRootFolder()
         {
@@ -1363,48 +1438,39 @@ namespace Exader.IO
             return new FilePath("", "", ParentPath, NameWithoutExtension, "", false);
         }
 
-        public string WithoutRootFolderAndExtensionAsString()
-        {
-            return ParentPath + NameWithoutExtension;
-        }
+        public string WithoutRootFolderAndExtensionAsString() => ParentPath + NameWithoutExtension;
+        public string WithoutRootFolderAndExtensionAsWindowsString() => ParentWindowsPath + NameWithoutExtension;
+        public string WithoutRootFolderAndExtensionAsUnixString() => ParentUnixPath + NameWithoutExtension;
 
         [CanBeNull]
-        public FilePath WithoutRootFolderAndFileName()
-        {
-            return _isDirectory ? WithoutRootFolder() : Parent?.WithoutRootFolder();
-        }
+        public FilePath WithoutRootFolderAndFileName() => _isDirectory ? WithoutRootFolder() : Parent?.WithoutRootFolder();
 
-        public string WithoutRootFolderAndFileNameAsString()
-        {
-            return _isDirectory ? ParentPath + NameWithoutExtension + Extension + Separator : ParentPath;
-        }
+        public string WithoutRootFolderAndFileNameAsString() => _isDirectory ? ParentPath + NameWithoutExtension + Extension + Separator : ParentPath;
+        public string WithoutRootFolderAndFileNameAsWindowsString() => _isDirectory ? ParentWindowsPath + NameWithoutExtension + Extension + WinSeparator : ParentWindowsPath;
+        public string WithoutRootFolderAndFileNameAsUnixString() => _isDirectory ? ParentUnixPath + NameWithoutExtension + Extension + UnixSeparator : ParentUnixPath;
 
         [CanBeNull]
-        public FilePath WithoutRootFolderAndName()
-        {
-            return Parent?.WithoutRootFolder();
-        }
+        public FilePath WithoutRootFolderAndName() => Parent?.WithoutRootFolder();
 
-        public string WithoutRootFolderAndNameAsString()
-        {
-            return ParentPath;
-        }
+        public string WithoutRootFolderAndNameAsString() => ParentPath;
+        public string WithoutRootFolderAndNameAsWindowsString() => ParentWindowsPath;
+        public string WithoutRootFolderAndNameAsUnixString() => ParentUnixPath;
 
-        public string WithoutRootFolderAsString()
-        {
-            return ParentPath + NameWithoutExtension + Extension + (_isDirectory ? Separator : "");
-        }
+        public string WithoutRootFolderAsString() => ParentPath + NameWithoutExtension + Extension + (_isDirectory ? Separator : "");
+        public string WithoutRootFolderAsWindowsString() => ParentWindowsPath + NameWithoutExtension + Extension + (_isDirectory ? WinSeparator : "");
+        public string WithoutRootFolderAsUnixString() => ParentUnixPath + NameWithoutExtension + Extension + (_isDirectory ? UnixSeparator : "");
+        public string WithoutRootFolderAsString(char sep) => sep == WinSep ? WithoutRootFolderAsWindowsString() : WithoutRootFolderAsUnixString();
 
         public FilePath WithRoot(string newRoot)
         {
             var newRootFolder = _rootFolder;
             if (!string.IsNullOrEmpty(newRoot))
             {
-                var root = newRoot.Trim().Replace('/', '\\');
+                var root = newRoot.Trim().Replace(AltSep, Sep);
 
-                if (root.StartsWith(@"\\?\UNC\"))
+                if (root.StartsWithIgnoreCase(Unc))
                     root = root.Substring(7);
-                else if (root.StartsWith(@"\\?\"))
+                else if (root.StartsWith(LongPath))
                     root = root.Substring(4);
 
                 if (root.Length == 1 || root.EndsWith(':'))
@@ -1415,7 +1481,7 @@ namespace Exader.IO
                     if (root.Length == 1)
                         root += ":";
                 }
-                else if (root.Length == 3 && root[1] == ':' && root[2] == '\\')
+                else if (root.Length == 3 && root[1] == ':' && root[2] == Sep)
                 {
                     if (!IsDriveLetter(root[0]))
                         throw new ArgumentOutOfRangeException(nameof(newRoot), $"Invalid drive letter '{newRoot}'.");
@@ -1423,15 +1489,15 @@ namespace Exader.IO
                     newRootFolder = Separator;
                     root = root[0] + ":";
                 }
-                else if (root.StartsWith('\\'))
+                else if (root.StartsWith(Sep))
                 {
-                    root = root.TrimStart('\\');
-                    var share = root.SubstringAfter('\\');
-                    if (share == "" || share.JoinsWith('\\'))
+                    root = root.TrimStart(Sep);
+                    var share = root.SubstringAfter(Sep);
+                    if (share == "" || share.JoinsWith(Sep))
                         throw new ArgumentException($"Invalid network share root '{newRoot}'.");
 
                     root = root.RemoveRight(share.Length + 1);
-                    newRootFolder = '\\' + share.EnsureEndsWith(Sep);
+                    newRootFolder = Sep + share.EnsureEndsWith(Sep);
 
                     root = Network + root;
                 }
@@ -1488,6 +1554,7 @@ namespace Exader.IO
         }
 
         private bool TryToRelativeCore(string basePath, string baseRoot, string baseLocalPath,
+            char sep, string separator,
             out FilePath relativePath)
         {
             if (_driveOrHost != baseRoot)
@@ -1496,8 +1563,8 @@ namespace Exader.IO
                 return false;
             }
 
-            var path = WithoutRootFolderAsString();
-            var result = GetRelativePath(path, baseLocalPath);
+            var path = WithoutRootFolderAsString(sep);
+            var result = GetRelativePath(path, baseLocalPath, sep, separator);
 
             // TODO Make the result FilePath without parsing
             relativePath = Parse(result);
@@ -1505,6 +1572,7 @@ namespace Exader.IO
         }
 
         private bool TryToRelativeStringCore(string basePath, string baseRoot, string baseLocalPath,
+            char sep, string separator,
             out string relativePath)
         {
             if (_driveOrHost != baseRoot)
@@ -1513,8 +1581,8 @@ namespace Exader.IO
                 return false;
             }
 
-            var path = WithoutRootFolderAsString();
-            relativePath = GetRelativePath(path, baseLocalPath);
+            var path = WithoutRootFolderAsString(sep);
+            relativePath = GetRelativePath(path, baseLocalPath, sep, separator);
             return true;
         }
     }

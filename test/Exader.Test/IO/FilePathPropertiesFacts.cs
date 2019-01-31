@@ -33,9 +33,9 @@ namespace Exader.IO
         [InlineData(@"dir1\dir2\..\..\", "", "", @"dir1\dir2\..\..\")]
         public void Canonicalize(string v, string r, string f, string p)
         {
-            Assert.Equal(p, FilePath.CanonicalizePath(v, out var driveOrHost, out var rootFolder));
-            Assert.Equal(f, rootFolder);
-            Assert.Equal(r, driveOrHost);
+            Assert.Equal(p, FilePath.CanonicalizePath(v, out var driveOrHost, out var rootFolder).Replace('/', '\\'));
+            Assert.Equal(f, rootFolder.Replace('/', '\\'));
+            Assert.Equal(r, driveOrHost.Replace('/', '\\'));
         }
 
         [Theory]
@@ -103,23 +103,23 @@ namespace Exader.IO
         [Fact]
         public void DirectoryPath_Directory()
         {
-            Assert.Equal(@"d\sd\", FilePath.Parse("c:/d/sd/").DirectoryPath);
-            Assert.Equal(@"d\sd\", FilePath.Parse("/d/sd/").DirectoryPath);
-            Assert.Equal(@"d\sd\", FilePath.Parse("d/sd/").DirectoryPath);
-            Assert.Equal(@"sd\", FilePath.Parse("/sd/").DirectoryPath);
-            Assert.Equal(@"sd\", FilePath.Parse("sd/").DirectoryPath);
-            Assert.Equal(@"", FilePath.Parse("./").DirectoryPath);
-            Assert.Equal(@"", FilePath.Parse(".").DirectoryPath);
-            Assert.Equal(@"", FilePath.Parse("").DirectoryPath);
+            Assert.Equal(@"d\sd\", FilePath.Parse("c:/d/sd/").DirectoryWindowsPath);
+            Assert.Equal(@"d\sd\", FilePath.Parse("/d/sd/").DirectoryWindowsPath);
+            Assert.Equal(@"d\sd\", FilePath.Parse("d/sd/").DirectoryWindowsPath);
+            Assert.Equal(@"sd\", FilePath.Parse("/sd/").DirectoryWindowsPath);
+            Assert.Equal(@"sd\", FilePath.Parse("sd/").DirectoryWindowsPath);
+            Assert.Equal(@"", FilePath.Parse("./").DirectoryWindowsPath);
+            Assert.Equal(@"", FilePath.Parse(".").DirectoryWindowsPath);
+            Assert.Equal(@"", FilePath.Parse("").DirectoryWindowsPath);
         }
 
         [Fact]
         public void DirectoryPath_File()
         {
-            Assert.Equal(@"d\", FilePath.Parse("c:/d/f.e").DirectoryPath);
-            Assert.Equal(@"d\", FilePath.Parse("/d/f.e").DirectoryPath);
-            Assert.Equal(@"d\", FilePath.Parse("d/f.e").DirectoryPath);
-            Assert.Equal(@"", FilePath.Parse("f.e").DirectoryPath);
+            Assert.Equal(@"d\", FilePath.Parse("c:/d/f.e").DirectoryWindowsPath);
+            Assert.Equal(@"d\", FilePath.Parse("/d/f.e").DirectoryWindowsPath);
+            Assert.Equal(@"d\", FilePath.Parse("d/f.e").DirectoryWindowsPath);
+            Assert.Equal(@"", FilePath.Parse("f.e").DirectoryWindowsPath);
         }
 
         [Fact]
@@ -168,14 +168,7 @@ namespace Exader.IO
             Assert.False(FilePath.Parse(".").IsAbsolute);
             Assert.False(FilePath.Parse("..").IsAbsolute);
 
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                Assert.False(FilePath.Parse("/").IsAbsolute);
-            }
-            else
-            {
-                Assert.True(FilePath.Parse("/").IsAbsolute);
-            }
+            Assert.Equal(!FilePath.IsWindows, FilePath.Parse("/").IsAbsolute);
 
             Assert.False(FilePath.Parse("f").IsAbsolute);
             Assert.False(FilePath.Parse("d/").IsAbsolute);

@@ -37,12 +37,12 @@ namespace Exader.IO
         public void CollapseRelativePath(string value, string result)
         {
             var fp = FilePath.Parse(value);
-            Assert.Equal(result, fp);
+            Assert.Equal(result, fp.ToWindowsString());
             Assert.Empty(fp.RootFolder);
 
             fp = FilePath.Parse("C:" + value);
             // relative path to the current directory on the drive
-            Assert.Equal("C:" + result, fp);
+            Assert.Equal("C:" + result, fp.ToWindowsString());
             Assert.Empty(fp.RootFolder);
         }
 
@@ -58,7 +58,7 @@ namespace Exader.IO
         {
             var fp = FilePath.Parse(value);
 
-            Assert.Equal(result, fp);
+            Assert.Equal(result, fp.ToWindowsString());
             Assert.True(fp.IsRoot);
         }
 
@@ -125,7 +125,7 @@ namespace Exader.IO
         [InlineData(@"file://c|\Program%20Files\", @"c:\Program Files\")]
         public void EncodedFileUri(string value, string result)
         {
-            Assert.Equal(result, FilePath.Parse(value));
+            Assert.Equal(result, FilePath.Parse(value).ToWindowsString());
         }
 
         [Theory]
@@ -204,13 +204,13 @@ namespace Exader.IO
                 FilePath.Parse(value.Replace("localhost\\", string.Empty))
             })
             {
-                Assert.Equal(@"c:\Windows\", fp);
+                Assert.Equal(@"c:\Windows\", fp.ToWindowsString());
                 Assert.Equal("Windows", fp.Name);
-                Assert.Equal("\\", fp.RootFolder);
+                Assert.Equal("\\", fp.RootFolderWindows);
                 Assert.Equal("c:", fp.Drive);
-                Assert.Empty(fp.Host);
+                Assert.Empty(fp.HostWindows);
                 Assert.Empty(fp.Extension);
-                Assert.Empty(fp.ParentPath);
+                Assert.Empty(fp.ParentWindowsPath);
                 Assert.True(fp.IsDirectory);
                 Assert.True(fp.IsLocal);
                 Assert.False(fp.IsNetwork);
@@ -222,7 +222,7 @@ namespace Exader.IO
         [InlineData(@"\\?\UNC\h\r\", @"\\h\r\")]
         public void LongPath(string value, string result)
         {
-            Assert.Equal(result, FilePath.Parse(value));
+            Assert.Equal(result, FilePath.Parse(value).ToWindowsString());
         }
 
         [Theory]
@@ -241,13 +241,13 @@ namespace Exader.IO
         {
             var fp = FilePath.Parse(value);
             {
-                Assert.Equal(@"\\h\r\d\", fp);
+                Assert.Equal(@"\\h\r\d\", fp.ToWindowsString());
                 Assert.Equal("d", fp.Name);
-                Assert.Equal("\\r\\", fp.RootFolder);
-                Assert.Equal("\\\\h", fp.Host);
+                Assert.Equal("\\r\\", fp.RootFolderWindows);
+                Assert.Equal("\\\\h", fp.HostWindows);
                 Assert.Empty(fp.Drive);
                 Assert.Empty(fp.Extension);
-                Assert.Empty(fp.ParentPath);
+                Assert.Empty(fp.ParentWindowsPath);
                 Assert.True(fp.IsDirectory);
                 Assert.False(fp.IsLocal);
                 Assert.True(fp.IsNetwork);
@@ -264,7 +264,7 @@ namespace Exader.IO
         [InlineData(@"\\h\r\d\..", @"\\h\r\")]
         public void NetworkShare(string value, string result)
         {
-            Assert.Equal(result, FilePath.Parse(value));
+            Assert.Equal(result, FilePath.Parse(value).ToWindowsString());
         }
 
         [Theory]
@@ -278,12 +278,12 @@ namespace Exader.IO
         public void NonCollapseRelativePath(string value)
         {
             var fp = FilePath.Parse(value);
-            Assert.Equal(value, fp);
+            Assert.Equal(value, fp.ToWindowsString());
             Assert.Empty(fp.RootFolder);
             Assert.True(fp.IsExternal);
 
             fp = FilePath.Parse("C:" + value);
-            Assert.Equal("C:" + value, fp);
+            Assert.Equal("C:" + value, fp.ToWindowsString());
             Assert.Empty(fp.RootFolder);
             Assert.True(fp.IsExternal);
         }
@@ -299,7 +299,7 @@ namespace Exader.IO
         [InlineData(@"d\", @"d\")]
         public void Regural(string value, string result)
         {
-            Assert.Equal(result, FilePath.Parse(value));
+            Assert.Equal(result, FilePath.Parse(value).ToWindowsString());
         }
 
         [Theory]
@@ -334,7 +334,7 @@ namespace Exader.IO
         [InlineData(@"c:\d1 . \d2 . \", @"c:\d1\d2\")]
         public void TrimEnds(string value, string result)
         {
-            Assert.Equal(result, FilePath.Parse(value));
+            Assert.Equal(result, FilePath.Parse(value).ToWindowsString());
         }
 
         [Theory]
@@ -343,7 +343,7 @@ namespace Exader.IO
         public void Unc(string value, string result)
         {
             var fp = FilePath.Parse(value);
-            Assert.Equal(result, fp);
+            Assert.Equal(result, fp.ToWindowsString());
         }
 
         [Fact]
@@ -364,7 +364,7 @@ namespace Exader.IO
         [Fact]
         public void UserProfile()
         {
-            Assert.Equal("~\\", FilePath.Parse("~/"));
+            Assert.Equal("~\\", FilePath.Parse("~/").ToWindowsString());
         }
     }
 }

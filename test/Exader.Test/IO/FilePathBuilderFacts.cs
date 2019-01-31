@@ -18,7 +18,7 @@ namespace Exader.IO
         public void CompactLongFileNameToShortestInvalidForm(string path)
         {
             Assert.Throws<InvalidOperationException>(() => 
-                FilePath.Builder.ParseAlt(path).Root().Trim(path.Length - 1, 1));
+                FilePath.Builder.ParseUnix(path).Root().Trim(path.Length - 1, 1));
         }
 
         [Theory]
@@ -40,25 +40,25 @@ namespace Exader.IO
         [InlineData("/dir/file.e", "/…/….e")]
         public void CompactLongFileNameToShortestValidForm(string path, string result)
         {
-            var file = FilePath.Builder.ParseAlt(path);
+            var file = FilePath.Builder.ParseUnix(path);
             file.Root().Trim(result.Length, 1);
 
-            Assert.Equal(result, file.ToAltString());
+            Assert.Equal(result, file.ToUnixString());
         }
 
         [Fact]
         public void DirectoryMerge()
         {
             var root = new FilePath.Builder();
-            var x = FilePath.Builder.ParseAlt("etc/x");
-            var y = FilePath.Builder.ParseAlt("etc/y");
+            var x = FilePath.Builder.ParseUnix("etc/x");
+            var y = FilePath.Builder.ParseUnix("etc/y");
 
             root.Add(x.Root());
-            Assert.Equal("\\etc\\x", x.ToString());
+            Assert.Equal("\\etc\\x", x.ToWindowsString());
 
             root.Add(y.Root());
-            Assert.Equal("\\etc\\x", x.ToString());
-            Assert.Equal("\\etc\\y", y.ToString());
+            Assert.Equal("\\etc\\x", x.ToWindowsString());
+            Assert.Equal("\\etc\\y", y.ToWindowsString());
             Assert.True(ReferenceEquals(x.Parent, y.Parent));
         }
 
@@ -66,15 +66,15 @@ namespace Exader.IO
         public void DoublesDirectoryMerge()
         {
             var root = new FilePath.Builder();
-            var x1 = FilePath.Builder.ParseAlt("etc/x");
-            var x2 = FilePath.Builder.ParseAlt("etc/x");
+            var x1 = FilePath.Builder.ParseUnix("etc/x");
+            var x2 = FilePath.Builder.ParseUnix("etc/x");
 
             root.Add(x1.Root());
-            Assert.Equal("\\etc\\x", x1.ToString());
+            Assert.Equal("\\etc\\x", x1.ToWindowsString());
 
             root.Add(x2.Root());
-            Assert.Equal("\\etc\\x(1)", x1.ToString());
-            Assert.Equal("\\etc\\x(2)", x2.ToString());
+            Assert.Equal("\\etc\\x(1)", x1.ToWindowsString());
+            Assert.Equal("\\etc\\x(2)", x2.ToWindowsString());
             Assert.True(ReferenceEquals(x1.Parent, x2.Parent));
         }
 
@@ -86,11 +86,11 @@ namespace Exader.IO
             var x2 = new FilePath.Builder("x.doc");
 
             root.Add(x1);
-            Assert.Equal("\\x.doc", x1.ToString());
+            Assert.Equal("\\x.doc", x1.ToWindowsString());
 
             root.Add(x2);
-            Assert.Equal("\\x(1).doc", x1.ToString());
-            Assert.Equal("\\x(2).doc", x2.ToString());
+            Assert.Equal("\\x(1).doc", x1.ToWindowsString());
+            Assert.Equal("\\x(2).doc", x2.ToWindowsString());
         }
 
         [Fact]
@@ -101,11 +101,11 @@ namespace Exader.IO
             var x2 = new FilePath.Builder("x");
 
             root.Add(x1);
-            Assert.Equal("\\x", x1.ToString());
+            Assert.Equal("\\x", x1.ToWindowsString());
 
             root.Add(x2);
-            Assert.Equal("\\x(1)", x1.ToString());
-            Assert.Equal("\\x(2)", x2.ToString());
+            Assert.Equal("\\x(1)", x1.ToWindowsString());
+            Assert.Equal("\\x(2)", x2.ToWindowsString());
         }
 
         [Theory]
@@ -117,7 +117,7 @@ namespace Exader.IO
         [InlineData("dir/1234567890.ext")]
         public void Length(string path)
         {
-            var p = FilePath.Builder.ParseAlt(path);
+            var p = FilePath.Builder.ParseUnix(path);
             Assert.Equal(path.Length, p.GetLength());
         }
 
@@ -130,9 +130,9 @@ namespace Exader.IO
         [InlineData("c:/d/f.e", @"\d\", "f", ".e")]
         public void Parse(string value, string parentPath, string name, string ext)
         {
-            var path = FilePath.Builder.ParseAlt(value);
+            var path = FilePath.Builder.ParseUnix(value);
             
-            Assert.Equal(parentPath, path.ParentPath);
+            Assert.Equal(parentPath, path.ParentWindowsPath);
             Assert.Equal(name, path.NameWithoutExtension);
             Assert.Equal(ext, path.Extension);
         }
@@ -140,27 +140,27 @@ namespace Exader.IO
         [Fact]
         public void Relative()
         {
-            Assert.Equal("foo", new FilePath.Builder("foo").ToAltString());
+            Assert.Equal("foo", new FilePath.Builder("foo").ToUnixString());
         }
 
         [Fact]
         public void Root()
         {
-            Assert.Equal("/", new FilePath.Builder().ToAltString());
+            Assert.Equal("/", new FilePath.Builder().ToUnixString());
         }
 
         [Fact]
         public void Rooted()
         {
-            Assert.Equal("/foo", new FilePath.Builder().Add("foo").ToAltString());
+            Assert.Equal("/foo", new FilePath.Builder().Add("foo").ToUnixString());
         }
 
         [Fact]
         public void ToFilePath()
         {
-            var path = FilePath.Builder.ParseAlt("c:/devdir/sqlton/src/Core/Core.csproj");
+            var path = FilePath.Builder.ParseUnix("c:/devdir/sqlton/src/Core/Core.csproj");
 
-            Assert.Equal(@"\devdir\sqlton\src\Core\Core.csproj", path.ToFilePath().ToString());
+            Assert.Equal(@"\devdir\sqlton\src\Core\Core.csproj", path.ToFilePath().ToWindowsString());
         }
     }
 }

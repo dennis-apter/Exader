@@ -313,6 +313,10 @@ namespace Exader.IO
 
             public string ParentPath => Parent != null ? Parent.ToString() : string.Empty;
 
+            public string ParentWindowsPath => Parent != null ? Parent.ToWindowsString() : string.Empty;
+            
+            public string ParentUnixPath => Parent != null ? Parent.ToUnixString() : string.Empty;
+
             public bool Equals(Builder other)
             {
                 if (ReferenceEquals(null, other))
@@ -350,10 +354,9 @@ namespace Exader.IO
             /// </summary>
             /// <param name="path"></param>
             /// <returns></returns>
-            public static Builder Parse(string path)
-            {
-                return Parse(path, Sep);
-            }
+            public static Builder Parse(string path) => Parse(path, Sep);
+            public static Builder ParseWindows(string path) => Parse(path, WinSep);
+            public static Builder ParseUnix(string path) => Parse(path, UnixSep);
 
             public static Builder Parse(string path, params char[] directorySeparatorChars)
             {
@@ -403,10 +406,7 @@ namespace Exader.IO
             /// </summary>
             /// <param name="path"></param>
             /// <returns></returns>
-            public static Builder ParseAlt(string path)
-            {
-                return Parse(path, AltSep);
-            }
+            public static Builder ParseAlt(string path) => Parse(path, AltSep);
 
             public Builder Add(string path)
             {
@@ -613,10 +613,9 @@ namespace Exader.IO
                 return new FilePath(parent, NameWithoutExtension, Extension, false);
             }
 
-            public override string ToString()
-            {
-                return ToString(Sep, HorizontalEllipsisFillerChar);
-            }
+            public override string ToString() => ToString(Sep, HorizontalEllipsisFillerChar);
+            public string ToWindowsString() => ToString(WinSep, HorizontalEllipsisFillerChar);
+            public string ToUnixString() => ToString(UnixSep, HorizontalEllipsisFillerChar);
 
             public void Trim(int maxLength = MaxNameLength, int minLength = MinNameLength)
             {

@@ -22,7 +22,7 @@ namespace Exader.IO
             var newTarget = source.CopyTo(target, new CopyOptions { Recursive = true });
             Assert.Equal(target, newTarget);
 
-            var result = string.Join(";", target.Descendants().Select(d => d % target));
+            var result = string.Join(";", target.Descendants().Select(d => (d % target).ToWindowsString()));
             Assert.Equal(@"B;B\b.txt;a.txt", result);
         }
 
@@ -35,7 +35,7 @@ namespace Exader.IO
             var newTarget = source.CopyTo(target, new CopyOptions { Recursive = true });
             Assert.Equal(target, newTarget);
 
-            var result = string.Join(";", target.Descendants().Select(d => d % target));
+            var result = string.Join(";", target.Descendants().Select(d => (d % target).ToWindowsString()));
             Assert.Equal(@"B;B\b.txt;a.txt", result);
         }
 

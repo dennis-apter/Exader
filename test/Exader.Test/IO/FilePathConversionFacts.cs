@@ -21,7 +21,7 @@ namespace Exader.IO
         [InlineData("", @"\d\f", @"\d\f")]
         public void Combine(string l, string r, string f)
         {
-            Assert.Equal(f, (FilePath) l / (FilePath) r);
+            Assert.Equal(f, ((FilePath) l / (FilePath) r).ToWindowsString());
         }
 
         [Theory]
@@ -30,7 +30,7 @@ namespace Exader.IO
         [InlineData("", @"\d\f", @"\d\f.e")]
         public void Combine_Or(string l, string r, string f)
         {
-            Assert.Equal(f, (FilePath) l | (r + ".e"));
+            Assert.Equal(f, ((FilePath) l | (r + ".e")).ToWindowsString());
         }
 
         [Theory]
@@ -56,7 +56,7 @@ namespace Exader.IO
         public void ToRelative_DifferentRoots(string p, string b)
         {
             Assert.Throws<ArgumentException>(() => FilePath.Parse(p) % b);
-            Assert.Throws<ArgumentException>(() => FilePath.Parse(p).ToRelativeString(b));
+            Assert.Throws<ArgumentException>(() => FilePath.Parse(p).ToRelativeWindowsString(b));
         }
 
         [Theory]
@@ -76,13 +76,13 @@ namespace Exader.IO
         {
             var fp = (FilePath) p;
             var result = fp % b;
-            var resultString = fp.ToRelativeString(b);
+            var resultString = fp.ToRelativeWindowsString(b);
 
             Assert.True(result.IsExternal);
-            Assert.Equal(r, result);
+            Assert.Equal(r, result.ToWindowsString());
             Assert.Equal(r, resultString);
-            Assert.Equal(fp, b / result);
-            Assert.Equal(fp, (FilePath) b / resultString);
+            Assert.Equal(fp, (b / result));
+            Assert.Equal(fp, ((FilePath) b / resultString));
         }
 
         [Theory]
@@ -102,10 +102,10 @@ namespace Exader.IO
         {
             var fp = (FilePath) p;
             var result = fp % b;
-            var resultString = fp.ToRelativeString(b);
+            var resultString = fp.ToRelativeWindowsString(b);
 
             Assert.True(result.IsExternal);
-            Assert.Equal(r, result);
+            Assert.Equal(r, result.ToWindowsString());
             Assert.Equal(r, resultString);
             Assert.Equal(fp, b / result);
             Assert.Equal(fp, (FilePath) b / resultString);
@@ -123,12 +123,11 @@ namespace Exader.IO
         [InlineData("//s/s/d/sd/", "d/")]
         public void TryToRelative_DifferentRoots(string p, string b)
         {
-            FilePath fp;
-            Assert.False(FilePath.Parse(p).TryToRelative(b, out fp));
+            Assert.False(FilePath.Parse(p).TryToRelative(b, out var fp));
             Assert.Null(fp);
 
             string s;
-            Assert.False(FilePath.Parse(p).TryToRelativeString(b, out s));
+            Assert.False(FilePath.Parse(p).TryToRelativeWindowsString(b, out s));
             Assert.Null(s);
         }
 
